@@ -1,0 +1,167 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Helvetica Now Display';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+          url('/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Regular.woff2') format('woff2'),
+          url('/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Regular.woff') format('woff');
+}
+
+@theme {
+  --color-gray: rgba(230, 230, 230, 1);
+
+  --font-helvetica: 'Helvetica Now Display';
+
+  --text-h1: 74px;
+  --text-h1--line-height: 114%;
+  --text-h1--letter-spacing: -0.74px;
+
+  --text-h1-md: 152px;
+  --text-h1-md--line-height: 114%;
+  --text-h1-md--letter-spacing: -1.52px;
+
+  --text-h1-2xl: 205px;
+  --text-h1-2xl--line-height: 114%;
+  --text-h1-2xl--letter-spacing: -2.05px;
+
+  --text-h2-md: 64px;
+  --text-h2-md--line-height: 114%;
+  --text-h2-md--letter-spacing: -0.64px;
+
+  --text-p1: 40px;
+  --text-p1--line-height: 114%;
+  --text-p1--letter-spacing: -0.4px;
+
+  --text-p1-2xl: 52px;
+  --text-p1-2xl--line-height: 114%;
+  --text-p1-2xl--letter-spacing: -0.52px;
+
+  --text-p2-md: 15px;
+  --text-p2-md--line-height: 114%;
+  --text-p2-md--letter-spacing: -0.15px;
+
+  --text-p2-2xl: 20px;
+  --text-p2-2xl--line-height: 114%;
+  --text-p2-2xl--letter-spacing: -0.2px;
+
+  --text-p3: 16px;
+  --text-p3--line-height: 114%;
+  --text-p3--letter-spacing: -0.16px;
+
+  --text-p3-md: 13px;
+  --text-p3-md--line-height: 114%;
+  --text-p3-md--letter-spacing: -0.13px;
+
+  --text-p3-2xl: 16px;
+  --text-p3-2xl--line-height: 114%;
+  --text-p3-2xl--letter-spacing: -0.16px;
+
+  --text-p4: 14px;
+  --text-p4--line-height: 114%;
+  --text-p4--letter-spacing: -0.14px;
+
+  --text-p4-md: 12px;
+  --text-p4-md--line-height: 114%;
+  --text-p4-md--letter-spacing: -0.12px;
+
+  --text-p4-2xl: 14px;
+  --text-p4-2xl--line-height: 114%;
+  --text-p4-2xl--letter-spacing: -0.14px;
+
+  --text-p5: 12px;
+  --text-p5--line-height: 114%;
+  --text-p5--letter-spacing: -0.12px;
+
+  --text-p5-md: 10px;
+  --text-p5-md--line-height: 114%;
+  --text-p5-md--letter-spacing: -0.1px;
+
+  --text-p5-2xl: 12px;
+  --text-p5-2xl--line-height: 114%;
+  --text-p5-2xl--letter-spacing: -0.12px;
+}
+
+@layer base {
+  * {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  *::-webkit-scrollbar {
+    display: none;
+  }
+
+  *::selection {
+    background-color: rgba(0, 0, 0, 0.8);
+    color: var(--color-white);
+  }
+
+  body {
+    position: relative;
+    font-family: var(--font-helvetica), sans-serif;
+    min-height: 100vh;
+    background-color: var(--color-gray);
+  }
+
+  body::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.15;
+    background: url("/images/noise.gif") 0 0 / 150px 150px repeat;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  a, button {
+    font-family: var(--font-helvetica), sans-serif;
+  }
+}
+
+@layer components {
+  .h1 {
+    @apply font-normal text-h1 md:text-h1-md 2xl:text-h1-2xl;
+  }
+
+  .h2 {
+    @apply font-normal text-h2-md;
+  }
+
+  .p1 {
+    @apply font-normal text-p1 2xl:text-p1-2xl;
+  }
+
+  .p2 {
+    @apply font-normal text-p2-md 2xl:text-p2-2xl;
+  }
+
+  .p3 {
+    @apply font-normal text-p3 md:text-p3-md 2xl:text-p3-2xl;
+  }
+
+  .p4 {
+    @apply font-normal text-p4 md:text-p4-md 2xl:text-p4-2xl;
+  }
+
+  .p5 {
+    @apply font-normal text-p5 md:text-p5-md 2xl:text-p5-2xl;
+  }
+
+  .button {
+    @apply uppercase leading-none cursor-pointer;
+  }
+
+  .button.button--xs {
+    @apply text-[14px] md:text-[12px];
+  }
+
+  .grid-container {
+    @apply grid grid-cols-2 md:grid-cols-4 lg:grid-cols-[14.5%_19.5%_22.5%_auto_minmax(140px,10%)] gap-x-2.5 px-2.5;
+  }
+}
