@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useRef } from "react";
+import {ReactNode, useRef, createContext, RefObject} from "react";
 import { ScrollSmoother } from "gsap/ScrollSmoother";
 import { usePathname } from "next/navigation";
 import { useGSAP } from "@gsap/react";
@@ -11,7 +11,10 @@ interface SmoothScrollProps {
   children: ReactNode;
 }
 
+export const ScrollContext = createContext<RefObject<HTMLDivElement | null> | undefined>(undefined);
+
 export function SmoothScroll({ children }: SmoothScrollProps) {
+  const pageRef = useRef<HTMLDivElement | null>(null);
   const smoother = useRef<ScrollSmoother | null>(null);
   const pathname = usePathname();
 
@@ -27,8 +30,12 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
   });
 
   return (
-    <div id="smooth-wrapper" className="overflow-hidden">
-      <div id="smooth-content">{children}</div>
-    </div>
+    <ScrollContext.Provider value={pageRef}>
+      <div id="smooth-wrapper" className="overflow-hidden">
+        <div id="smooth-content">
+          <div id="page" className="will-change-transform" ref={pageRef}>{children}</div>
+        </div>
+      </div>
+    </ScrollContext.Provider>
   )
 }

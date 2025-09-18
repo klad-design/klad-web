@@ -82,6 +82,17 @@
   --text-p5-2xl: 12px;
   --text-p5-2xl--line-height: 114%;
   --text-p5-2xl--letter-spacing: -0.12px;
+
+  --animate-opacity: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes opacity {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
 }
 
 @layer base {
