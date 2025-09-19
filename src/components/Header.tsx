@@ -7,6 +7,7 @@ import {useEffect, useRef, useState} from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
+import {TextBlur} from "@/components/ui/TextBlur";
 
 type City = {
   name: string;
@@ -88,67 +89,125 @@ export function Header() {
       <div className="relative flex lg:flex-col-reverse justify-between items-start lg:h-full lg:w-[130px]">
         <Dialog.Root open={isOpenMenu} onOpenChange={setIsOpenMenu}>
           <Dialog.Trigger asChild>
-            <Button className="md:hidden mt-1.5" text="Menu" />
+            <Button blur="regular" className="md:hidden mt-1.5" text="Menu" />
           </Dialog.Trigger>
           <Dialog.Portal container={container}>
             <Dialog.Overlay className="fixed inset-0 bg-gray/95 animate-opacity" />
             <Dialog.Content onOpenAutoFocus={handleOpenAutoFocus} className="fixed inset-0 flex flex-col items-start pt-[70px] px-2.5 pb-2.5 overflow-auto">
               <Dialog.Title className="hidden">Menu</Dialog.Title>
               <Dialog.Close asChild>
-                <Button className="fixed top-[9px]" text="Close" />
+                <Button blur="regular" className="fixed top-[9px]" text="Close" />
               </Dialog.Close>
               <nav ref={menuRef} className="w-full grow flex flex-col items-center gap-8">
-                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">About</Link>
-                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">Cases</Link>
-                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">Process</Link>
-                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">Expectations</Link>
-                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">Pricing</Link>
-                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">Express</Link>
-                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">Mockups</Link>
-                <Link className="menuItem text-p1 uppercase -rotate-2 mt-auto" href="https://calendly.com/klad-design/discovery" target="_blank">Book a call</Link>
+                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">
+                  <TextBlur isBold>About</TextBlur>
+                </Link>
+                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">
+                  <TextBlur isBold>Cases</TextBlur>
+                </Link>
+                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">
+                  <TextBlur isBold>Process</TextBlur>
+                </Link>
+                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">
+                  <TextBlur isBold>Expectations</TextBlur>
+                </Link>
+                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">
+                  <TextBlur isBold>Pricing</TextBlur>
+                </Link>
+                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">
+                  <TextBlur isBold>Express</TextBlur>
+                </Link>
+                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">
+                  <TextBlur isBold>Mockups</TextBlur>
+                </Link>
+                <Link className="menuItem text-p1 uppercase -rotate-2 mt-auto" href="https://calendly.com/klad-design/discovery" target="_blank">
+                  <TextBlur isBold>Book a call</TextBlur>
+                </Link>
               </nav>
             </Dialog.Content>
           </Dialog.Portal>
         </Dialog.Root>
         <div className="hidden md:grid grid-cols-4 lg:flex lg:flex-col-reverse gap-2.5 lg:gap-[30px] grow">
           <div className="hidden lg:flex flex-col items-start mt-6 text-[12px] leading-none uppercase">
-            <div className="-rotate-2">© Klad syndicate.</div>
+            <div className="-rotate-2">
+              <TextBlur isBold>© Klad syndicate.</TextBlur>
+            </div>
             <ul className="flex flex-col gap-[3px] mt-2">
-              <li>All Rights Reserved.</li>
-              <li>Remote, Worldwide</li>
-              <li><Link href="mailto:info@klad.design">info@klad.design</Link></li>
-              <li><Link href="tel:+995-591-017-066">995.591.017.066</Link></li>
+              <li>
+                <TextBlur isBold>All Rights Reserved.</TextBlur>
+              </li>
+              <li>
+                <TextBlur isBold>Remote, Worldwide</TextBlur>
+              </li>
+              <li>
+                <Link href="mailto:info@klad.design">
+                  <TextBlur isBold>info@klad.design</TextBlur>
+                </Link>
+              </li>
+              <li>
+                <Link href="tel:+995-591-017-066">
+                  <TextBlur isBold>995.591.017.066</TextBlur>
+                </Link>
+              </li>
             </ul>
           </div>
           <nav className="flex flex-col items-start gap-[3px]">
-            <Link className="button button--xs" href="#">About</Link>
-            <Link className="button button--xs" href="#">Cases</Link>
-            <Link className="button button--xs" href="#">Process</Link>
-            <Link className="button button--xs" href="#">Expectations</Link>
-            <Link className="button button--xs" href="#">Pricing</Link>
-            <Link className="button button--xs" href="#">Express</Link>
-            <Link className="button button--xs" href="#">Mockups</Link>
-            <Link className="button button--xs mt-1.5" href="https://calendly.com/klad-design/discovery" target="_blank">Book a call</Link>
+            <Link className="button button--xs" href="#">
+              <TextBlur isBold>About</TextBlur>
+            </Link>
+            <Link className="button button--xs" href="#">
+              <TextBlur>Cases</TextBlur>
+            </Link>
+            <Link className="button button--xs" href="#">
+              <TextBlur>Process</TextBlur>
+            </Link>
+            <Link className="button button--xs" href="#">
+              <TextBlur>Expectations</TextBlur>
+            </Link>
+            <Link className="button button--xs" href="#">
+              <TextBlur>Pricing</TextBlur>
+            </Link>
+            <Link className="button button--xs" href="#">
+              <TextBlur>Express</TextBlur>
+            </Link>
+            <Link className="button button--xs" href="#">
+              <TextBlur>Mockups</TextBlur>
+            </Link>
+            <Link className="button button--xs mt-1.5" href="https://calendly.com/klad-design/discovery" target="_blank">
+              <TextBlur>Book a call</TextBlur>
+            </Link>
           </nav>
           <div className="text-[12px] leading-none uppercase">
-            <div>Our time at</div>
+            <div>
+              <TextBlur isBold>Our time at</TextBlur>
+            </div>
             <ul className="flex flex-col items-start gap-[3px] mt-2">
               {cities.map(city => (
                 <li key={city.name} className="flex gap-1.5 justify-between text-nowrap">
-                  <span className="min-w-[65px]">{city.name}</span>
-                  <span className="min-w-[55px] text-right">{time[city.name]}</span>
+                  <span className="min-w-[65px]">
+                    <TextBlur isBold>{city.name}</TextBlur>
+                  </span>
+                  <span className="min-w-[55px] text-right">
+                    <TextBlur isBold>{time[city.name]}</TextBlur>
+                  </span>
                 </li>
               ))}
             </ul>
           </div>
           <nav className="flex flex-col items-start gap-[3px]">
-            <Link className="button button--xs" href="https://www.behance.net/klad_design" target="_blank">Behance</Link>
-            <Link className="button button--xs" href="https://www.instagram.com/klad_syndicate" target="_blank">Instagram</Link>
-            <Link className="button button--xs" href="https://www.linkedin.com/company/klad" target="_blank">LinkedIn</Link>
+            <Link className="button button--xs" href="https://www.behance.net/klad_design" target="_blank">
+              <TextBlur isBold>Behance</TextBlur>
+            </Link>
+            <Link className="button button--xs" href="https://www.instagram.com/klad_syndicate" target="_blank">
+              <TextBlur isBold>Instagram</TextBlur>
+            </Link>
+            <Link className="button button--xs" href="https://www.linkedin.com/company/klad" target="_blank">
+              <TextBlur isBold>LinkedIn</TextBlur>
+            </Link>
           </nav>
         </div>
         <Link href="/" className="relative md:absolute md:right-0 lg:static z-10">
-          <Image className="md:size-[70px] lg:size-[80px]" src="/images/logotype.svg" alt="logotype" width={60} height={60} />
+          <Image className="md:size-[70px] lg:size-[80px] blur-[0.6px]" src="/images/logotype.svg" alt="logotype" width={60} height={60} />
         </Link>
       </div>
       <div ref={setContainer} />

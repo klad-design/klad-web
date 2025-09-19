@@ -15,6 +15,8 @@
 
   --font-helvetica: 'Helvetica Now Display';
 
+  --text-normal: inherit;
+
   --text-h1: 74px;
   --text-h1--line-height: 114%;
   --text-h1--letter-spacing: -0.74px;
@@ -170,6 +172,14 @@
 
   .button.button--xs {
     @apply text-[14px] md:text-[12px];
+  }
+
+  .button.button--link {
+    @apply text-normal normal-case;
+  }
+
+  .button.is-active {
+    @apply text-red-700;
   }
 
   .grid-container {
