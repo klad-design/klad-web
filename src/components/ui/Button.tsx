@@ -1,6 +1,6 @@
-import { HTMLAttributes, ReactNode } from "react";
-import clsx from "clsx";
-import { TextBlur } from "@/components/ui/TextBlur";
+import type { HTMLAttributes, ReactNode } from 'react'
+import clsx from 'clsx'
+import { TextBlur } from '@/components/ui/TextBlur'
 
 interface ButtonProps extends HTMLAttributes<HTMLButtonElement> {
   text?: string
@@ -17,13 +17,15 @@ export function Button({ text, size = 'xs', className, isLink, blur, children, .
       type="button"
       {...props}
     >
-      {blur ? (
-        <TextBlur isBold={blur === 'bold'}>
-          {children || text}
-        </TextBlur>
-      ) : (
-        children || text
-      )}
+      {blur
+        ? (
+            <TextBlur isBold={blur === 'bold'}>
+              {children || text}
+            </TextBlur>
+          )
+        : (
+            children || text
+          )}
     </button>
   )
 }

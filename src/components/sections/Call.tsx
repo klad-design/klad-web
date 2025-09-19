@@ -1,8 +1,8 @@
 'use client'
 
-import Image from "next/image";
-import Link from "next/link";
-import { TextBlur } from "@/components/ui/TextBlur";
+import Image from 'next/image'
+import Link from 'next/link'
+import { TextBlur } from '@/components/ui/TextBlur'
 
 export function Call() {
   return (
@@ -14,9 +14,12 @@ export function Call() {
           </div>
           <div className="absolute top-0 left-full md:top-auto md:-bottom-1 lg:bottom-2 rotate-[4deg] md:rotate-2 text-[3.4vw] md:text-[13px] lg:text-[1.05vw] ml-[0.5em] md:ml-[1.1em]">
             <TextBlur isBold>
-              Making<br />
-              your<br />
-              competitors<br />
+              Making
+              <br />
+              your
+              <br />
+              competitors
+              <br />
               jealous
             </TextBlur>
             <Image className="absolute -top-[34px] md:-top-[65px] lg:-top-[70px] right-1 size-[60px] md:size-[100px] lg:size-[120px]" src="/images/icon-call.svg" alt="Icon call" width={50} height={50} />
@@ -35,8 +38,8 @@ export function Call() {
           </div>
         </div>
         <div className="flex flex-col items-start gap-[30px] col-span-2 lg:col-span-1 md:col-start-2 lg:col-start-4 mt-10 md:mt-[50px] lg:mt-0 lg:max-w-[320px]">
-          <p className="p3">Got an idea or want to work with us? We’re always open to new talent. Reach out to Egor to chat.</p>
-          <p className="p5">Running an open-source, non-profit, or free education project? Discounted rates are available. We&#39;re always happy to connect and see how we can help.</p>
+          <p className="p3">Got an idea or want to work with us? We’re always open to new talent. Reach out to Egor to chat.</p>
+          <p className="p5">Running an open-source, non-profit, or free education project? Discounted rates are available. We&#39;re always happy to connect and see how we can help.</p>
           <Link href="/privacy.txt" target="_blank" className="button button--xs underline">
             <TextBlur>PRIVACY.TXT</TextBlur>
           </Link>

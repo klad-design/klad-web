@@ -1,79 +1,79 @@
 'use client'
 
-import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { TextBlur } from "@/components/ui/TextBlur";
+import { gsap } from 'gsap'
+import { useEffect, useRef } from 'react'
+import { TextBlur } from '@/components/ui/TextBlur'
 
-const titles = ["Branding", "Experience", "Product", "Branding", "Experience", "Product"]
+const titles = ['Branding', 'Experience', 'Product', 'Branding', 'Experience', 'Product']
 
 const services = [
   {
-    title: "Industries",
+    title: 'Industries',
     list: [
-      "AI",
-      "Web3 & Blockchain",
-      "Retail & E-commerce",
-      "Lifestyle",
-      "Food & Beverage",
-      "Biotech",
-      "Jewelry manufacturing",
-      "Banking & finance",
-      "Digital marketing",
-      "Robotics",
-      "Logistics & transportation",
-    ]
+      'AI',
+      'Web3 & Blockchain',
+      'Retail & E-commerce',
+      'Lifestyle',
+      'Food & Beverage',
+      'Biotech',
+      'Jewelry manufacturing',
+      'Banking & finance',
+      'Digital marketing',
+      'Robotics',
+      'Logistics & transportation',
+    ],
   },
   {
-    title: "Tools",
+    title: 'Tools',
     list: [
-      "Figma",
-      "Adobe CC",
-      "Blender",
-      "Cinema 4D",
-      "Rive",
-      "ZBrush",
-      "Logic Pro",
-      "Ableton",
-    ]
+      'Figma',
+      'Adobe CC',
+      'Blender',
+      'Cinema 4D',
+      'Rive',
+      'ZBrush',
+      'Logic Pro',
+      'Ableton',
+    ],
   },
   {
-    title: "Development",
+    title: 'Development',
     list: [
-      "HTML + CSS + JS",
-      "React",
-      "WebGL",
-      "GSAP",
-      "Python",
-      "Shopify",
-      "Webflow",
-    ]
+      'HTML + CSS + JS',
+      'React',
+      'WebGL',
+      'GSAP',
+      'Python',
+      'Shopify',
+      'Webflow',
+    ],
   },
   {
-    title: "Services",
+    title: 'Services',
     list: [
-      "Visual identity and logotype",
-      "Packaging",
-      "Signage",
-      "Digital and printed material",
-      "Web design",
-      "UI/UX",
-      "3D modeling",
-      "Motion design",
-      "Visual research",
-      "Frontend",
-    ]
-  }
+      'Visual identity and logotype',
+      'Packaging',
+      'Signage',
+      'Digital and printed material',
+      'Web design',
+      'UI/UX',
+      '3D modeling',
+      'Motion design',
+      'Visual research',
+      'Frontend',
+    ],
+  },
 ]
 
 export function Services() {
-  const wordsRef = useRef<HTMLDivElement | null>(null);
+  const wordsRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: wordsRef.current,
         scrub: 1,
-      }
+      },
     })
 
     tl.to(wordsRef.current, {
@@ -128,7 +128,7 @@ export function Services() {
           <div className="flex items-end p1 leading-[90%] uppercase md:min-h-[92px] md:mr-3">
             <TextBlur isBold>$20M+ raised</TextBlur>
           </div>
-          <div className="p5 mt-2">in seed and pre-seed rounds for startups over the past year</div>
+          <div className="p5 mt-2">in seed and pre-seed rounds for startups over the past year</div>
         </div>
         <div className="flex flex-col items-start">
           <div className="flex items-end p1 leading-[90%] uppercase md:min-h-[92px] md:mr-3">

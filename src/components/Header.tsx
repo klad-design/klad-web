@@ -1,88 +1,89 @@
 'use client'
 
-import Link from "next/link";
-import Image from "next/image";
-import { Button } from "@/components/ui/Button";
-import {useEffect, useRef, useState} from "react";
-import * as Dialog from "@radix-ui/react-dialog";
-import { useGSAP } from "@gsap/react";
-import { gsap } from "gsap";
-import {TextBlur} from "@/components/ui/TextBlur";
+import { useGSAP } from '@gsap/react'
+import * as Dialog from '@radix-ui/react-dialog'
+import { gsap } from 'gsap'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useEffect, useRef, useState } from 'react'
+import { Button } from '@/components/ui/Button'
+import { TextBlur } from '@/components/ui/TextBlur'
 
-type City = {
-  name: string;
-  timeZone: string;
+interface City {
+  name: string
+  timeZone: string
 
-};
+}
 
 const cities: City[] = [
-  { name: "TBILISI", timeZone: "Asia/Tbilisi" },
-  { name: "DA NANG", timeZone: "Asia/Ho_Chi_Minh" },
-  { name: "HELSINKI", timeZone: "Europe/Helsinki" },
-];
+  { name: 'TBILISI', timeZone: 'Asia/Tbilisi' },
+  { name: 'DA NANG', timeZone: 'Asia/Ho_Chi_Minh' },
+  { name: 'HELSINKI', timeZone: 'Europe/Helsinki' },
+]
 
 export function Header() {
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null)
 
-  const [isOpenMenu, setIsOpenMenu] = useState(false);
-  const [container, setContainer] = useState<HTMLDivElement | null>(null);
-  const [time, setTime] = useState<Record<string, string>>({});
+  const [isOpenMenu, setIsOpenMenu] = useState(false)
+  const [container, setContainer] = useState<HTMLDivElement | null>(null)
+  const [time, setTime] = useState<Record<string, string>>({})
 
   // Menu items animation
-  const { contextSafe } = useGSAP({ scope: menuRef });
+  const { contextSafe } = useGSAP({ scope: menuRef })
   const handleOpenAutoFocus = contextSafe(() => {
-    if (!menuRef.current) return
+    if (!menuRef.current)
+      return
 
     const ctx = gsap.context(() => {
-      gsap.from(".menuItem", {
+      gsap.from('.menuItem', {
         filter: 'blur(10px)',
         autoAlpha: 0,
         duration: 0.3,
         yPercent: 40,
         stagger: 0.1,
         delay: 0.1,
-        onComplete: () => ctx.revert()
-      });
-    });
-  });
+        onComplete: () => ctx.revert(),
+      })
+    })
+  })
 
   // Close menu when screen size >= 768
   useEffect(() => {
-    const mm = gsap.matchMedia();
+    const mm = gsap.matchMedia()
 
-    mm.add("(min-width: 768px)", () => {
+    mm.add('(min-width: 768px)', () => {
       if (isOpenMenu) {
         setIsOpenMenu(false)
       }
-    });
+    })
 
     return () => mm.revert()
-  }, [isOpenMenu]);
+  }, [isOpenMenu])
 
   // Update time
   useEffect(() => {
     const updateTime = () => {
-      const now = new Date();
-      const formatted: Record<string, string> = {};
+      const now = new Date()
+      const formatted: Record<string, string> = {}
 
-      cities.forEach(city => {
-        formatted[city.name] = new Intl.DateTimeFormat("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
+      cities.forEach((city) => {
+        formatted[city.name] = new Intl.DateTimeFormat('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
           timeZone: city.timeZone,
           hour12: true,
-        }).format(now);
-      });
+        }).format(now)
+      })
 
-      setTime(formatted);
-    };
+      setTime(formatted)
+    }
 
-    updateTime();
+    updateTime()
 
-    const interval = setInterval(updateTime, 1000 * 60);
+    const interval = setInterval(updateTime, 1000 * 60)
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <header className="fixed z-10 top-0 right-0 lg:bottom-0 w-full lg:w-auto pt-[3px] pr-[3px] pl-2.5 md:px-2.5 md:pt-2.5 lg:px-2.5 lg:pb-2.5 lg:pt-[60px]">

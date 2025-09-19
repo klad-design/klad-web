@@ -1,33 +1,34 @@
 'use client'
 
-import {ReactNode, useRef, createContext, RefObject} from "react";
-import { ScrollSmoother } from "gsap/ScrollSmoother";
-import { usePathname } from "next/navigation";
-import { useGSAP } from "@gsap/react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import type { ReactNode, RefObject } from 'react'
+import { useGSAP } from '@gsap/react'
+import { gsap } from 'gsap'
+import { ScrollSmoother } from 'gsap/ScrollSmoother'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { usePathname } from 'next/navigation'
+import { createContext, useRef } from 'react'
 
 interface SmoothScrollProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
-export const ScrollContext = createContext<RefObject<HTMLDivElement | null> | undefined>(undefined);
+export const ScrollContext = createContext<RefObject<HTMLDivElement | null> | undefined>(undefined)
 
 export function SmoothScroll({ children }: SmoothScrollProps) {
-  const pageRef = useRef<HTMLDivElement | null>(null);
-  const smoother = useRef<ScrollSmoother | null>(null);
-  const pathname = usePathname();
+  const pageRef = useRef<HTMLDivElement | null>(null)
+  const smoother = useRef<ScrollSmoother | null>(null)
+  const pathname = usePathname()
 
   useGSAP(() => {
-    gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+    gsap.registerPlugin(ScrollTrigger, ScrollSmoother)
 
     smoother.current = ScrollSmoother.create({
-      smooth: 1
-    });
+      smooth: 1,
+    })
   }, {
     dependencies: [pathname],
     revertOnUpdate: true,
-  });
+  })
 
   return (
     <ScrollContext.Provider value={pageRef}>
