@@ -7,7 +7,7 @@ export function Hero() {
   return (
     <section className="pt-[60px] md:pt-[160px] lg:pt-0 overflow-hidden">
       <h1 className="md:text-nowrap text-[20vw] md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase -ml-1.5 lg:-ml-2.5 -rotate-2">
-        <TextBlur isBold>Klad Syndicate</TextBlur>
+        <TextBlur>Klad Syndicate</TextBlur>
       </h1>
       <div className="grid-container mt-10 md:mt-[60px] lg:mt-20">
         <div className="flex flex-col items-start gap-[30px] md:col-start-2 col-span-2 lg:col-span-1 lg:col-start-4 p3">

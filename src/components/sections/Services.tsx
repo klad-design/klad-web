@@ -1,10 +1,10 @@
 'use client'
 
+import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
-import { useEffect, useRef } from 'react'
-import { TextBlur } from '@/components/ui/TextBlur'
+import { useRef } from 'react'
 
-const titles = ['Branding', 'Experience', 'Product', 'Branding', 'Experience', 'Product']
+const titles = ['Branding', 'Experience', 'Product']
 
 const services = [
   {
@@ -65,76 +65,70 @@ const services = [
   },
 ]
 
+const advantages = [
+  { title: '45+', description: 'clients' },
+  { title: 'over 100', description: 'completed projects' },
+  { title: '$20M+ raised', description: 'in seed and pre-seed rounds for startups over the past year' },
+  { title: 'since 2020' },
+]
+
 export function Services() {
   const wordsRef = useRef<HTMLDivElement | null>(null)
 
-  useEffect(() => {
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: wordsRef.current,
-        scrub: 1,
-      },
+  useGSAP(() => {
+    gsap.to('.service', {
+      xPercent: -100,
+      repeat: -1,
+      duration: 15,
+      ease: 'linear',
     })
-
-    tl.to(wordsRef.current, {
-      xPercent: -20,
-      ease: 'none',
-    })
-
-    return () => {
-      tl.kill()
-    }
-  }, [])
+  }, { scope: wordsRef })
 
   return (
-    <section className="md:-mt-6">
-      <div ref={wordsRef} className="w-fit -rotate-2 flex gap-[0.3em] text-h1 md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase">
-        {titles.map((service, index) => (
-          <div key={service + index} className="blur-xs hover:blur-none transition-all duration-500 cursor-pointer">
-            <TextBlur>{service}</TextBlur>
-          </div>
-        ))}
+    <section className="-mt-6 md:-mt-14 lg:-mt-20">
+      <div ref={wordsRef} className="-rotate-2 w-fit flex text-h1 md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase">
+        <div className="service w-fit flex gap-[0.3em] pl-[0.3em]">
+          {titles.map((service, index) => (
+            <div key={service + index} className="blur-xs hover:blur-none transition-all duration-500 cursor-pointer">
+              {service}
+            </div>
+          ))}
+        </div>
+        <div className="service w-fit flex gap-[0.3em] pl-[0.3em]">
+          {titles.map((service, index) => (
+            <div key={service + index} className="blur-xs hover:blur-none transition-all duration-500 cursor-pointer">
+              {service}
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="grid-container gap-y-10 mt-24 md:mt-32 lg:mt-24 p4 leading-none uppercase">
+      <div className="grid-container gap-y-10 mt-32 md:mt-40 p4 leading-none uppercase">
         {services.map(service => (
           <div key={service.title}>
-            <div>
-              <TextBlur isBold>{service.title}</TextBlur>
+            <div className="blurred blurred--active" data-label={service.title}>
+              <span>{service.title}</span>
             </div>
             <ul className="flex flex-col items-start mt-4">
               {service.list.map(item => (
-                <li key={item}>
-                  <TextBlur isBold>{item}</TextBlur>
+                <li key={item} className="blurred blurred--active" data-label={item}>
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
           </div>
         ))}
       </div>
-      <div className="grid-container flex md:grid flex-wrap lg:gap-x-2.5 gap-y-2 mt-20 lg:mt-14">
-        <div className="flex flex-col items-start">
-          <div className="flex items-end p1 leading-[90%] uppercase md:min-h-[92px] md:mr-3">
-            <TextBlur isBold>45+</TextBlur>
+      <div className="grid-container flex md:grid flex-wrap lg:gap-x-2.5 gap-x-6 gap-y-3 mt-[74px] lg:mt-14">
+        {advantages.map(({ title, description }) => (
+          <div key={title} className="flex flex-col items-start">
+            <div className="flex items-end p1 leading-[90%] uppercase md:min-h-[92px] md:mr-3">
+              <div className="blurred blurred--active [&>span]:blur-[0.75px] before:blur-[5px] after:blur-[2px]" data-label={title}>
+                <span>{title}</span>
+              </div>
+            </div>
+            {description && <div className="p5 mt-1.5">{description}</div>}
           </div>
-          <div className="p5 mt-2">clients</div>
-        </div>
-        <div className="flex flex-col items-start">
-          <div className="flex items-end p1 leading-[90%] uppercase md:min-h-[92px] md:mr-3">
-            <TextBlur isBold>over 100</TextBlur>
-          </div>
-          <div className="p5 mt-2">completed projects</div>
-        </div>
-        <div className="flex flex-col items-start">
-          <div className="flex items-end p1 leading-[90%] uppercase md:min-h-[92px] md:mr-3">
-            <TextBlur isBold>$20M+ raised</TextBlur>
-          </div>
-          <div className="p5 mt-2">in seed and pre-seed rounds for startups over the past year</div>
-        </div>
-        <div className="flex flex-col items-start">
-          <div className="flex items-end p1 leading-[90%] uppercase md:min-h-[92px] md:mr-3">
-            <TextBlur isBold>since 2020</TextBlur>
-          </div>
-        </div>
+        ))}
       </div>
     </section>
   )

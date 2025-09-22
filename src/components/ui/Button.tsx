@@ -1,31 +1,53 @@
-import type { HTMLAttributes, ReactNode } from 'react'
+import type { LinkProps } from 'next/link'
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, JSX, RefObject } from 'react'
 import clsx from 'clsx'
-import { TextBlur } from '@/components/ui/TextBlur'
+import Link from 'next/link'
 
-interface ButtonProps extends HTMLAttributes<HTMLButtonElement> {
-  text?: string
+interface ButtonPropsBasic {
+  label: string | JSX.Element
   size?: 'xs' | 's' | 'm'
-  isLink?: boolean
-  blur?: 'none' | 'regular' | 'bold'
-  children?: ReactNode
+  isActive?: boolean
+  isInherit?: boolean
 }
 
-export function Button({ text, size = 'xs', className, isLink, blur, children, ...props }: ButtonProps) {
+type ButtonProps = ButtonPropsBasic
+  & (
+    | (ButtonHTMLAttributes<HTMLButtonElement> & { as?: 'button' })
+    | (AnchorHTMLAttributes<HTMLAnchorElement> & LinkProps & { as: 'a' })
+    )
+
+export function Button({
+  ref,
+  ...props
+}: ButtonProps & { ref?: RefObject<HTMLAnchorElement | HTMLButtonElement> }) {
+  const {
+    as = 'button',
+    label,
+    size = 'xs',
+    isActive,
+    isInherit,
+    className,
+    ...rest
+  } = props
+
+  const Component = as === 'button' ? as : Link
+
   return (
-    <button
-      className={clsx('button', `button--${size}`, { 'button--link': isLink }, className)}
-      type="button"
-      {...props}
+    <Component
+      ref={ref as any}
+      {...(rest as any)}
+      className={clsx(
+        'button',
+        `button--${size}`,
+        {
+          'button--inherit': isInherit,
+          'button--active': isActive,
+        },
+        className,
+      )}
+      aria-label={label}
     >
-      {blur
-        ? (
-            <TextBlur isBold={blur === 'bold'}>
-              {children || text}
-            </TextBlur>
-          )
-        : (
-            children || text
-          )}
-    </button>
+      <span>{label}</span>
+    </Component>
   )
 }

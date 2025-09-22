@@ -7,18 +7,21 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
-import { TextBlur } from '@/components/ui/TextBlur'
 
-interface City {
-  name: string
-  timeZone: string
-
-}
-
-const cities: City[] = [
+const cities = [
   { name: 'TBILISI', timeZone: 'Asia/Tbilisi' },
   { name: 'DA NANG', timeZone: 'Asia/Ho_Chi_Minh' },
   { name: 'HELSINKI', timeZone: 'Europe/Helsinki' },
+]
+
+const menu = [
+  { title: 'About', link: '#' },
+  { title: 'Cases', link: '#' },
+  { title: 'Process', link: '#' },
+  { title: 'Expectations', link: '#' },
+  { title: 'Pricing', link: '#' },
+  { title: 'Express', link: '#' },
+  { title: 'Mockups', link: '#' },
 ]
 
 export function Header() {
@@ -90,125 +93,131 @@ export function Header() {
       <div className="relative flex lg:flex-col-reverse justify-between items-start lg:h-full lg:w-[130px]">
         <Dialog.Root open={isOpenMenu} onOpenChange={setIsOpenMenu}>
           <Dialog.Trigger asChild>
-            <Button blur="regular" className="md:hidden mt-1.5" text="Menu" />
+            <Button className="md:hidden mt-1.5" label="Menu" />
           </Dialog.Trigger>
           <Dialog.Portal container={container}>
-            <Dialog.Overlay className="fixed inset-0 bg-gray/95 animate-opacity" />
-            <Dialog.Content onOpenAutoFocus={handleOpenAutoFocus} className="fixed inset-0 flex flex-col items-start pt-[70px] px-2.5 pb-2.5 overflow-auto">
+            <Dialog.Overlay className="fixed inset-0 bg-gray/95 animate-opacity z-10" />
+            <Dialog.Content onOpenAutoFocus={handleOpenAutoFocus} className="fixed inset-0 z-20 flex flex-col items-start pt-[70px] px-2.5 pb-2.5 overflow-auto">
               <Dialog.Title className="hidden">Menu</Dialog.Title>
               <Dialog.Close asChild>
-                <Button blur="regular" className="fixed top-[9px]" text="Close" />
+                <Button className="fixed top-[9px]" label="Close" />
               </Dialog.Close>
-              <nav ref={menuRef} className="w-full grow flex flex-col items-center gap-8">
-                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">
-                  <TextBlur isBold>About</TextBlur>
-                </Link>
-                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">
-                  <TextBlur isBold>Cases</TextBlur>
-                </Link>
-                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">
-                  <TextBlur isBold>Process</TextBlur>
-                </Link>
-                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">
-                  <TextBlur isBold>Expectations</TextBlur>
-                </Link>
-                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">
-                  <TextBlur isBold>Pricing</TextBlur>
-                </Link>
-                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">
-                  <TextBlur isBold>Express</TextBlur>
-                </Link>
-                <Link className="menuItem text-p1 uppercase -rotate-2" href="#">
-                  <TextBlur isBold>Mockups</TextBlur>
-                </Link>
-                <Link className="menuItem text-p1 uppercase -rotate-2 mt-auto" href="https://calendly.com/klad-design/discovery" target="_blank">
-                  <TextBlur isBold>Book a call</TextBlur>
-                </Link>
+              <Image
+                className="fixed top-[3px] right-[3px] md:size-[70px] lg:size-[80px] blur-[0.6px]"
+                src="/images/logotype.svg"
+                alt="logotype"
+                width={60}
+                height={60}
+              />
+              <nav ref={menuRef} className="w-full grow flex flex-col items-center gap-8 text-p1">
+                {menu.map(({ title, link }) => (
+                  <div key={title} className="menuItem -rotate-2">
+                    <Button
+                      as="a"
+                      href={link}
+                      label={title}
+                      className="text-p1 [&>span]:blur-[0.75px] before:blur-[5px] after:blur-[2px]"
+                      isActive
+                    />
+                  </div>
+                ))}
+                <div className="menuItem -rotate-2 mt-auto">
+                  <Button
+                    as="a"
+                    href="https://calendly.com/klad-design/discovery"
+                    target="_blank"
+                    label="Book a call"
+                    className="text-p1 [&>span]:blur-[0.75px] before:blur-[5px] after:blur-[2px]"
+                    isActive
+                  />
+                </div>
               </nav>
             </Dialog.Content>
           </Dialog.Portal>
         </Dialog.Root>
         <div className="hidden md:grid grid-cols-4 lg:flex lg:flex-col-reverse gap-2.5 lg:gap-[30px] grow">
           <div className="hidden lg:flex flex-col items-start mt-6 text-[12px] leading-none uppercase">
-            <div className="-rotate-2">
-              <TextBlur isBold>© Klad syndicate.</TextBlur>
+            <div className="-rotate-2 blurred blurred--active" data-label="© Klad syndicate.">
+              <span>© Klad syndicate.</span>
             </div>
             <ul className="flex flex-col gap-[3px] mt-2">
-              <li>
-                <TextBlur isBold>All Rights Reserved.</TextBlur>
+              <li className="blurred blurred--active" data-label="All Rights Reserved.">
+                <span>All Rights Reserved.</span>
+              </li>
+              <li className="blurred blurred--active" data-label="Remote, Worldwide">
+                <span>Remote, Worldwide</span>
               </li>
               <li>
-                <TextBlur isBold>Remote, Worldwide</TextBlur>
+                <Button as="a" href="mailto:info@klad.design" label="info@klad.design" isActive />
               </li>
               <li>
-                <Link href="mailto:info@klad.design">
-                  <TextBlur isBold>info@klad.design</TextBlur>
-                </Link>
-              </li>
-              <li>
-                <Link href="tel:+995-591-017-066">
-                  <TextBlur isBold>995.591.017.066</TextBlur>
-                </Link>
+                <Button as="a" href="tel:+995-591-017-066" label="995.591.017.066" isActive />
               </li>
             </ul>
           </div>
           <nav className="flex flex-col items-start gap-[3px]">
-            <Link className="button button--xs" href="#">
-              <TextBlur isBold>About</TextBlur>
-            </Link>
-            <Link className="button button--xs" href="#">
-              <TextBlur>Cases</TextBlur>
-            </Link>
-            <Link className="button button--xs" href="#">
-              <TextBlur>Process</TextBlur>
-            </Link>
-            <Link className="button button--xs" href="#">
-              <TextBlur>Expectations</TextBlur>
-            </Link>
-            <Link className="button button--xs" href="#">
-              <TextBlur>Pricing</TextBlur>
-            </Link>
-            <Link className="button button--xs" href="#">
-              <TextBlur>Express</TextBlur>
-            </Link>
-            <Link className="button button--xs" href="#">
-              <TextBlur>Mockups</TextBlur>
-            </Link>
-            <Link className="button button--xs mt-1.5" href="https://calendly.com/klad-design/discovery" target="_blank">
-              <TextBlur>Book a call</TextBlur>
-            </Link>
+            {menu.map(({ title, link }) => (
+              <Button key={title} as="a" href={link} className="button button--xs" label={title} />
+            ))}
+            <Button
+              as="a"
+              href="https://calendly.com/klad-design/discovery"
+              className="button button--xs mt-1.5"
+              target="_blank"
+              label="Book a call"
+            />
           </nav>
           <div className="text-[12px] leading-none uppercase">
-            <div>
-              <TextBlur isBold>Our time at</TextBlur>
+            <div className="blurred blurred--active" data-label="Our time at">
+              <span>Our time at</span>
             </div>
             <ul className="flex flex-col items-start gap-[3px] mt-2">
               {cities.map(city => (
                 <li key={city.name} className="flex gap-1.5 justify-between text-nowrap">
-                  <span className="min-w-[65px]">
-                    <TextBlur isBold>{city.name}</TextBlur>
+                  <span className="min-w-[65px] blurred blurred--active" data-label={city.name}>
+                    <span>{city.name}</span>
                   </span>
-                  <span className="min-w-[55px] text-right">
-                    <TextBlur isBold>{time[city.name]}</TextBlur>
+                  <span className="inline-flex justify-end min-w-[55px]">
+                    <span className="blurred blurred--active" data-label={time[city.name]}>
+                      <span>{time[city.name]}</span>
+                    </span>
                   </span>
                 </li>
               ))}
             </ul>
           </div>
           <nav className="flex flex-col items-start gap-[3px]">
-            <Link className="button button--xs" href="https://www.behance.net/klad_design" target="_blank">
-              <TextBlur isBold>Behance</TextBlur>
-            </Link>
-            <Link className="button button--xs" href="https://www.instagram.com/klad_syndicate" target="_blank">
-              <TextBlur isBold>Instagram</TextBlur>
-            </Link>
-            <Link className="button button--xs" href="https://www.linkedin.com/company/klad" target="_blank">
-              <TextBlur isBold>LinkedIn</TextBlur>
-            </Link>
+            <Button
+              as="a"
+              href="https://www.behance.net/klad_design"
+              className="button button--xs"
+              target="_blank"
+              label="Behance"
+            />
+            <Button
+              as="a"
+              href="https://www.instagram.com/klad_syndicate"
+              className="button button--xs"
+              target="_blank"
+              label="Instagram"
+            />
+            <Button
+              as="a"
+              href="https://www.linkedin.com/company/klad"
+              className="button button--xs"
+              target="_blank"
+              label="LinkedIn"
+            />
           </nav>
         </div>
         <Link href="/" className="relative md:absolute md:right-0 lg:static z-10">
-          <Image className="md:size-[70px] lg:size-[80px] blur-[0.6px]" src="/images/logotype.svg" alt="logotype" width={60} height={60} />
+          <Image
+            className="md:size-[70px] lg:size-[80px] blur-[0.6px]"
+            src="/images/logotype.svg"
+            alt="logotype"
+            width={60}
+            height={60}
+          />
         </Link>
       </div>
       <div ref={setContainer} />

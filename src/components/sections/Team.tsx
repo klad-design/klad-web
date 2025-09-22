@@ -28,23 +28,41 @@ const team: TeamMember[] = [
       <>
         <p>
           Web design and UI/UX specialist with 11 years of design experience. Co-founder. Not limited by industry or product type. Prefers digital minimalism. Can design with existing branding (see
+          {' '}
           <Link href="#" className="underline">Shareio</Link>
           {' '}
           or
+          {' '}
           <Link href="#" className="underline">Chainviz</Link>
           ) or start from scratch (see
+          {' '}
           <Link href="#" className="underline">Guardrail</Link>
           {' '}
           or
+          {' '}
           <Link href="#" className="underline">Circus</Link>
           ).
         </p>
         <p>
           Never communicates directly with the client but allows them to follow her process in Figma from the start. Handles projects together with
-          <Button data-member={3} isLink className="underline decoration-dotted text-nowrap">
-            Egor
-            <Image className="inline ml-0.5 align-text-bottom w-[11px]" src="/images/model-1.png" alt="Egor 3d model" width={11} height={14} />
-          </Button>
+          {' '}
+          <Button
+            data-member={3}
+            className="underline decoration-dotted text-nowrap"
+            isInherit
+            label={(
+              <>
+                Egor
+                <Image
+                  className="inline ml-0.5 align-text-bottom w-[11px]"
+                  src="/images/model-1.png"
+                  alt="Egor 3d model"
+                  width={11}
+                  height={14}
+                />
+              </>
+            )}
+          />
           .
         </p>
         <p>A visual thinker with an understanding of web development processes. Prefers long lasting simpler solutions over intensive design and ensures brand assets translate seamlessly to the web.</p>
@@ -60,22 +78,41 @@ const team: TeamMember[] = [
         <p>Motion and 3D generalist with 8 years of experience and formal training. Co-founder. Adapts quickly, unconstrained by tools or trends.</p>
         <p>
           Equally confident leading solo projects (e.g.,
+          {' '}
           <Link href="#" className="underline">Circus</Link>
           ,
+          {' '}
           <Link href="#" className="underline">Shareio</Link>
           ) or collaborating within larger teams (e.g.,
+          {' '}
           <Link href="#" className="underline">Veev</Link>
           ,
+          {' '}
           <Link href="#" className="underline">Skoda</Link>
           ). Handles projects together with
-          <Button data-member={4} isLink className="underline decoration-dotted text-nowrap">
-            Dasha
-            <Image className="inline ml-0.5 align-text-bottom w-[11px]" src="/images/model-1.png" alt="Dasha 3d model" width={11} height={14} />
-          </Button>
+          {' '}
+          <Button
+            data-member={4}
+            className="underline decoration-dotted text-nowrap"
+            isInherit
+            label={(
+              <>
+                Dasha
+                <Image
+                  className="inline ml-0.5 align-text-bottom w-[11px]"
+                  src="/images/model-1.png"
+                  alt="Dasha 3d model"
+                  width={11}
+                  height={14}
+                />
+              </>
+            )}
+          />
           .
         </p>
         <p>
           Prefers artistic interpretations over commonly researched standards. Skilled at both. Has straightforward
+          {' '}
           <Link href="#" className="underline">processes</Link>
           , shaped by past experience.
         </p>
@@ -90,27 +127,47 @@ const team: TeamMember[] = [
       <>
         <p>
           Brand designer with X years of experience. She has provided solutions for large-scale physical brands (see
+          {' '}
           <Link href="#" className="underline">Perekrestok</Link>
           ) and digital startups (see
+          {' '}
           <Link href="#" className="underline">Shareio</Link>
           ), in both B2B and B2C spaces.
         </p>
         <p>
           Equally skilled in building brands from scratch (e.g.
+          {' '}
           <Link href="#" className="underline">Kay</Link>
           {' '}
           or
+          {' '}
           <Link href="#" className="underline">Nectar</Link>
           ) or evolving them over time (see
+          {' '}
           <Link href="#" className="underline">Guardrail</Link>
           {' '}
           or
+          {' '}
           <Link href="#" className="underline">Helikon</Link>
           ). More often works on projects together with
-          <Button data-member={3} isLink className="underline decoration-dotted text-nowrap">
-            Egor
-            <Image className="inline ml-0.5 align-text-bottom w-[11px]" src="/images/model-1.png" alt="Egor 3d model" width={11} height={14} />
-          </Button>
+          {' '}
+          <Button
+            data-member={3}
+            className="underline decoration-dotted text-nowrap"
+            isInherit
+            label={(
+              <>
+                Egor
+                <Image
+                  className="inline ml-0.5 align-text-bottom w-[11px]"
+                  src="/images/model-1.png"
+                  alt="Egor 3d model"
+                  width={11}
+                  height={14}
+                />
+              </>
+            )}
+          />
           .
         </p>
         <p>Typically takes on a creative lead in branding projects, while remaining comfortable in collaborative roles.</p>
@@ -125,27 +182,58 @@ const team: TeamMember[] = [
       <>
         <p>
           Project lead for web and branding with 8 years in B2B marketing and analytics. Co-founder with a focus on data visualization (see
+          {' '}
           <Link href="#" className="underline">Chainviz</Link>
           ) and naming (see
+          {' '}
           <Link href="#" className="underline">Namefolio</Link>
           ).
         </p>
         <p>Prefers minimal calls with only core decision-makers. Advocates for the client in design discussions, while in client-facing calls, focuses on leveraging the team’s strengths.</p>
         <p>
           Shares studio
+          {' '}
           <Link href="#" className="underline">expectations</Link>
           {' '}
           in every project. Primary and often the only point of contact for projects involving
-          <Button data-member={0} isLink className="underline decoration-dotted text-nowrap">
-            Ksusha
-            <Image className="inline ml-0.5 align-text-bottom w-[11px]" src="/images/model-1.png" alt="Ksusha 3d model" width={11} height={14} />
-          </Button>
+          {' '}
+          <Button
+            data-member={0}
+            className="underline decoration-dotted text-nowrap"
+            isInherit
+            label={(
+              <>
+                Ksusha
+                <Image
+                  className="inline ml-0.5 align-text-bottom w-[11px]"
+                  src="/images/model-1.png"
+                  alt="Ksusha 3d model"
+                  width={11}
+                  height={14}
+                />
+              </>
+            )}
+          />
           {' '}
           and
-          <Button data-member={2} isLink className="underline decoration-dotted text-nowrap">
-            Lena R
-            <Image className="inline ml-0.5 align-text-bottom w-[11px]" src="/images/model-1.png" alt="Lena R 3d model" width={11} height={14} />
-          </Button>
+          {' '}
+          <Button
+            data-member={2}
+            className="underline decoration-dotted text-nowrap"
+            isInherit
+            label={(
+              <>
+                Lena R
+                <Image
+                  className="inline ml-0.5 align-text-bottom w-[11px]"
+                  src="/images/model-1.png"
+                  alt="Lena R 3d model"
+                  width={11}
+                  height={14}
+                />
+              </>
+            )}
+          />
           .
         </p>
       </>
@@ -160,32 +248,53 @@ const team: TeamMember[] = [
         <p>Project lead for motion and 3D with 6 years in account management and legal, and a background in conflict management. Co-founder.</p>
         <p>
           Skilled in managing both fast-paced (see
+          {' '}
           <Link href="#" className="underline">London Handel Festival</Link>
           {' '}
           and
+          {' '}
           <Link href="#" className="underline">Skoda</Link>
           ) and long-term projects (e.g.
+          {' '}
           <Link href="#" className="underline">S+H</Link>
           {' '}
           and
+          {' '}
           <Link href="#" className="underline">FutureMoney</Link>
           ), with a focus on lasting partnerships.
         </p>
         <p>
           Shares studio
+          {' '}
           <Link href="#" className="underline">expectations</Link>
           {' '}
           in every project. Main point of contact for projects involving
-          <Button data-member={1} isLink className="underline decoration-dotted text-nowrap">
-            Lena S
-            <Image className="inline ml-0.5 align-text-bottom w-[11px]" src="/images/model-1.png" alt="Lena S 3d model" width={11} height={14} />
-          </Button>
+          {' '}
+          <Button
+            data-member={1}
+            className="underline decoration-dotted text-nowrap"
+            isInherit
+            label={(
+              <>
+                Lena S
+                <Image
+                  className="inline ml-0.5 align-text-bottom w-[11px]"
+                  src="/images/model-1.png"
+                  alt="Lena S 3d model"
+                  width={11}
+                  height={14}
+                />
+              </>
+            )}
+          />
           .
         </p>
       </>
     ),
   },
 ]
+
+const mobileGap = 30
 
 export function Team() {
   const scrollContext = useContext(ScrollContext)
@@ -203,13 +312,11 @@ export function Team() {
     gsap.registerPlugin(ScrollTrigger)
 
     mm.add('(max-width: 767px)', () => {
-      const gap = 30
-
       ScrollTrigger.create({
         trigger: modelsRef.current,
         endTrigger: '.memberDescriptionEnd',
-        start: `top +=${gap}px`,
-        end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + gap}px`,
+        start: `top +=${mobileGap}px`,
+        end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
         pinSpacing: false,
         pin: true,
         scrub: 1,
@@ -233,9 +340,9 @@ export function Team() {
           ScrollTrigger.create({
             trigger,
             animation: tl,
-            start: () => `top ${(modelsRef.current?.clientHeight || 0) + gap * 2}px`,
-            end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + gap * 2}px`,
-            scrub: 0.5,
+            start: () => `top ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
+            end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
+            scrub: 1,
           })
         }
       })
@@ -315,10 +422,11 @@ export function Team() {
 
   // Scroll to member handler
   useEffect(() => {
+    const isHorizontalView = window.matchMedia('(min-width: 768px)').matches
     const smoother = ScrollSmoother.get()
     const teamSection = sectionRef.current
     const teamDescription = descriptionsRef.current
-    const startPosition = smoother?.offset(teamSection, 'center center') || 0
+    const startPosition = smoother?.offset(teamSection, isHorizontalView ? 'center center' : 'top top') || 0
 
     const buttons = teamSection?.querySelectorAll<HTMLButtonElement>('button[data-member]')
 
@@ -332,10 +440,10 @@ export function Team() {
       const memberOffset = team.reduce((prev, _, index) => {
         const section = teamDescription.querySelector(`.memberDescription:nth-child(${index + 1})`)
 
-        return section && index < memberIndex ? prev + section.clientWidth : prev
+        return section && index < memberIndex ? prev + section[isHorizontalView ? 'clientWidth' : 'clientHeight'] : prev
       }, 0)
 
-      smoother.scrollTo(startPosition + memberOffset, true)
+      smoother.scrollTo(startPosition + memberOffset - (isHorizontalView ? 0 : mobileGap), true)
     }
 
     if (buttons && buttons.length) {
@@ -356,7 +464,7 @@ export function Team() {
   return (
     <section className="mt-20 md:mt-28">
       <h2 className="text-nowrap text-[15vw] md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase -ml-1.5 lg:-ml-2.5 -rotate-2">
-        <TextBlur isBold>
+        <TextBlur>
           Team
           {' '}
           <span>专责小组</span>
@@ -366,11 +474,11 @@ export function Team() {
         <div className="hidden md:flex flex-col items-start self-end">
           {team.map((member, index) => (
             <Button
+              key={member.name}
               className="memberLink"
               data-member={index}
-              key={member.name}
-              text={`${member.name.replace('.', '')}, ${member.role}`}
-              blur={activeMemberIndex === index ? 'bold' : 'regular'}
+              label={`${member.name.replace('.', '')}, ${member.role}`}
+              isActive={activeMemberIndex === index}
             />
           ))}
         </div>
@@ -389,12 +497,12 @@ export function Team() {
             ))}
           </div>
         </div>
-        <div ref={descriptionsRef} className="flex flex-col md:flex-row gap-10 md:gap-0 mt-6 md:m-0">
+        <div ref={descriptionsRef} className="flex flex-col md:flex-row">
           {team.map((member, index) => (
-            <div key={member.name} className={`memberDescription ${team.length - 2 === index ? 'memberDescriptionEnd' : ''} flex justify-center lg:justify-start w-full md:w-[calc(42vw_-_20px)] lg:w-[calc(43.5vw_-_29px)] shrink-0`}>
+            <div key={member.name} className={`memberDescription ${team.length - 2 === index ? 'memberDescriptionEnd' : ''} flex justify-center lg:justify-start w-full md:w-[calc(42vw_-_20px)] lg:w-[calc(43.5vw_-_29px)] shrink-0 pt-6 md:pt-0`}>
               <div className="max-w-[264px] md:max-w-[180px] 2xl:max-w-[240px]">
                 <h3 className="p1 uppercase -rotate-2">
-                  <TextBlur isBold>{member.name}</TextBlur>
+                  <TextBlur>{member.name}</TextBlur>
                 </h3>
                 <div className="flex flex-col gap-1.5 p5 mt-6">
                   {member.description()}
