@@ -2,6 +2,7 @@
 
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
+import { Observer } from 'gsap/Observer'
 import { useRef } from 'react'
 
 const titles = ['Branding', 'Experience', 'Product']
@@ -76,11 +77,31 @@ export function Services() {
   const wordsRef = useRef<HTMLDivElement | null>(null)
 
   useGSAP(() => {
-    gsap.to('.service', {
+    gsap.registerPlugin(Observer)
+
+    const tween = gsap.to('.service', {
       xPercent: -100,
-      repeat: -1,
       duration: 15,
       ease: 'linear',
+      repeat: -1,
+    }).totalProgress(0.5)
+
+    const velocity = { value: 1 }
+
+    const quickSpeed = gsap.quickTo(velocity, 'value', {
+      onUpdate: () => {
+        gsap.to(tween, { timeScale: 1 + velocity.value })
+      },
+    })
+
+    Observer.create({
+      target: window,
+      type: 'wheel,scroll,touch',
+      onChangeY: (self) => {
+        const v = gsap.utils.clamp(-20, 20, self.velocityY * 0.005)
+
+        quickSpeed(Math.abs(v))
+      },
     })
   }, { scope: wordsRef })
 
