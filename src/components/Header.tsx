@@ -3,6 +3,7 @@
 import { useGSAP } from '@gsap/react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { gsap } from 'gsap'
+import { useLenis } from 'lenis/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
@@ -31,6 +32,8 @@ export function Header() {
   const [container, setContainer] = useState<HTMLDivElement | null>(null)
   const [time, setTime] = useState<Record<string, string>>({})
 
+  const smoother = useLenis()
+
   // Menu items animation
   const { contextSafe } = useGSAP({ scope: menuRef })
   const handleOpenAutoFocus = contextSafe(() => {
@@ -52,6 +55,8 @@ export function Header() {
 
   // Close menu when screen size >= 768
   useEffect(() => {
+    isOpenMenu ? smoother?.stop() : smoother?.start()
+
     const mm = gsap.matchMedia()
 
     mm.add('(min-width: 768px)', () => {
@@ -212,7 +217,7 @@ export function Header() {
         </div>
         <Link href="/" className="relative md:absolute md:right-0 lg:static z-10">
           <Image
-            className="md:size-[70px] lg:size-[80px] blur-[0.6px]"
+            className="md:size-[70px] lg:size-[80px] blur-[0.6px] dark:invert"
             src="/images/logotype.svg"
             alt="logotype"
             width={60}

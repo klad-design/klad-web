@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
+import { ThemeProvider } from 'next-themes'
 import { Header } from '@/components/Header'
 import { SmoothScroll } from '@/components/SmoothScroll'
 
 import '@/styles/globals.css'
+import 'lenis/dist/lenis.css'
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -50,13 +52,15 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en">
-      <body>
-        <Header />
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-gray dark:bg-black dark:text-gray transition-colors duration-200">
+        <ThemeProvider enableSystem={false} defaultTheme="light">
+          <Header />
 
-        <SmoothScroll>
-          {children}
-        </SmoothScroll>
+          <SmoothScroll>
+            {children}
+          </SmoothScroll>
+        </ThemeProvider>
       </body>
     </html>
   )

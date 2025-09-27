@@ -18,7 +18,13 @@ export function Hero() {
           </div>
         </div>
         <div className="flex justify-center -mx-2.5 lg:mx-0 mt-[30px] md:mt-10 lg:mt-3 col-span-4">
-          <Image className="max-w-[140svw] md:max-w-[133svw] lg:max-w-full" src="/images/world.png" alt="World map" width={1410} height={928} />
+          <Image
+            className="max-w-[140svw] md:max-w-[133svw] lg:max-w-full dark:invert"
+            src="/images/world.png"
+            alt="World map"
+            width={1410}
+            height={928}
+          />
         </div>
       </div>
     </section>

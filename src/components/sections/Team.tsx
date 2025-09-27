@@ -3,12 +3,11 @@
 import type { JSX } from 'react'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
-import { ScrollSmoother } from 'gsap/ScrollSmoother'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useLenis } from 'lenis/react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useContext, useEffect, useRef, useState } from 'react'
-import { ScrollContext } from '@/components/SmoothScroll'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
 
@@ -297,13 +296,14 @@ const team: TeamMember[] = [
 const mobileGap = 30
 
 export function Team() {
-  const scrollContext = useContext(ScrollContext)
-  const sectionRef = useRef<HTMLDivElement | null>(null)
-  const modelsRef = useRef<HTMLDivElement | null>(null)
-  const descriptionsRef = useRef<HTMLDivElement | null>(null)
+  const sectionRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const modelsRef = useRef<HTMLDivElement>(null)
+  const descriptionsRef = useRef<HTMLDivElement>(null)
+
   const [activeMemberIndex, setActiveMemberIndex] = useState(0)
 
-  const [isPageRefReady, setIsPageRefReady] = useState(Boolean(scrollContext?.current))
+  const smoother = useLenis()
 
   // Mobile scroll
   useGSAP(() => {
@@ -330,11 +330,13 @@ export function Team() {
 
           tl.to(trigger, {
             opacity: 0.05,
+            ease: 'none',
           }, 0)
 
           tl.to(model, {
             clipPath: 'inset(0px 0px 100%)',
             objectPosition: '50% -50px',
+            ease: 'none',
           }, 0)
 
           ScrollTrigger.create({
@@ -354,38 +356,19 @@ export function Team() {
     const mm = gsap.matchMedia()
 
     mm.add('(min-width: 768px)', () => {
-      const page = scrollContext?.current
       const teamSection = sectionRef.current
+      const teamContent = contentRef.current
       const teamDescription = descriptionsRef.current
-      const smoother = ScrollSmoother.get()
 
-      if (!page || !teamSection || !teamDescription || !smoother)
+      if (!teamSection || !teamContent || !teamDescription || !smoother)
         return
 
       const descriptionItemWidth = teamDescription.clientWidth / team.length
-      const startPosition = smoother.offset(teamSection, 'center top')
       const endPosition = descriptionItemWidth * (team.length - 1)
 
       const animation = gsap.to(teamDescription, {
         x: endPosition * -1,
         ease: 'none',
-      })
-
-      ScrollTrigger.create({
-        id: 'global',
-        trigger: page,
-        start: `${startPosition}px center`,
-        end: `+=${endPosition}px center`,
-        pin: true,
-        invalidateOnRefresh: true,
-        scrub: 1,
-        animation,
-        onUpdate: (self) => {
-          const progress = Number(self.progress.toFixed(2))
-          const currentMemberIndex = Math.min(Math.floor(progress * team.length), team.length - 1)
-
-          setActiveMemberIndex(currentMemberIndex)
-        },
       })
 
       team.forEach((_, index) => {
@@ -396,54 +379,68 @@ export function Team() {
 
           tl.to(trigger, {
             opacity: 0.05,
+            ease: 'none',
           }, 0)
 
           tl.to(model, {
             clipPath: 'inset(0px 0px 100%)',
+            ease: 'none',
           }, 0)
 
           ScrollTrigger.create({
-            trigger,
+            trigger: teamContent,
             animation: tl,
-            start: `${descriptionItemWidth * index + teamDescription.clientHeight / 2}px center`,
-            end: `+=${descriptionItemWidth} center`,
+            start: `${teamContent.clientHeight + descriptionItemWidth * index + 10}px bottom`,
+            end: `+=${descriptionItemWidth} bottom`,
             scrub: 1,
-            invalidateOnRefresh: true,
           })
         }
       })
-    })
-  }, { dependencies: [isPageRefReady], scope: sectionRef })
 
-  // Update desktop gsap when ref is set
-  useEffect(() => {
-    setIsPageRefReady(Boolean(scrollContext?.current))
-  }, [scrollContext])
+      ScrollTrigger.create({
+        id: 'global',
+        trigger: teamSection,
+        start: `bottom bottom`,
+        end: `+=${endPosition}px bottom`,
+        pin: true,
+        scrub: 1,
+        animation,
+        onUpdate: (self) => {
+          const progress = Number(self.progress.toFixed(2))
+          const currentMemberIndex = Math.min(Math.floor(progress * team.length), team.length - 1)
+
+          setActiveMemberIndex(currentMemberIndex)
+        },
+      })
+    })
+  }, { dependencies: [smoother], scope: sectionRef })
 
   // Scroll to member handler
   useEffect(() => {
     const isHorizontalView = window.matchMedia('(min-width: 768px)').matches
-    const smoother = ScrollSmoother.get()
     const teamSection = sectionRef.current
+    const teamContent = contentRef.current
     const teamDescription = descriptionsRef.current
-    const startPosition = smoother?.offset(teamSection, isHorizontalView ? 'center center' : 'top top') || 0
 
     const buttons = teamSection?.querySelectorAll<HTMLButtonElement>('button[data-member]')
 
     const handleScrollTo = (e: MouseEvent) => {
       const target = e.currentTarget as HTMLButtonElement
 
-      if (!target || !smoother || !teamSection || !teamDescription)
+      if (!target || !smoother || !teamSection || !teamContent || !teamDescription)
         return
 
+      const startPosition = isHorizontalView
+        ? teamSection.parentElement?.offsetTop || 0
+        : teamContent.offsetTop
       const memberIndex = Number(target.dataset.member) || 0
       const memberOffset = team.reduce((prev, _, index) => {
         const section = teamDescription.querySelector(`.memberDescription:nth-child(${index + 1})`)
 
-        return section && index < memberIndex ? prev + section[isHorizontalView ? 'clientWidth' : 'clientHeight'] : prev
+        return section && index < memberIndex ? prev + section.getBoundingClientRect()[isHorizontalView ? 'width' : 'height'] : prev
       }, 0)
 
-      smoother.scrollTo(startPosition + memberOffset - (isHorizontalView ? 0 : mobileGap), true)
+      smoother.scrollTo(startPosition + memberOffset - (isHorizontalView ? 0 : mobileGap))
     }
 
     if (buttons && buttons.length) {
@@ -459,18 +456,18 @@ export function Team() {
         })
       }
     }
-  }, [])
+  }, [smoother])
 
   return (
-    <section className="mt-20 md:mt-28">
-      <h2 className="text-nowrap text-[15vw] md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase -ml-1.5 lg:-ml-2.5 -rotate-2">
+    <section ref={sectionRef} className="md:min-h-svh md:flex md:flex-col pt-20 md:pt-28 md:pb-2.5">
+      <h2 className="text-nowrap text-[15vw] md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase md:my-auto -ml-1.5 lg:-ml-2.5 -rotate-2">
         <TextBlur>
           Team
           {' '}
           <span>专责小组</span>
         </TextBlur>
       </h2>
-      <div ref={sectionRef} className="flex flex-col md:grid md:grid-cols-[16vw_42vw_1fr] lg:grid-cols-[14.5%_19.5%_22.5%_auto_minmax(140px,10%)] lg:gap-x-2.5 items-center mt-16 md:mt-16 lg:mt-24 px-2.5">
+      <div ref={contentRef} className="flex flex-col md:grid md:grid-cols-[16vw_42vw_1fr] lg:grid-cols-[14.5%_19.5%_22.5%_auto_minmax(140px,10%)] lg:gap-x-2.5 items-center mt-16 md:mt-16 lg:mt-24 px-2.5">
         <div className="hidden md:flex flex-col items-start self-end">
           {team.map((member, index) => (
             <Button
@@ -483,7 +480,7 @@ export function Team() {
           ))}
         </div>
         <div className="self-stretch z-1 lg:col-span-2">
-          <div ref={modelsRef} className="mx-auto md:w-full relative aspect-[264/357] max-w-[264px] lg:max-w-[70%] overflow-hidden will-change-transform">
+          <div ref={modelsRef} className="models mx-auto md:w-full relative aspect-[264/357] max-w-[264px] lg:max-w-[70%] overflow-hidden will-change-transform">
             {team.map((member, index) => (
               <div key={member.name} className="memberModel absolute inset-0" style={{ height: '100%', zIndex: team.length - index }}>
                 <Image

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-
+import { DarkSections } from '@/components/DarkSections'
 import { Call, Hero, Services, Team } from '@/components/sections'
 
 export const metadata: Metadata = {
@@ -13,6 +13,12 @@ export default function Home() {
       <Services />
       <Team />
       <Call />
+      <DarkSections>
+        <Hero />
+        <Services />
+        <Team />
+        <Call />
+      </DarkSections>
     </>
   )
 }

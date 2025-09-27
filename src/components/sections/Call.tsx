@@ -6,7 +6,7 @@ import { TextBlur } from '@/components/ui/TextBlur'
 
 export function Call() {
   return (
-    <section className="mt-32 md:mt-36 pb-[60px] md:pb-[160px]">
+    <section className="pt-32 md:pt-36 pb-[60px] md:pb-[160px]">
       <div className="flex flex-col items-start text-nowrap tracking-normal leading-none uppercase -ml-1.5 lg:-ml-2.5 -rotate-2">
         <div className="relative">
           <div className="text-[13vw] md:text-[80px] lg:text-[7.2vw]">
