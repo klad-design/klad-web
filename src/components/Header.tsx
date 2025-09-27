@@ -94,14 +94,14 @@ export function Header() {
   }, [])
 
   return (
-    <header className="fixed z-10 top-0 right-0 lg:bottom-0 w-full lg:w-auto pt-[3px] pr-[3px] pl-2.5 md:px-2.5 md:pt-2.5 lg:px-2.5 lg:pb-2.5 lg:pt-[60px]">
+    <header className="fixed z-20 top-0 right-0 lg:bottom-0 w-full lg:w-auto pt-[3px] pr-[3px] pl-2.5 md:px-2.5 md:pt-2.5 lg:px-2.5 lg:pb-2.5 lg:pt-[60px]">
       <div className="relative flex lg:flex-col-reverse justify-between items-start lg:h-full lg:w-[130px]">
         <Dialog.Root open={isOpenMenu} onOpenChange={setIsOpenMenu}>
           <Dialog.Trigger asChild>
             <Button className="md:hidden mt-1.5" label="Menu" />
           </Dialog.Trigger>
           <Dialog.Portal container={container}>
-            <Dialog.Overlay className="fixed inset-0 bg-gray/95 animate-opacity z-10" />
+            <Dialog.Overlay className="fixed inset-0 bg-gray/95 dark:bg-black/95 animate-opacity z-10" />
             <Dialog.Content onOpenAutoFocus={handleOpenAutoFocus} className="fixed inset-0 z-20 flex flex-col items-start pt-[70px] px-2.5 pb-2.5 overflow-auto">
               <Dialog.Title className="hidden">Menu</Dialog.Title>
               <Dialog.Close asChild>
@@ -217,7 +217,7 @@ export function Header() {
         </div>
         <Link href="/" className="relative md:absolute md:right-0 lg:static z-10">
           <Image
-            className="md:size-[70px] lg:size-[80px] blur-[0.6px] dark:invert"
+            className="md:size-[70px] lg:size-[80px] blur-[0.6px] dark:invert transform-gpu"
             src="/images/logotype.svg"
             alt="logotype"
             width={60}

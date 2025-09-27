@@ -137,7 +137,7 @@
     opacity: 0.15;
     background: url("/images/noise.gif") 0 0 / 150px 150px repeat;
     pointer-events: none;
-    z-index: 10;
+    z-index: 30;
   }
 
   a, button {
@@ -182,7 +182,7 @@
 
   .button::before,
   .button::after {
-    @apply inline-flex items-center absolute inset-0 content-[attr(aria-label)] transition-all duration-150 opacity-0;
+    @apply inline-flex items-center absolute inset-0 content-[attr(aria-label)] transition-all duration-150 opacity-0 transform-gpu;
   }
 
   .button::before {
@@ -194,7 +194,7 @@
   }
 
   .button > span {
-    @apply relative blur-regular z-10;
+    @apply relative blur-regular z-10 transform-gpu;
   }
 
   .button.button--active {
@@ -222,7 +222,7 @@
   }
 
   .blurred {
-    @apply blur-regular;
+    @apply blur-regular transform-gpu;
   }
 
   .blurred.blurred--active {
@@ -231,7 +231,7 @@
 
   .blurred.blurred--active::before,
   .blurred.blurred--active::after {
-    @apply inline-flex items-center absolute inset-0 content-[attr(data-label)];
+    @apply inline-flex items-center absolute inset-0 content-[attr(data-label)] transform-gpu;
   }
 
   .blurred.blurred--active::before {
@@ -243,6 +243,6 @@
   }
 
   .blurred.blurred--active > span {
-    @apply relative blur-regular z-10;
+    @apply relative blur-regular z-10 transform-gpu;
   }
 }

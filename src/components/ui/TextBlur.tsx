@@ -10,13 +10,13 @@ export function TextBlur({ isBold, children }: TextBlurProps) {
     isBold
       ? (
           <span className="relative">
-            <span className="absolute blur-[3px]">{children}</span>
-            <span className="absolute blur-[1.5px]">{children}</span>
-            <span className="relative blur-[0.6px]">{children}</span>
+            <span className="absolute blur-[3px] transform-gpu">{children}</span>
+            <span className="absolute blur-[1.5px] transform-gpu">{children}</span>
+            <span className="relative blur-[0.6px] transform-gpu">{children}</span>
           </span>
         )
       : (
-          <span className="blur-[0.8px]">
+          <span className="blur-[0.8px] transform-gpu">
             {children}
           </span>
         )
