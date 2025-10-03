@@ -42,7 +42,7 @@ export function DarkSections({ children }: SectionProps) {
   }, [])
 
   return (
-    <div ref={sectionRef} className="overflow-hidden h-svh">
+    <div ref={sectionRef} className="h-svh">
       {children}
     </div>
   )

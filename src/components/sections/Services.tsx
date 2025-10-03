@@ -84,7 +84,7 @@ export function Services() {
       duration: 15,
       ease: 'linear',
       repeat: -1,
-    }).totalProgress(0.5)
+    })
 
     const velocity = { value: 1 }
 
@@ -98,7 +98,7 @@ export function Services() {
       target: window,
       type: 'wheel,scroll,touch',
       onChangeY: (self) => {
-        const v = gsap.utils.clamp(-20, 20, self.velocityY * 0.005)
+        const v = gsap.utils.clamp(-50, 50, self.velocityY * 0.003)
 
         quickSpeed(Math.abs(v))
       },
@@ -131,7 +131,7 @@ export function Services() {
             </div>
             <ul className="flex flex-col items-start mt-4">
               {service.list.map(item => (
-                <li key={item} className="blurred blurred--active" data-label={item}>
+                <li key={item} className="blurred" data-label={item}>
                   <span>{item}</span>
                 </li>
               ))}
