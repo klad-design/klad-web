@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useLenis } from 'lenis/react'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef } from 'react'
 
@@ -12,11 +13,16 @@ interface SectionProps {
 export function DarkSections({ children }: SectionProps) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const { setTheme } = useTheme()
+  const smoother = useLenis()
 
   useEffect(() => {
     if (ScrollTrigger.isTouch) {
-      sectionRef.current?.remove()
+      sectionRef.current?.classList.add('max-h-0')
+
+      ScrollTrigger.refresh()
+
       setTheme('light')
+
       return
     }
 
@@ -45,7 +51,7 @@ export function DarkSections({ children }: SectionProps) {
       st.kill()
       clearTimeout(timer)
     }
-  }, [])
+  }, [smoother])
 
   return (
     <div ref={sectionRef} className="h-svh">
