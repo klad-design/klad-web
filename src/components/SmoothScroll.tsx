@@ -4,7 +4,7 @@ import type { LenisRef } from 'lenis/react'
 import type { ReactNode } from 'react'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
-import { Observer } from 'gsap/Observer'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ReactLenis } from 'lenis/react'
 import { useEffect, useRef } from 'react'
 
@@ -26,30 +26,26 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
   }, [])
 
   useGSAP(() => {
-    gsap.registerPlugin(Observer)
+    gsap.registerPlugin(ScrollTrigger)
 
-    const scrollY = { value: 0, isDown: true }
+    document.querySelectorAll('.textBlur').forEach((el) => {
+      const isHorizontal = el.classList.contains('textBlurHorizontal')
 
-    const animateBlurText = gsap.quickTo('.textBlur', '--value', {
-      duration: 0.1,
-      ease: 'none',
-    })
+      if (isHorizontal)
+        return
 
-    Observer.create({
-      target: window,
-      type: 'wheel,scroll,touch',
-      onChangeY: (self) => {
-        if (scrollY.isDown && self.deltaY < 0) {
-          scrollY.isDown = false
-        }
-        else if (!scrollY.isDown && self.deltaY > 0) {
-          scrollY.isDown = true
-        }
-
-        scrollY.value = gsap.utils.clamp(0, 80, scrollY.isDown ? scrollY.value + 0.5 : scrollY.value - 0.5)
-
-        animateBlurText(scrollY.value * -1)
-      },
+      setTimeout(() => {
+        gsap.to(el, {
+          '--value': -75,
+          'ease': 'none',
+          'scrollTrigger': {
+            trigger: el,
+            start: 'center center',
+            end: 'bottom top',
+            scrub: 1,
+          },
+        })
+      })
     })
   })
 

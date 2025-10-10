@@ -24,7 +24,7 @@ export function TextBlur({ isBold, isHorizontal, children }: TextBlurProps) {
     isBold
       ? <Text>{children}</Text>
       : (
-          <span className="textBlur relative">
+          <span className={clsx('textBlur relative', { textBlurHorizontal: isHorizontal })}>
             <span
               className={clsx('absolute blur-[3px] opacity-20 transform-gpu ease-linear', {
                 'translate-y-[calc(var(--value)_*_3_*_1%)]': !isHorizontal,

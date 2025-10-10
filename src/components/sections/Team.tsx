@@ -329,8 +329,9 @@ export function Team() {
           const tl = gsap.timeline({ defaults: { ease: 'none' } })
 
           tl.to(trigger, {
-            opacity: 0.05,
-            ease: 'none',
+            '--value': 75,
+            'opacity': 0.05,
+            'ease': 'none',
           }, 0)
 
           tl.to(model, {
@@ -378,8 +379,9 @@ export function Team() {
           const tl = gsap.timeline({ defaults: { ease: 'none' } })
 
           tl.to(trigger, {
-            opacity: 0.05,
-            ease: 'none',
+            '--value': 75,
+            'opacity': 0.05,
+            'ease': 'none',
           }, 0)
 
           tl.to(model, {
