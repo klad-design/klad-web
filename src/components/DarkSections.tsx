@@ -14,6 +14,12 @@ export function DarkSections({ children }: SectionProps) {
   const { setTheme } = useTheme()
 
   useEffect(() => {
+    if (ScrollTrigger.isTouch) {
+      sectionRef.current?.remove()
+      setTheme('light')
+      return
+    }
+
     const st = ScrollTrigger.create({
       id: 'darkSections',
       trigger: sectionRef.current,
