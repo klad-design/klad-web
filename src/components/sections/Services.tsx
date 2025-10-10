@@ -81,7 +81,7 @@ export function Services() {
 
     const tween = gsap.to('.service', {
       xPercent: -100,
-      duration: 15,
+      duration: 20,
       ease: 'linear',
       repeat: -1,
     })
@@ -98,7 +98,7 @@ export function Services() {
       target: window,
       type: 'wheel,scroll,touch',
       onChangeY: (self) => {
-        const v = gsap.utils.clamp(-50, 50, self.velocityY * 0.003)
+        const v = gsap.utils.clamp(-5, 5, self.velocityY * 0.003)
 
         quickSpeed(Math.abs(v))
       },
