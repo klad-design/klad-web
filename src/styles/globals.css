@@ -167,7 +167,7 @@
   }
 
   .button {
-    @apply relative uppercase leading-none;
+    @apply relative uppercase leading-none outline-0;
   }
 
   .button::before,
