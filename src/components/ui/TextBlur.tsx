@@ -11,11 +11,11 @@ interface TextBlurProps {
 
 function Text({ children, isAbsolute }: TextBlurProps & { isAbsolute?: boolean }) {
   return (
-    <span className={clsx({ absolute: isAbsolute, relative: !isAbsolute })}>
+    <div className={clsx({ absolute: isAbsolute, relative: !isAbsolute })}>
       <span className="absolute top-1/2 -translate-y-1/2 blur-[3px] transform-gpu" aria-hidden>{children}</span>
       <span className="absolute top-1/2 -translate-y-1/2 blur-[1.5px] transform-gpu" aria-hidden>{children}</span>
       <span className="relative blur-[0.6px] transform-gpu">{children}</span>
-    </span>
+    </div>
   )
 }
 
@@ -24,7 +24,7 @@ export function TextBlur({ isBold, isHorizontal, children }: TextBlurProps) {
     isBold
       ? <Text>{children}</Text>
       : (
-          <span className={clsx('textBlur relative', { textBlurHorizontal: isHorizontal })}>
+          <div className={clsx('textBlur relative', { textBlurHorizontal: isHorizontal })}>
             <span
               className={clsx('absolute blur-[3px] opacity-20 transform-gpu ease-linear', {
                 'translate-y-[calc(var(--value)_*_3_*_1%)]': !isHorizontal,
@@ -53,7 +53,7 @@ export function TextBlur({ isBold, isHorizontal, children }: TextBlurProps) {
               {children}
             </span>
             <Text>{children}</Text>
-          </span>
+          </div>
         )
   )
 }
