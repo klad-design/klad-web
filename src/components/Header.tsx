@@ -18,9 +18,9 @@ const cities = [
 const menu = [
   { title: 'About', link: '#' },
   { title: 'Cases', link: '#' },
-  { title: 'Process', link: '#' },
-  { title: 'Expectations', link: '#' },
-  { title: 'Pricing', link: '#' },
+  { title: 'Process', link: '/process' },
+  { title: 'Expectations', link: '/expectations' },
+  { title: 'Pricing', link: '/pricing' },
   { title: 'Express', link: '#' },
   { title: 'Mockups', link: '#' },
 ]

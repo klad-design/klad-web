@@ -6,6 +6,7 @@ import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ReactLenis } from 'lenis/react'
+import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 
 interface SmoothScrollProps {
@@ -14,6 +15,7 @@ interface SmoothScrollProps {
 
 export function SmoothScroll({ children }: SmoothScrollProps) {
   const lenisRef = useRef<LenisRef>(null)
+  const pathname = usePathname()
 
   useEffect(() => {
     function update(time: number) {
@@ -50,7 +52,7 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
   })
 
   return (
-    <ReactLenis root ref={lenisRef} options={{ lerp: 0.1, duration: 1.5, infinite: true }}>
+    <ReactLenis root ref={lenisRef} options={{ lerp: 0.1, duration: 1.5, infinite: pathname === '/' }}>
       <div className="overflow-hidden">
         {children}
       </div>
