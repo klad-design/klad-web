@@ -35,7 +35,7 @@ export default function Process() {
               – who serves as your sole point of contact.
             </p>
           </div>
-          <div className="p5 flex flex-col gap-4 max-w-[264px] md:max-w-[320px] mt-[30px]">
+          <div className="p5 flex flex-col gap-4 max-w-[264px] md:max-w-[320px] lg:max-w-[432px] mt-[30px]">
             <p>Projects are quoted based on discovery and briefing. We typically bill 30–40 hours per person per week, and most projects run eight weeks or longer.</p>
             <p>
               We skip wireframes, instead using visual references and content planning from the start. You’ll have a multiple rounds of discussions, but final visual calls are made by the lead designer. This ensures quality and accountability, for more details refer to
@@ -46,7 +46,7 @@ export default function Process() {
           </div>
         </div>
         <div className="col-span-2 md:col-span-full lg:col-start-1 lg:row-start-1 lg:col-span-3 -mx-2.5 md:mt-3 lg:-mt-2.5 lg:mr-2.5 lg:mb-5">
-          <Image className="lg:max-w-[85%]" src="/images/process.svg" alt="Process picture" width={930} height={330} />
+          <Image className="lg:max-w-[85%] dark:invert" src="/images/process.svg" alt="Process picture" width={930} height={330} />
         </div>
         <div className="md:col-span-4 lg:col-span-1 lg:col-start-1">
           <div className="flex flex-col gap-2.5 p4">

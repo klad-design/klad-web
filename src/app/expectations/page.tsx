@@ -31,7 +31,7 @@ export default function Expectations() {
           </div>
         </div>
         <div className="col-span-2 md:col-span-full lg:col-start-1 lg:row-start-1 lg:col-span-3 -mx-2.5 md:mt-3 lg:-mt-2.5 lg:mr-2.5 lg:mb-5">
-          <Image className="lg:max-w-[85%]" src="/images/expectations.svg" alt="Expectations picture" width={930} height={330} />
+          <Image className="lg:max-w-[85%] dark:invert" src="/images/expectations.svg" alt="Expectations picture" width={930} height={330} />
         </div>
         <div className="md:col-span-4 lg:col-span-1 lg:col-start-1">
           <div className="text-p5 uppercase">
