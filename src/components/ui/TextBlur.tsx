@@ -14,7 +14,7 @@ function Text({ children, isAbsolute }: TextBlurProps & { isAbsolute?: boolean }
     <div className={clsx({ absolute: isAbsolute, relative: !isAbsolute })}>
       <span className="absolute top-1/2 -translate-y-1/2 blur-[3px] transform-gpu" aria-hidden>{children}</span>
       <span className="absolute top-1/2 -translate-y-1/2 blur-[1.5px] transform-gpu" aria-hidden>{children}</span>
-      <span className="relative blur-[0.6px] transform-gpu">{children}</span>
+      <div className="relative blur-[0.6px] transform-gpu">{children}</div>
     </div>
   )
 }

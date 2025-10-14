@@ -95,9 +95,9 @@ export default function Pricing() {
               </TextBlur>
             </div>
             <div className="p4 blur-regular max-w-[280px] 2xl:max-w-[350px]">
-              COMMERCIAL PROPOSALS ARE PROVIDED WITHIN THREE DAYS AFTER THE
+              Commercial proposals are provided within three days after the
               {' '}
-              <Link href="#" className="underline">DISCOVERY CALL</Link>
+              <Link href="#" className="underline">Discovery call</Link>
               .
             </div>
           </div>
