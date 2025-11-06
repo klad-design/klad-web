@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import { DarkSections } from '@/components/DarkSections'
 import { Call, Hero, Services, Team } from '@/components/sections'
 

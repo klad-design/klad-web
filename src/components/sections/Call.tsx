@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+
 import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
 

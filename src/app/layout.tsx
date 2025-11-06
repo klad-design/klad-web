@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
+
 import { ThemeProvider } from 'next-themes'
+
 import { Header } from '@/components/Header'
 import { SmoothScroll } from '@/components/SmoothScroll'
 

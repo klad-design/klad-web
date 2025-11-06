@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useLenis } from 'lenis/react'
 import { useTheme } from 'next-themes'

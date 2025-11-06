@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+
 import { TextBlur } from '@/components/ui/TextBlur'
 
 export function Hero() {
