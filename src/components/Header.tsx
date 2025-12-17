@@ -6,6 +6,7 @@ import { gsap } from 'gsap'
 import { useLenis } from 'lenis/react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
@@ -34,6 +35,7 @@ export function Header() {
   const [time, setTime] = useState<Record<string, string>>({})
 
   const smoother = useLenis()
+  const pathname = usePathname()
 
   // Menu items animation
   const { contextSafe } = useGSAP({ scope: menuRef })
@@ -163,7 +165,14 @@ export function Header() {
           </div>
           <nav className="flex flex-col items-start gap-[3px]">
             {menu.map(({ title, link }) => (
-              <Button key={title} as="a" href={link} className="button button--xs" label={title} />
+              <Button
+                key={title}
+                as="a"
+                href={link}
+                className="button button--xs"
+                label={title}
+                isActive={pathname === link}
+              />
             ))}
             <Button
               as="a"
