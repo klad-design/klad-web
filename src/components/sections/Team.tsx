@@ -6,7 +6,7 @@ import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useLenis } from 'lenis/react'
-import Image from 'next/image'
+import NextImage from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
@@ -16,7 +16,6 @@ import { TextBlur } from '@/components/ui/TextBlur'
 interface TeamMember {
   name: string
   role: string
-  image: string
   description: () => JSX.Element
 }
 
@@ -24,7 +23,6 @@ const team: TeamMember[] = [
   {
     name: 'Ksusha',
     role: 'web',
-    image: '/images/model-1.png',
     description: () => (
       <>
         <p>
@@ -54,7 +52,7 @@ const team: TeamMember[] = [
             label={(
               <>
                 Egor
-                <Image
+                <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
                   src="/images/model-1.png"
                   alt="Egor 3d model"
@@ -73,7 +71,6 @@ const team: TeamMember[] = [
   {
     name: 'Lena S.',
     role: 'motion',
-    image: '/images/model-2.png',
     description: () => (
       <>
         <p>Motion and 3D generalist with 8 years of experience and formal training. Co-founder. Adapts quickly, unconstrained by tools or trends.</p>
@@ -99,7 +96,7 @@ const team: TeamMember[] = [
             label={(
               <>
                 Dasha
-                <Image
+                <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
                   src="/images/model-1.png"
                   alt="Dasha 3d model"
@@ -123,7 +120,6 @@ const team: TeamMember[] = [
   {
     name: 'Lena R.',
     role: 'branding',
-    image: '/images/model-1.png',
     description: () => (
       <>
         <p>
@@ -159,7 +155,7 @@ const team: TeamMember[] = [
             label={(
               <>
                 Egor
-                <Image
+                <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
                   src="/images/model-1.png"
                   alt="Egor 3d model"
@@ -178,7 +174,6 @@ const team: TeamMember[] = [
   {
     name: 'Egor',
     role: 'MGMT',
-    image: '/images/model-2.png',
     description: () => (
       <>
         <p>
@@ -205,7 +200,7 @@ const team: TeamMember[] = [
             label={(
               <>
                 Ksusha
-                <Image
+                <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
                   src="/images/model-1.png"
                   alt="Ksusha 3d model"
@@ -225,7 +220,7 @@ const team: TeamMember[] = [
             label={(
               <>
                 Lena R
-                <Image
+                <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
                   src="/images/model-1.png"
                   alt="Lena R 3d model"
@@ -243,7 +238,6 @@ const team: TeamMember[] = [
   {
     name: 'Dasha',
     role: 'MGMT',
-    image: '/images/model-1.png',
     description: () => (
       <>
         <p>Project lead for motion and 3D with 6 years in account management and legal, and a background in conflict management. Co-founder.</p>
@@ -278,7 +272,7 @@ const team: TeamMember[] = [
             label={(
               <>
                 Lena S
-                <Image
+                <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
                   src="/images/model-1.png"
                   alt="Lena S 3d model"
@@ -327,19 +321,12 @@ export function Team() {
       team.forEach((_, index) => {
         if (index < team.length - 1) {
           const trigger = `.memberDescription:nth-child(${index + 1})`
-          const model = `.memberModel:nth-child(${index + 1}) > img`
           const tl = gsap.timeline({ defaults: { ease: 'none' } })
 
           tl.to(trigger, {
             '--value': 75,
             'opacity': 0.05,
             'ease': 'none',
-          }, 0)
-
-          tl.to(model, {
-            clipPath: 'inset(0px 0px 100%)',
-            objectPosition: '50% -50px',
-            ease: 'none',
           }, 0)
 
           ScrollTrigger.create({
@@ -381,18 +368,12 @@ export function Team() {
       team.forEach((_, index) => {
         if (index < team.length - 1) {
           const trigger = `.memberDescription:nth-child(${index + 1})`
-          const model = `.memberModel:nth-child(${index + 1}) > img`
           const tl = gsap.timeline({ defaults: { ease: 'none' } })
 
           tl.to(trigger, {
             '--value': 75,
             'opacity': 0.05,
             'ease': 'none',
-          }, 0)
-
-          tl.to(model, {
-            clipPath: 'inset(0px 0px 100%)',
-            ease: 'none',
           }, 0)
 
           ScrollTrigger.create({
@@ -491,17 +472,15 @@ export function Team() {
         </div>
         <div className="self-stretch z-1 lg:col-span-2">
           <div ref={modelsRef} className="models mx-auto md:w-full relative aspect-[264/357] max-w-[264px] lg:max-w-[70%] overflow-hidden will-change-transform">
-            {team.map((member, index) => (
-              <div key={member.name} className="memberModel absolute inset-0" style={{ height: '100%', zIndex: team.length - index }}>
-                <Image
-                  className="size-full object-cover object-top"
-                  src={member.image}
-                  alt={`${member.name} 3d model`}
-                  width={264}
-                  height={357}
-                />
-              </div>
-            ))}
+            <div className="absolute inset-0">
+              <NextImage
+                className="size-full object-cover object-top"
+                src="/images/team/0.avif"
+                alt="3d model"
+                width={264}
+                height={357}
+              />
+            </div>
           </div>
         </div>
         <div ref={descriptionsRef} className="flex flex-col md:flex-row">
