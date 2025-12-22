@@ -99,7 +99,7 @@ export default function Pricing() {
             <div className="p4 blur-regular max-w-[280px] 2xl:max-w-[350px]">
               Commercial proposals are provided within three days after the
               {' '}
-              <Link href="https://cal.com/klad-design/discovery?overlayCalendar=true" target="_blank" className="underline">Discovery call</Link>
+              <Link href="https://cal.com/klad-design/discovery" target="_blank" className="underline">Discovery call</Link>
               .
             </div>
           </div>

@@ -132,7 +132,7 @@ export function Header() {
                 <div className="menuItem -rotate-2 mt-auto">
                   <Button
                     as="a"
-                    href="https://cal.com/klad-design/discovery?overlayCalendar=true"
+                    href="https://cal.com/klad-design/discovery"
                     target="_blank"
                     label="Book a call"
                     className="text-p1 [&>span]:blur-[0.75px] before:blur-[5px] after:blur-[2px]"
@@ -176,7 +176,7 @@ export function Header() {
             ))}
             <Button
               as="a"
-              href="https://calendly.com/klad-design/discovery"
+              href="https://cal.com/klad-design/discovery"
               className="button button--xs mt-1.5"
               target="_blank"
               label="Book a call"
