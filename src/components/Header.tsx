@@ -18,13 +18,12 @@ const cities = [
 ]
 
 const menu = [
-  { title: 'About', link: '#' },
+  { title: 'About', link: '/' },
   { title: 'Cases', link: '#' },
   { title: 'Process', link: '/process' },
   { title: 'Expectations', link: '/expectations' },
   { title: 'Pricing', link: '/pricing' },
   { title: 'Express', link: '#' },
-  { title: 'Mockups', link: '#' },
 ]
 
 export function Header() {
@@ -111,7 +110,7 @@ export function Header() {
                 <Button className="fixed top-[9px]" label="Close" />
               </Dialog.Close>
               <Image
-                className="fixed top-[3px] right-[3px] md:size-[70px] lg:size-[80px] blur-[0.6px]"
+                className="fixed top-[3px] right-[3px] md:size-[70px] lg:size-[80px] blur-[0.6px] dark:invert transform-gpu"
                 src="/images/logotype.svg"
                 alt="logotype"
                 width={60}
@@ -123,6 +122,7 @@ export function Header() {
                     <Button
                       as="a"
                       href={link}
+                      onClick={() => setIsOpenMenu(false)}
                       label={title}
                       className="text-p1 [&>span]:blur-[0.75px] before:blur-[5px] after:blur-[2px]"
                       isActive
@@ -132,7 +132,7 @@ export function Header() {
                 <div className="menuItem -rotate-2 mt-auto">
                   <Button
                     as="a"
-                    href="https://calendly.com/klad-design/discovery"
+                    href="https://cal.com/klad-design/discovery?overlayCalendar=true"
                     target="_blank"
                     label="Book a call"
                     className="text-p1 [&>span]:blur-[0.75px] before:blur-[5px] after:blur-[2px]"
@@ -159,7 +159,7 @@ export function Header() {
                 <Button as="a" href="mailto:info@klad.design" label="info@klad.design" isActive />
               </li>
               <li>
-                <Button as="a" href="tel:+995-591-017-066" label="995.591.017.066" isActive />
+                <Button as="a" href="https://t.me/klad_syndicate" target="_blank" label="995.591.017.066" isActive />
               </li>
             </ul>
           </div>

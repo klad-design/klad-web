@@ -47,6 +47,8 @@ const services = [
       'Python',
       'Shopify',
       'Webflow',
+      'Next.js',
+      'Payload',
     ],
   },
   {

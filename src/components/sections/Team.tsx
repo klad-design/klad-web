@@ -194,7 +194,7 @@ const team: TeamMember[] = [
         <p>
           Shares studio
           {' '}
-          <Link href="#" className="underline">expectations</Link>
+          <Link href="/expectations" className="underline">expectations</Link>
           {' '}
           in every project. Primary and often the only point of contact for projects involving
           {' '}
@@ -267,7 +267,7 @@ const team: TeamMember[] = [
         <p>
           Shares studio
           {' '}
-          <Link href="#" className="underline">expectations</Link>
+          <Link href="/expectations" className="underline">expectations</Link>
           {' '}
           in every project. Main point of contact for projects involving
           {' '}
@@ -352,11 +352,15 @@ export function Team() {
         }
       })
     })
+
+    return () => mm.revert()
   })
 
   // Desktop scroll
   useGSAP(() => {
     const mm = gsap.matchMedia()
+
+    gsap.registerPlugin(ScrollTrigger)
 
     mm.add('(min-width: 768px)', () => {
       const teamSection = sectionRef.current
@@ -417,6 +421,8 @@ export function Team() {
         },
       })
     })
+
+    return () => mm.revert()
   }, { dependencies: [smoother], scope: sectionRef })
 
   // Scroll to member handler
@@ -463,7 +469,7 @@ export function Team() {
   }, [smoother])
 
   return (
-    <section ref={sectionRef} className="md:min-h-svh md:flex md:flex-col pt-20 md:pt-28 md:pb-2.5">
+    <section id="team" ref={sectionRef} className="md:min-h-svh md:flex md:flex-col pt-20 md:pt-28 md:pb-2.5">
       <h2 className="text-nowrap text-[15vw] md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase md:my-auto -ml-1.5 lg:-ml-2.5 -rotate-2">
         <TextBlur>
           Team

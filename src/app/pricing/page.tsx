@@ -19,13 +19,13 @@ export default function Pricing() {
           <span className="mt-2 block md:inline">価格設定</span>
         </TextBlur>
       </h1>
-      <div className="relative mt-10 md:mt-12 lg:mt-8 overflow-hidden">
+      <div className="relative mt-10 md:mt-12 lg:my-auto overflow-hidden">
         <div className="absolute left-[75px] md:left-[120px] xl:left-[200px] 2xl:left-[276px] w-[90px] md:w-[134px] xl:w-[230px] 2xl:w-[300px] top-1/2 -translate-y-1/2 text-center text-p2-2xl md:text-[28px] xl:text-p1 2xl:text-p1-2xl 2x uppercase">
-          <TextBlur isBold>€80 / hr</TextBlur>
+          <TextBlur isBold>€90 / hr</TextBlur>
         </div>
         <Image className="dark:invert w-auto max-w-fit h-[122px] md:h-[194px] xl:h-[332px] 2xl:h-[440px] -ml-10 md:-ml-[68px] xl:-ml-[120px] 2xl:-ml-[150px]" src="/images/coins.svg" alt="Coins" width={1900} height={440} />
       </div>
-      <div className="md:grow grid-container grid-cols-1 md:grid-cols-6 gap-y-[30px] mt-12 md:mt-9 lg:mt-16 2xl:mt-[86px]">
+      <div className="grid-container grid-cols-1 md:grid-cols-6 gap-y-[30px] mt-12 md:mt-9 lg:mt-16 2xl:mt-[86px]">
         <div className="md:col-span-2 lg:col-span-2 xl:col-span-1">
           <div className="flex flex-col gap-2.5 p4 uppercase">
             <TextBlur isBold>Types of Engagement</TextBlur>
@@ -67,7 +67,7 @@ export default function Pricing() {
             <p>
               If you run an open-source, non-profit, or free education project,
               {' '}
-              <Link href="#" className="underline">contact us</Link>
+              <Link href="mailto:info@klad.design" className="underline">contact us</Link>
               {' '}
               for discounted rates.
             </p>
@@ -91,7 +91,7 @@ export default function Pricing() {
               <TextBlur isBold>
                 Branding is
                 {' '}
-                <Image className="inline align-top size-10 2xl:size-14" src="/images/hook.svg" alt="Hook icon" width={46} height={46} />
+                <Image className="inline align-top size-10 2xl:size-14 dark:invert" src="/images/hook.svg" alt="Hook icon" width={46} height={46} />
                 {' '}
                 always&nbsp;offered at a fixed rate.
               </TextBlur>
@@ -99,7 +99,7 @@ export default function Pricing() {
             <div className="p4 blur-regular max-w-[280px] 2xl:max-w-[350px]">
               Commercial proposals are provided within three days after the
               {' '}
-              <Link href="#" className="underline">Discovery call</Link>
+              <Link href="https://cal.com/klad-design/discovery?overlayCalendar=true" target="_blank" className="underline">Discovery call</Link>
               .
             </div>
           </div>
@@ -107,7 +107,7 @@ export default function Pricing() {
         <div className="md:col-start-1 md:col-span-3 lg:col-span-2 lg:col-start-1 xl:col-span-2 md:row-start-3 xl:row-start-2 md:self-end mt-16 md:mt-0">
           <div className="flex flex-col gap-3 p4 uppercase xl:max-w-[400px] 2xl:max-w-[540px]">
             <TextBlur isBold>
-              <Image className="md:w-auto md:h-7 2xl:h-9" src="/images/dagger.svg" alt="Dagger image" width={116} height={38} />
+              <Image className="md:w-auto md:h-7 2xl:h-9 dark:invert" src="/images/dagger.svg" alt="Dagger image" width={116} height={38} />
             </TextBlur>
             <TextBlur isBold>
               Each project is quoted separately based on discovery sessions and briefing. Quotations are based on the studio hourly rate and requested deliverables.

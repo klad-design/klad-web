@@ -26,7 +26,7 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
     gsap.ticker.add(update)
 
     return () => gsap.ticker.remove(update)
-  }, [])
+  }, [pathname])
 
   useGSAP(() => {
     gsap.registerPlugin(ScrollTrigger)
@@ -37,23 +37,36 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
       if (isHorizontal)
         return
 
-      setTimeout(() => {
-        gsap.to(el, {
-          '--value': -75,
-          'ease': 'none',
-          'scrollTrigger': {
-            trigger: el,
-            start: 'center center',
-            end: 'bottom top',
-            scrub: 1,
-          },
-        })
+      const tl = gsap.timeline({ defaults: { ease: 'none' } })
+
+      tl.to(el, {
+        '--value': -75,
+        'ease': 'none',
       })
+
+      const st = ScrollTrigger.create({
+        trigger: el,
+        animation: tl,
+        start: 'center center',
+        end: 'bottom top',
+        scrub: 1,
+      })
+
+      setTimeout(() => st.refresh(), 100)
     })
-  })
+  }, { dependencies: [pathname] })
+
+  useEffect(() => {
+    ScrollTrigger.getAll().forEach(t => t.refresh())
+  }, [pathname])
 
   return (
-    <ReactLenis root ref={lenisRef} options={{ lerp: 0.1, duration: 1.5, infinite: pathname === '/' }}>
+    <ReactLenis
+      key={pathname}
+      root
+      ref={lenisRef}
+      options={{ lerp: 0.1, duration: 1.5, infinite: pathname === '/' }}
+    >
       <div className="overflow-hidden">
         {children}
       </div>

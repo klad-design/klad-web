@@ -55,7 +55,7 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-gray dark:bg-black dark:text-gray transition-colors duration-200">
+      <body className="bg-gray dark:bg-black dark:text-gray transition-colors duration-200 selection:bg-[#ADADAD]/60">
         <ThemeProvider enableSystem={false} defaultTheme="light">
           <Header />
 

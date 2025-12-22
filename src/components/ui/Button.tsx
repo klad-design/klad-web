@@ -5,6 +5,7 @@ import clsx from 'clsx'
 import Link from 'next/link'
 
 interface ButtonPropsBasic {
+  children?: JSX.Element
   label: string | JSX.Element
   size?: 'xs' | 's' | 'm'
   isActive?: boolean
@@ -28,6 +29,7 @@ export function Button({
     isActive,
     isInherit,
     className,
+    children,
     ...rest
   } = props
 
@@ -48,7 +50,7 @@ export function Button({
       )}
       aria-label={label}
     >
-      <span>{label}</span>
+      {children || <span>{label}</span>}
     </Component>
   )
 }

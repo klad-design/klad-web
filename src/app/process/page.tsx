@@ -20,7 +20,7 @@ export default function Process() {
         </TextBlur>
       </h1>
       <div className="md:grow grid-container md:grid-cols-12 gap-y-[30px] md:gap-y-9 lg:gap-y-0 lg:grid-rows-[1fr_auto_auto] mt-10 md:mt-16 lg:mt-20">
-        <div className="col-span-2 md:col-start-4 md:col-span-6 lg:col-span-1">
+        <div className="col-span-2 md:col-start-4 md:col-span-6 lg:col-span-1 lg:self-center">
           <div className="p4 uppercase mb-4">
             <TextBlur isBold>Expected management process</TextBlur>
           </div>
@@ -42,12 +42,12 @@ export default function Process() {
             <p>
               We skip wireframes, instead using visual references and content planning from the start. You’ll have a multiple rounds of discussions, but final visual calls are made by the lead designer. This ensures quality and accountability, for more details refer to
               {' '}
-              <Link className="underline" href="/">expectations</Link>
+              <Link className="underline" href="/expectations">expectations</Link>
               . We can support in-house teams or act as your external design department. Every collaboration comes with a dedicated manager who handles all communication.
             </p>
           </div>
         </div>
-        <div className="col-span-2 md:col-span-full lg:col-start-1 lg:row-start-1 lg:col-span-3 -mx-2.5 md:mt-3 lg:-mt-2.5 lg:mr-2.5 lg:mb-5">
+        <div className="col-span-2 md:col-span-full lg:col-start-1 lg:row-start-1 lg:col-span-3 lg:self-center -mx-2.5 md:mt-3 lg:-mt-2.5 lg:mr-2.5 lg:mb-5">
           <Image className="lg:max-w-[85%] dark:invert" src="/images/process.svg" alt="Process picture" width={930} height={330} />
         </div>
         <div className="md:col-span-4 lg:col-span-1 lg:col-start-1">
@@ -293,12 +293,12 @@ export default function Process() {
         <div className="col-span-2 md:row-start-4 md:col-span-6 lg:row-start-auto lg:col-span-2 md:self-end mt-10 lg:mt-0">
           <div className="flex flex-col gap-3 p4 uppercase xl:max-w-[420px] 2xl:max-w-[540px]">
             <TextBlur isBold>
-              <Image className="md:w-auto md:h-7 2xl:h-9" src="/images/dagger.svg" alt="Dagger image" width={116} height={38} />
+              <Image className="md:w-auto md:h-7 2xl:h-9 dark:invert" src="/images/dagger.svg" alt="Dagger image" width={116} height={38} />
             </TextBlur>
             <TextBlur isBold>
               Always depends on the project. These are just general milestones and may not apply to every case.
               {' '}
-              <Link className="underline underline-offset-4" href="/">Reach out</Link>
+              <Link className="underline underline-offset-4" href="mailto:info@klad.design">Reach out</Link>
               {' '}
               to learn more.
             </TextBlur>

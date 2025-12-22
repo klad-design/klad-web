@@ -22,7 +22,11 @@ export function Call() {
           </div>
         </div>
         <h2 className="text-[16.3vw] md:text-[100px] lg:text-[10.5vw] md:mt-2.5">
-          <TextBlur>Book a call</TextBlur>
+          <a href="https://cal.com/klad-design/discovery?overlayCalendar=true" target="_blank">
+            <TextBlur>
+              Book a call
+            </TextBlur>
+          </a>
         </h2>
       </div>
       <div className="grid-container mt-10 lg:mt-[90px]">
