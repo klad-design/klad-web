@@ -8,7 +8,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useLenis } from 'lenis/react'
 import NextImage from 'next/image'
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
@@ -292,14 +292,51 @@ const team: TeamMember[] = [
 const mobileGap = 30
 
 export function Team() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
   const sectionRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   const modelsRef = useRef<HTMLDivElement>(null)
   const descriptionsRef = useRef<HTMLDivElement>(null)
 
+  const imagesRef = useRef<HTMLImageElement[]>([])
+
   const [activeMemberIndex, setActiveMemberIndex] = useState(0)
 
   const smoother = useLenis()
+
+  const canvasFrames = {
+    currentIndex: 0,
+    maxIndex: 121,
+  }
+
+  const loadImageOnCanvas = useCallback((index: number) => {
+    const canvas = canvasRef.current
+    const context = canvas?.getContext('2d')
+    const images = imagesRef.current
+
+    if (index >= 0 && index < images.length && canvas && context) {
+      const img = images[index]
+
+      if (!img)
+        return
+
+      canvas.width = canvas.clientWidth * window.devicePixelRatio
+      canvas.height = canvas.clientHeight * window.devicePixelRatio
+
+      const scaleX = canvas.width / img.width
+      const scaleY = canvas.height / img.height
+      const scale = Math.min(scaleX, scaleY)
+
+      const newWidth = img.width * scale
+      const newHeight = img.height * scale
+
+      const offsetX = (canvas.width - newWidth) / 2
+      const offsetY = (canvas.height - newHeight) / 2
+
+      context.clearRect(0, 0, canvas.width, canvas.height)
+      context.drawImage(img, offsetX, offsetY, newWidth, newHeight)
+    }
+  }, [])
 
   // Mobile scroll
   useGSAP(() => {
@@ -395,10 +432,12 @@ export function Team() {
         scrub: 1,
         animation,
         onUpdate: (self) => {
-          const progress = Number(self.progress.toFixed(2))
+          const progress = self.progress
           const currentMemberIndex = Math.min(Math.floor(progress * team.length), team.length - 1)
+          const frameIndex = Math.round(progress * (canvasFrames.maxIndex - 1))
 
           setActiveMemberIndex(currentMemberIndex)
+          loadImageOnCanvas(frameIndex)
         },
       })
     })
@@ -449,6 +488,31 @@ export function Team() {
     }
   }, [smoother])
 
+  useEffect(() => {
+    let imagesLoaded = 0
+    const totalImages = canvasFrames.maxIndex
+
+    const preloadImages = () => {
+      for (let i = 0; i <= totalImages; i++) {
+        const imageUrl = `/images/team/${i}.avif`
+        const img = new Image()
+
+        img.src = imageUrl
+
+        img.onload = () => {
+          imagesLoaded++
+
+          if (imagesLoaded === totalImages)
+            loadImageOnCanvas(canvasFrames.currentIndex)
+        }
+
+        imagesRef.current[i] = img
+      }
+    }
+
+    preloadImages()
+  }, [canvasFrames.currentIndex, canvasFrames.maxIndex, loadImageOnCanvas])
+
   return (
     <section id="team" ref={sectionRef} className="md:min-h-svh md:flex md:flex-col pt-20 md:pt-28 md:pb-2.5">
       <h2 className="text-nowrap text-[15vw] md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase md:my-auto -ml-1.5 lg:-ml-2.5 -rotate-2">
@@ -473,13 +537,7 @@ export function Team() {
         <div className="self-stretch z-1 lg:col-span-2">
           <div ref={modelsRef} className="models mx-auto md:w-full relative aspect-[264/357] max-w-[264px] lg:max-w-[70%] overflow-hidden will-change-transform">
             <div className="absolute inset-0">
-              <NextImage
-                className="size-full object-cover object-top"
-                src="/images/team/0.avif"
-                alt="3d model"
-                width={264}
-                height={357}
-              />
+              <canvas ref={canvasRef} className="size-full" />
             </div>
           </div>
         </div>
