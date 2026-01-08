@@ -461,7 +461,7 @@ export function Team() {
         return
 
       const startPosition = isHorizontalView
-        ? teamSection.parentElement?.offsetTop || 0
+        ? (teamSection.parentElement?.offsetTop || 0) - (window.innerHeight - teamSection.clientHeight)
         : teamContent.offsetTop
       const memberIndex = Number(target.dataset.member) || 0
       const memberOffset = team.reduce((prev, _, index) => {
@@ -514,7 +514,7 @@ export function Team() {
   }, [canvasFrames.currentIndex, canvasFrames.maxIndex, loadImageOnCanvas])
 
   return (
-    <section id="team" ref={sectionRef} className="md:min-h-svh md:flex md:flex-col pt-20 md:pt-28 md:pb-2.5">
+    <section id="team" ref={sectionRef} className="md:min-h-svh md:flex md:flex-col pt-20 md:pt-28 md:pb-2.5 z-1">
       <h2 className="text-nowrap text-[15vw] md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase md:my-auto -ml-1.5 lg:-ml-2.5 -rotate-2">
         <TextBlur>
           Team
