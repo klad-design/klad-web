@@ -554,7 +554,6 @@ export function Team() {
                 <h3 className="p1 uppercase -rotate-2">
                   <TextBlur isHorizontal>{member.name}</TextBlur>
                 </h3>
-                w
                 <div className="flex flex-col gap-1.5 p5 mt-6">
                   {member.description()}
                 </div>
