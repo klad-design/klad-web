@@ -353,6 +353,12 @@ export function Team() {
         pinSpacing: false,
         pin: true,
         scrub: 1,
+        onUpdate: (self) => {
+          const progress = self.progress
+          const frameIndex = Math.round(progress * (canvasFrames.maxIndex - 1))
+
+          loadImageOnCanvas(frameIndex)
+        },
       })
 
       team.forEach((_, index) => {
@@ -548,6 +554,7 @@ export function Team() {
                 <h3 className="p1 uppercase -rotate-2">
                   <TextBlur isHorizontal>{member.name}</TextBlur>
                 </h3>
+                w
                 <div className="flex flex-col gap-1.5 p5 mt-6">
                   {member.description()}
                 </div>
