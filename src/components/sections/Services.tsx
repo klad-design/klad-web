@@ -69,9 +69,9 @@ const services = [
 ]
 
 const advantages = [
-  { title: '45+', description: 'clients' },
-  { title: 'over 100', description: 'completed projects' },
-  { title: '$20M+ raised', description: 'in seed and pre-seed rounds for startups over the past year' },
+  { title: '65+', description: 'clients' },
+  { title: 'over 150', description: 'completed projects' },
+  { title: '$90M+ raised', description: 'in seed and pre-seed rounds for startups over the past year' },
   { title: 'since 2020' },
 ]
 
