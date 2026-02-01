@@ -37,20 +37,20 @@ export default function Expectations() {
           <Image className="lg:max-w-[85%] dark:invert" src="/images/expectations.svg" alt="Expectations picture" width={930} height={330} />
         </div>
         <div className="md:col-span-4 lg:col-span-1 lg:col-start-1">
-          <div className="text-p5 uppercase">
+          <div className="p4 uppercase">
             <TextBlur isBold>Clients isn't always right</TextBlur>
           </div>
-          <div className="text-p5-md flex flex-col gap-1.5 md:max-w-[180px] 2xl:max-w-[240px] mt-3">
+          <div className="p5 flex flex-col gap-1.5 md:max-w-[180px] 2xl:max-w-[240px] mt-3">
             <p>When you seek help from a lawyer, you expect a solution tailored to your situation. Similarly, we offer design solutions based on your input and our expertise. Just as you wouldn't edit a lawyer’s work, we don’t expect interference in our workflow if we’re to deliver high-quality results.</p>
             <p>By purchasing our services, you’re buying our expertise in the form of a design solution. While you may have different subjective preferences, the final call is ours. That means our reputation is on the line, and we reserve the final say on design decisions.</p>
             <p>We focus solely on design. We won’t step into marketing, positioning, or management decisions.</p>
           </div>
         </div>
         <div className="md:col-span-4 lg:col-span-1">
-          <div className="text-p5 uppercase">
+          <div className="p4 uppercase">
             <TextBlur isBold>What We Expect From You</TextBlur>
           </div>
-          <div className="text-p5-md flex flex-col gap-1.5 md:max-w-[180px] 2xl:max-w-[240px] mt-3">
+          <div className="p5 flex flex-col gap-1.5 md:max-w-[180px] 2xl:max-w-[240px] mt-3">
             <p>Treat our work with respect – during and after the process. In many ways, design is never truly finished, so treat the deliverables with care. Avoid disrupting its integrity with inconsistent materials or poor content handling.</p>
             <p>Respect our time, terms, and workflow. Urgency doesn’t cancel boundaries: send assets on time, skip unnecessary calls, and pay invoices promptly.</p>
             <p>We don’t co-create. Like lawyers, we gather input, then deliver solutions.</p>
@@ -58,10 +58,10 @@ export default function Expectations() {
           </div>
         </div>
         <div className="md:col-span-4 lg:col-span-1">
-          <div className="text-p5 uppercase">
+          <div className="p4 uppercase">
             <TextBlur isBold>What you can expect from&nbsp;us</TextBlur>
           </div>
-          <div className="text-p5-md flex flex-col gap-1.5 md:max-w-[180px] 2xl:max-w-[240px] mt-3">
+          <div className="p5 flex flex-col gap-1.5 md:max-w-[180px] 2xl:max-w-[240px] mt-3">
             <p>Commitment to delivering the best possible results.</p>
             <p>Genuine, full involvement in your project.</p>
             <p>Honest and transparent communication.</p>
