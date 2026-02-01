@@ -9,6 +9,22 @@ export const metadata: Metadata = {
   title: 'Process page',
 }
 
+function getNextStartDate(daysToAdd: number = 7) {
+  const date = new Date()
+
+  date.setDate(date.getDate() + daysToAdd)
+
+  return date.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
+const brandingDate = getNextStartDate(7)
+const designDate = getNextStartDate(12)
+const motionDate = getNextStartDate(3)
+
 export default function Process() {
   return (
     <section className="md:flex md:flex-col md:min-h-svh pb-2.5 pt-[65px] md:pt-[150px] lg:pt-0">
@@ -269,7 +285,7 @@ export default function Process() {
                 <TextBlur isBold>Next branding start date:</TextBlur>
               </div>
               <div className="p1">
-                <TextBlur isBold>21 April, 2025</TextBlur>
+                <TextBlur isBold>{brandingDate}</TextBlur>
               </div>
             </div>
             <div className="flex flex-col gap-y-1">
@@ -277,7 +293,7 @@ export default function Process() {
                 <TextBlur isBold>Next web design start date:</TextBlur>
               </div>
               <div className="p1">
-                <TextBlur isBold>1 may, 2025</TextBlur>
+                <TextBlur isBold>{designDate}</TextBlur>
               </div>
             </div>
             <div className="flex flex-col gap-y-1">
@@ -285,7 +301,7 @@ export default function Process() {
                 <TextBlur isBold>Next 3d/motion start date:</TextBlur>
               </div>
               <div className="p1">
-                <TextBlur isBold>12 April, 2025</TextBlur>
+                <TextBlur isBold>{motionDate}</TextBlur>
               </div>
             </div>
           </div>
