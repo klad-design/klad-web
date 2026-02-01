@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { TextBlur } from '@/components/ui/TextBlur'
 
 export const metadata: Metadata = {
-  title: 'Expectations page',
+  title: 'Expectations & Working Principles – KLAD',
+  description: 'How we work and what we expect from our clients. Сlear communication, respect for expertise, creative ownership and a shared commitment to strong design.',
 }
 
 export default function Expectations() {

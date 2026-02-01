@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { TextBlur } from '@/components/ui/TextBlur'
 
 export const metadata: Metadata = {
-  title: 'Process page',
+  title: 'Our Design Process – From Discovery to Delivery – KLAD',
+  description: 'A transparent process for your project, from discovery to execution. Clear scoping, dedicated management and a structure built for long-term collaboration.',
 }
 
 function getNextStartDate(daysToAdd: number = 7) {

@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { TextBlur } from '@/components/ui/TextBlur'
 
 export const metadata: Metadata = {
-  title: 'Pricing page',
+  title: 'Pricing Models – KLAD',
+  description: 'How pricing works at Klad Syndicate. Engagement models, commitments and billing structure for long-term design partnerships.',
 }
 
 export default function Pricing() {

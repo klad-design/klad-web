@@ -34,7 +34,7 @@ const cases = [
   },
 ]
 
-export default function CasesPage() {
+export default function WorkPage() {
   const containerRef = useRef<HTMLElement>(null)
   const cursorAreaRef = useRef<HTMLDivElement>(null)
   const cursorRef = useRef<HTMLDivElement>(null)
@@ -133,7 +133,7 @@ export default function CasesPage() {
 
         {/* Media */}
         <div ref={cursorAreaRef} className="case-anim-target bg-black/10 dark:bg-white/10 col-span-full aspect-[355/295] grayscale relative md:col-start-2 md:col-end-5 mb-7 md:mb-5 lg:row-end-4 lg:row-start-2 lg:mb-0 lg:aspect-auto xl:mr-[130px]">
-          <Link href="/cases/case">
+          <Link href="/src/app/work/case">
             <Image
               className="size-full object-cover"
               src="/images/case.png"
@@ -167,7 +167,7 @@ export default function CasesPage() {
 
         {/* Link */}
         <div className="col-span-full mt-8 md:mt-0 md:col-start-4 md:col-end-5 lg:hidden">
-          <Button as="a" href="/cases/case" label="View case" />
+          <Button as="a" href="/work/case" label="View case" />
         </div>
       </div>
     </section>

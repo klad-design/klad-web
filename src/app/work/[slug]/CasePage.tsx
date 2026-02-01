@@ -50,7 +50,7 @@ export function CasePage() {
         <div className="col-span-full flex gap-5 items-start justify-between md:justify-end md:gap-10 md:absolute md:top-0 md:right-0 lg:gap-[45px]">
           <Button label="Previous" />
           <Button label="Next" />
-          <Button as="a" href="/cases" label="Close" />
+          <Button as="a" href="/work" label="Close" />
         </div>
 
         {/* Title */}

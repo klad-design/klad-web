@@ -19,7 +19,7 @@ const cities = [
 
 const menu = [
   { title: 'About', link: '/' },
-  { title: 'Cases', link: '/cases' },
+  { title: 'Work', link: '/work' },
   { title: 'Process', link: '/process' },
   { title: 'Expectations', link: '/expectations' },
   { title: 'Pricing', link: '/pricing' },
@@ -95,7 +95,7 @@ export function Header() {
     return () => clearInterval(interval)
   }, [])
 
-  if (pathname.includes('/cases/'))
+  if (pathname.includes('/work/'))
     return null
 
   return (
