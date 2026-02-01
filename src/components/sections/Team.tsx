@@ -59,10 +59,10 @@ const team: TeamMember[] = [
                   width={11}
                   height={14}
                 />
+                .
               </>
             )}
           />
-          .
         </p>
         <p>A visual thinker with an understanding of web development processes. Prefers long lasting simpler solutions over intensive design and ensures brand assets translate seamlessly to the web.</p>
       </>
