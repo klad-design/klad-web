@@ -113,7 +113,7 @@ export function Header() {
                 <Button className="fixed top-[9px]" label="Close" />
               </Dialog.Close>
               <Image
-                className="fixed top-[3px] right-[3px] md:size-[70px] lg:size-[80px] blur-[0.6px] dark:invert transform-gpu"
+                className="fixed top-[3px] right-[3px] md:size-[70px] lg:size-[80px] blur-[0.6px] lg:blur-[1px] dark:invert transform-gpu"
                 src="/images/logotype.svg"
                 alt="logotype"
                 width={60}
@@ -230,7 +230,7 @@ export function Header() {
         </div>
         <Link href="/" className="relative md:absolute md:right-0 lg:static z-10">
           <Image
-            className="md:size-[70px] lg:size-[80px] blur-[0.6px] dark:invert transform-gpu"
+            className="md:size-[70px] lg:size-[80px] blur-[0.6px] lg:blur-[1px] dark:invert transform-gpu"
             src="/images/logotype.svg"
             alt="logotype"
             width={60}
