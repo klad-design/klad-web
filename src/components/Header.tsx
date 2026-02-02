@@ -23,7 +23,6 @@ const menu = [
   { title: 'Process', link: '/process' },
   { title: 'Expectations', link: '/expectations' },
   { title: 'Pricing', link: '/pricing' },
-  { title: 'Express', link: '#' },
 ]
 
 export function Header() {
