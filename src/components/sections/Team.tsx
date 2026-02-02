@@ -28,18 +28,18 @@ const team: TeamMember[] = [
         <p>
           Web design and UI/UX specialist with 11 years of design experience. Co-founder. Not limited by industry or product type. Prefers digital minimalism. Can design with existing branding (see
           {' '}
-          <Link href="#" className="underline">Shareio</Link>
+          <Link href="https://shareio.webflow.io/" className="underline">Shareio</Link>
           {' '}
           or
           {' '}
-          <Link href="#" className="underline">Chainviz</Link>
+          <Link href="https://www.behance.net/gallery/186534927/Chainviz-Validators-Explorer" className="underline">Chainviz</Link>
           ) or start from scratch (see
           {' '}
-          <Link href="#" className="underline">Guardrail</Link>
+          <Link href="https://www.guardrail.ai/" className="underline">Guardrail</Link>
           {' '}
           or
           {' '}
-          <Link href="#" className="underline">Circus</Link>
+          <Link href="https://circus-dev.webflow.io" className="underline">Circus</Link>
           ).
         </p>
         <p>
@@ -54,8 +54,8 @@ const team: TeamMember[] = [
                 Egor
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/model-1.png"
-                  alt="Egor 3d model"
+                  src="/images/team/85.avif"
+                  alt="Egor 3d model preview"
                   width={11}
                   height={14}
                 />
@@ -77,16 +77,16 @@ const team: TeamMember[] = [
         <p>
           Equally confident leading solo projects (e.g.,
           {' '}
-          <Link href="#" className="underline">Circus</Link>
+          <Link href="https://circus-dev.webflow.io/" className="underline">Circus</Link>
           ,
           {' '}
-          <Link href="#" className="underline">Shareio</Link>
+          <Link href="https://shareio.webflow.io/" className="underline">Shareio</Link>
           ) or collaborating within larger teams (e.g.,
           {' '}
-          <Link href="#" className="underline">Veev</Link>
+          <Link href="https://www.behance.net/gallery/167777627/Veev-Motion-Library" className="underline">Veev</Link>
           ,
           {' '}
-          <Link href="#" className="underline">Skoda</Link>
+          <Link href="https://www.skoda-auto.com/" className="underline">Skoda</Link>
           ). Handles projects together with
           {' '}
           <Button
@@ -98,8 +98,8 @@ const team: TeamMember[] = [
                 Dasha
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/model-1.png"
-                  alt="Dasha 3d model"
+                  src="/images/team/121.avif"
+                  alt="Dasha 3d model preview"
                   width={11}
                   height={14}
                 />
@@ -111,7 +111,7 @@ const team: TeamMember[] = [
         <p>
           Prefers artistic interpretations over commonly researched standards. Skilled at both. Has straightforward
           {' '}
-          <Link href="#" className="underline">processes</Link>
+          <Link href="/process" className="underline">processes</Link>
           , shaped by past experience.
         </p>
       </>
@@ -125,27 +125,27 @@ const team: TeamMember[] = [
         <p>
           Brand designer with X years of experience. She has provided solutions for large-scale physical brands (see
           {' '}
-          <Link href="#" className="underline">Perekrestok</Link>
+          <Link href="https://www.behance.net/gallery/110329005/Perekrestok" className="underline">Perekrestok</Link>
           ) and digital startups (see
           {' '}
-          <Link href="#" className="underline">Shareio</Link>
+          <Link href="https://www.behance.net/gallery/224757329/Shareio-Content-Tool" className="underline">Shareio</Link>
           ), in both B2B and B2C spaces.
         </p>
         <p>
           Equally skilled in building brands from scratch (e.g.
           {' '}
-          <Link href="#" className="underline">Kay</Link>
+          <Link href="https://www.kay.ai/" className="underline">Kay</Link>
           {' '}
           or
           {' '}
-          <Link href="#" className="underline">Nectar</Link>
+          <Link href="https://www.nectarsocial.com/" className="underline">Nectar</Link>
           ) or evolving them over time (see
           {' '}
-          <Link href="#" className="underline">Guardrail</Link>
+          <Link href="https://www.guardrail.ai/" className="underline">Guardrail</Link>
           {' '}
           or
           {' '}
-          <Link href="#" className="underline">Helikon</Link>
+          <Link href="https://helikon.io/" className="underline">Helikon</Link>
           ). More often works on projects together with
           {' '}
           <Button
@@ -157,8 +157,8 @@ const team: TeamMember[] = [
                 Egor
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/model-1.png"
-                  alt="Egor 3d model"
+                  src="/images/team/85.avif"
+                  alt="Egor 3d model preview"
                   width={11}
                   height={14}
                 />
@@ -179,10 +179,10 @@ const team: TeamMember[] = [
         <p>
           Project lead for web and branding with 8 years in B2B marketing and analytics. Co-founder with a focus on data visualization (see
           {' '}
-          <Link href="#" className="underline">Chainviz</Link>
+          <Link href="https://www.behance.net/gallery/186534927/Chainviz-Validators-Explorer" className="underline">Chainviz</Link>
           ) and naming (see
           {' '}
-          <Link href="#" className="underline">Namefolio</Link>
+          <Link href="https://www.behance.net/gallery/162125657/Namefolio-2020-2023" className="underline">Namefolio</Link>
           ).
         </p>
         <p>Prefers minimal calls with only core decision-makers. Advocates for the client in design discussions, while in client-facing calls, focuses on leveraging the team’s strengths.</p>
@@ -202,8 +202,8 @@ const team: TeamMember[] = [
                 Ksusha
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/model-1.png"
-                  alt="Ksusha 3d model"
+                  src="/images/team/0.avif"
+                  alt="Ksusha 3d model preview"
                   width={11}
                   height={14}
                 />
@@ -222,8 +222,8 @@ const team: TeamMember[] = [
                 Lena R
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/model-1.png"
-                  alt="Lena R 3d model"
+                  src="/images/team/60.avif"
+                  alt="Lena R 3d model preview"
                   width={11}
                   height={14}
                 />
@@ -244,18 +244,18 @@ const team: TeamMember[] = [
         <p>
           Skilled in managing both fast-paced (see
           {' '}
-          <Link href="#" className="underline">London Handel Festival</Link>
+          <Link href="https://www.london-handel-festival.com" className="underline">London Handel Festival</Link>
           {' '}
           and
           {' '}
-          <Link href="#" className="underline">Skoda</Link>
+          <Link href="https://www.skoda-auto.com/" className="underline">Skoda</Link>
           ) and long-term projects (e.g.
           {' '}
-          <Link href="#" className="underline">S+H</Link>
+          <Link href="https://www.behance.net/gallery/240620453/StarsHoney-Product-3D" className="underline">S+H</Link>
           {' '}
           and
           {' '}
-          <Link href="#" className="underline">FutureMoney</Link>
+          <Link href="https://www.futuremoney.co" className="underline">FutureMoney</Link>
           ), with a focus on lasting partnerships.
         </p>
         <p>
@@ -274,8 +274,8 @@ const team: TeamMember[] = [
                 Lena S
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/model-1.png"
-                  alt="Lena S 3d model"
+                  src="/images/team/30.avif"
+                  alt="Lena S 3d model preview"
                   width={11}
                   height={14}
                 />
