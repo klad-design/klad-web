@@ -101,7 +101,7 @@ export function CasePage() {
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           title="[Klad] Showreel 2021"
-          className="aspect-video"
+          className="w-full aspect-video"
         >
         </iframe>
       </SectionMedia>
