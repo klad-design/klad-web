@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import { CasePage } from '@/app/work/[slug]/CasePage'
+import { CasePage } from '@/app/work/case/CasePage'
 
 export const metadata: Metadata = {
   title: 'Case page',

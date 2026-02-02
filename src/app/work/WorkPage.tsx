@@ -13,24 +13,94 @@ import { TextBlur } from '@/components/ui/TextBlur'
 const cases = [
   {
     title: 'Chainviz',
+    info: ['Lifestyle & Well-being', 'Netherlands', '2022', '9 weeks, ongoing'],
+    tags: ['Branding', 'Web, UI/UX', '3d'],
+    image: '/images/case.png',
+    link: '/work/case',
+    description: () => (
+      <>
+        <p>Started website update and markup. Discovered and fixed redundant web infrastructure. Redesigned website, created new brand visuals & elements for windows decals. Developing brand starter packs for new clients as a part of the ongoing collaboration.</p>
+        <p>Company wanted to do the redesign without actual redesign as they had a lot of physical materials and interior design that has old visuals.</p>
+      </>
+    ),
   },
   {
     title: 'Shareio',
+    info: ['Lifestyle & Well-being', 'Netherlands', '2022', '9 weeks, ongoing'],
+    tags: ['Branding', 'Web, UI/UX', '3d'],
+    image: '/images/case.png',
+    link: '/work/case',
+    description: () => (
+      <>
+        <p>Started website update and markup. Discovered and fixed redundant web infrastructure. Redesigned website, created new brand visuals & elements for windows decals. Developing brand starter packs for new clients as a part of the ongoing collaboration.</p>
+        <p>Company wanted to do the redesign without actual redesign as they had a lot of physical materials and interior design that has old visuals.</p>
+      </>
+    ),
   },
   {
     title: 'Process',
+    info: ['Lifestyle & Well-being', 'Netherlands', '2022', '9 weeks, ongoing'],
+    tags: ['Branding', 'Web, UI/UX', '3d'],
+    image: '/images/case.png',
+    link: '/work/case',
+    description: () => (
+      <>
+        <p>Started website update and markup. Discovered and fixed redundant web infrastructure. Redesigned website, created new brand visuals & elements for windows decals. Developing brand starter packs for new clients as a part of the ongoing collaboration.</p>
+        <p>Company wanted to do the redesign without actual redesign as they had a lot of physical materials and interior design that has old visuals.</p>
+      </>
+    ),
   },
   {
     title: 'Omnia',
+    info: ['Lifestyle & Well-being', 'Netherlands', '2022', '9 weeks, ongoing'],
+    tags: ['Branding', 'Web, UI/UX', '3d'],
+    image: '/images/case.png',
+    link: '/work/case',
+    description: () => (
+      <>
+        <p>Started website update and markup. Discovered and fixed redundant web infrastructure. Redesigned website, created new brand visuals & elements for windows decals. Developing brand starter packs for new clients as a part of the ongoing collaboration.</p>
+        <p>Company wanted to do the redesign without actual redesign as they had a lot of physical materials and interior design that has old visuals.</p>
+      </>
+    ),
   },
   {
     title: 'Veev',
+    info: ['Lifestyle & Well-being', 'Netherlands', '2022', '9 weeks, ongoing'],
+    tags: ['Branding', 'Web, UI/UX', '3d'],
+    image: '/images/case.png',
+    link: '/work/case',
+    description: () => (
+      <>
+        <p>Started website update and markup. Discovered and fixed redundant web infrastructure. Redesigned website, created new brand visuals & elements for windows decals. Developing brand starter packs for new clients as a part of the ongoing collaboration.</p>
+        <p>Company wanted to do the redesign without actual redesign as they had a lot of physical materials and interior design that has old visuals.</p>
+      </>
+    ),
   },
   {
     title: 'Subvt',
+    info: ['Lifestyle & Well-being', 'Netherlands', '2022', '9 weeks, ongoing'],
+    tags: ['Branding', 'Web, UI/UX', '3d'],
+    image: '/images/case.png',
+    link: '/work/case',
+    description: () => (
+      <>
+        <p>Started website update and markup. Discovered and fixed redundant web infrastructure. Redesigned website, created new brand visuals & elements for windows decals. Developing brand starter packs for new clients as a part of the ongoing collaboration.</p>
+        <p>Company wanted to do the redesign without actual redesign as they had a lot of physical materials and interior design that has old visuals.</p>
+      </>
+    ),
   },
   {
     title: 'Namefolio',
+    info: ['Lifestyle & Well-being', 'Netherlands', '2022', '9 weeks, ongoing'],
+    tags: ['Branding', 'Web, UI/UX', '3d'],
+    image: '/images/case.png',
+    link: '/work/case',
+    description: () => (
+      <>
+        <p>Started website update and markup. Discovered and fixed redundant web infrastructure. Redesigned website, created new brand visuals & elements for windows decals. Developing brand starter packs for new clients as a part of the ongoing collaboration.</p>
+        <p>Company wanted to do the redesign without actual redesign as they had a lot of physical materials and interior design that has old visuals.</p>
+      </>
+    ),
   },
 ]
 
@@ -133,10 +203,10 @@ export default function WorkPage() {
 
         {/* Media */}
         <div ref={cursorAreaRef} className="case-anim-target bg-black/10 dark:bg-white/10 col-span-full aspect-[355/295] grayscale relative md:col-start-2 md:col-end-5 mb-7 md:mb-5 lg:row-end-4 lg:row-start-2 lg:mb-0 lg:aspect-auto xl:mr-[130px]">
-          <Link href="/src/app/work/case">
+          <Link href={cases[activeIndex].link}>
             <Image
               className="size-full object-cover"
-              src="/images/case.png"
+              src={cases[activeIndex].image}
               alt={`${cases[activeIndex].title} poster`}
               fill
             />
@@ -149,25 +219,19 @@ export default function WorkPage() {
         {/* Description */}
         <div className="case-anim-target col-span-full md:col-start-2 md:col-end-3 lg:col-start-1 lg:col-end-2 lg:row-start-3 lg:flex lg:flex-col lg:justify-end">
           <div className="p4 blur-regular uppercase">
-            <div>Lifestyle & Well-being</div>
-            <div>Netherlands</div>
-            <div>2022</div>
-            <div>9 weeks, ongoing</div>
+            {cases[activeIndex].info.map(tag => <div key={tag}>{tag}</div>)}
           </div>
           <div className="p4 blur-regular uppercase flex flex-wrap gap-2.5 mt-4 md:mt-3">
-            <span>Branding</span>
-            <span>Web, UI/UX</span>
-            <span>3D</span>
+            {cases[activeIndex].tags.map(tag => <span key={tag}>{tag}</span>)}
           </div>
           <div className="p5 flex flex-col gap-4 mt-[30px] md:gap-2 md:mt-4">
-            <p>Started website update and markup. Discovered and fixed redundant web infrastructure. Redesigned website, created new brand visuals & elements for windows decals. Developing brand starter packs for new clients as a part of the ongoing collaboration.</p>
-            <p>Company wanted to do the redesign without actual redesign as they had a lot of physical materials and interior design that has old visuals.</p>
+            {cases[activeIndex].description()}
           </div>
         </div>
 
         {/* Link */}
         <div className="col-span-full mt-8 md:mt-0 md:col-start-4 md:col-end-5 lg:hidden">
-          <Button as="a" href="/work/case" label="View case" />
+          <Button as="a" href={cases[activeIndex].link} label="View case" />
         </div>
       </div>
     </section>
