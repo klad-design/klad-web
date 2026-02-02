@@ -1,39 +1,11 @@
 'use client'
 
-import clsx from 'clsx'
 import { useTheme } from 'next-themes'
 import Image from 'next/image'
 
+import { SectionMedia, SectionText } from '@/app/work/sections'
 import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
-
-function SectionMedia() {
-  return (
-    <section className="py-5 px-2.5 md:py-[30px] md:px-10 lg:px-[75px] 2xl:px-[100px]">
-      <Image className="w-full" src="/images/case.png" alt="Case Image" width={1920} height={1280} />
-    </section>
-  )
-}
-
-function SectionText({ align }: { align?: 'left' | 'right' | 'center' }) {
-  return (
-    <section className="grid-container py-[30px] md:py-[50px]">
-      <div className="col-span-full md:col-span-2 md:col-start-2 lg:col-span-full lg:px-[140px]">
-        <div className={clsx('[&_h2]:text-p1 2xl:[&_h2]:text-p1-2xl [&_h2]:uppercase flex flex-col gap-5 p3 w-full', {
-          'lg:max-w-[440px] lg:ml-auto': align === 'right',
-          'lg:max-w-[440px]': align === 'left',
-          'lg:max-w-[976px] lg:mx-auto text-center': align === 'center',
-        })}
-        >
-          { align === 'center' && <h2>Title</h2>}
-          <p>We bring hands-on, experienced team of specialists and artists who focus solely on design, delivering unique solutions without outsourcing or co-creation.</p>
-          <p>Our work isn’t about appeasing. It’s about elevating. We listen closely but speak honestly. Our role isn’t to echo your views, but to broaden them.</p>
-          <p>Our work isn’t about appeasing. It’s about elevating.</p>
-        </div>
-      </div>
-    </section>
-  )
-}
 
 export function CasePage() {
   const { setTheme } = useTheme()
@@ -48,8 +20,8 @@ export function CasePage() {
 
         {/* Menu */}
         <div className="col-span-full flex gap-5 items-start justify-between md:justify-end md:gap-10 md:absolute md:top-0 md:right-0 lg:gap-[45px]">
-          <Button label="Previous" />
-          <Button label="Next" />
+          <Button as="a" href="/work/another-case" label="Previous" />
+          <Button as="a" href="/work/another-case" label="Next" />
           <Button as="a" href="/work" label="Close" />
         </div>
 
@@ -111,17 +83,54 @@ export function CasePage() {
         </div>
       </header>
 
-      <SectionMedia />
-      <SectionText align="right" />
-      <SectionMedia />
-      <SectionText align="center" />
-      <SectionMedia />
-      <SectionText align="left" />
+      <SectionMedia>
+        <Image className="w-full" src="/images/case.png" alt="Case Image" width={1920} height={1280} />
+      </SectionMedia>
+
+      <SectionText align="right">
+        <p>We bring hands-on, experienced team of specialists and artists who focus solely on design, delivering unique solutions without outsourcing or co-creation.</p>
+        <p>Our work isn’t about appeasing. It’s about elevating. We listen closely but speak honestly. Our role isn’t to echo your views, but to broaden them.</p>
+        <p>Our work isn’t about appeasing. It’s about elevating. We listen closely but speak honestly. Our role isn’t to echo your views, but to broaden them.</p>
+        <p>Our work isn’t about appeasing. It’s about elevating.</p>
+        <p>Our work isn’t about appeasing. It’s about elevating.</p>
+      </SectionText>
+
+      <SectionMedia>
+        <iframe
+          src="https://player.vimeo.com/video/723160654?loop=1&autoplay=1"
+          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
+          referrerPolicy="strict-origin-when-cross-origin"
+          title="[Klad] Showreel 2021"
+          className="aspect-video"
+        >
+        </iframe>
+      </SectionMedia>
+
+      <SectionText title="Make Mint fresh again" align="center">
+        <p>
+          Open-source software compromises value of good design, which is strange as good design just like good
+          software is seeking to create simple, yet effective solutions which are enjoyed by their users. Open-source
+          software compromises value of good design, which is strange as good design just like good software is seeking
+          to create simple, yet effective solutions which are enjoyed by their users.
+        </p>
+      </SectionText>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/case.png" alt="Case Image" width={1920} height={1280} />
+      </SectionMedia>
+
+      <SectionText align="left">
+        <p>We bring hands-on, experienced team of specialists and artists who focus solely on design, delivering unique solutions without outsourcing or co-creation.</p>
+        <p>Our work isn’t about appeasing. It’s about elevating. We listen closely but speak honestly. Our role isn’t to echo your views, but to broaden them.</p>
+        <p>Our work isn’t about appeasing. It’s about elevating. We listen closely but speak honestly. Our role isn’t to echo your views, but to broaden them.</p>
+        <p>Our work isn’t about appeasing. It’s about elevating.</p>
+        <p>Our work isn’t about appeasing. It’s about elevating.</p>
+      </SectionText>
 
       {/* Footer */}
       <footer className="flex justify-center gap-10">
-        <Button label="Previous" />
-        <Button label="Next" />
+        <Button as="a" href="/work/another-case" label="Previous" />
+        <Button as="a" href="/work/another-case" label="Next" />
       </footer>
     </main>
   )
