@@ -119,11 +119,11 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2494]" src="https://klad.b-cdn.net/shareio/F_08%20font_2.mp4" autoPlay loop muted playsInline />
+        <video className="w-full aspect-[3840/2494]" src="https://klad.b-cdn.net/shareio/F_08%20font_2.mp4" autoPlay loop muted playsInline preload="metadata" />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2082]" src="https://klad.b-cdn.net/shareio/F_09_chrome_11.mp4" autoPlay loop muted playsInline />
+        <video className="w-full aspect-[3840/2082]" src="https://klad.b-cdn.net/shareio/F_09_chrome_11.mp4" autoPlay loop muted playsInline preload="none" />
       </SectionMedia>
 
        <SectionMedia>
@@ -131,7 +131,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2114]" src="https://klad.b-cdn.net/shareio/F_11%20gems_10.mp4" autoPlay loop muted playsInline />
+        <video className="w-full aspect-[3840/2114]" src="https://klad.b-cdn.net/shareio/F_11%20gems_10.mp4" autoPlay loop muted playsInline preload="none" />
       </SectionMedia>
 
        <SectionMedia>
@@ -139,7 +139,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2082]" src="https://klad.b-cdn.net/shareio/F_13%20aura_7.mp4" autoPlay loop muted playsInline />
+        <video className="w-full aspect-[3840/2082]" src="https://klad.b-cdn.net/shareio/F_13%20aura_7.mp4" autoPlay loop muted playsInline preload="none" />
       </SectionMedia>
 
        <SectionMedia>
@@ -167,7 +167,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2574]" src="https://klad.b-cdn.net/shareio/F_18%20quasar_7.mp4" autoPlay loop muted playsInline />
+        <video className="w-full aspect-[3840/2574]" src="https://klad.b-cdn.net/shareio/F_18%20quasar_7.mp4" autoPlay loop muted playsInline preload="none" />
       </SectionMedia>
 
        <SectionMedia>
@@ -228,7 +228,7 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2272]" src="https://klad.b-cdn.net/shareio/F_34_1.mp4" autoPlay loop muted playsInline />
+        <video className="w-full aspect-[3840/2272]" src="https://klad.b-cdn.net/shareio/F_34_1.mp4" autoPlay loop muted playsInline preload="none" />
       </SectionMedia>
 
        <SectionMedia>
@@ -236,7 +236,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2548]" src="https://klad.b-cdn.net/shareio/F_35%20screen%20mockup_1.mp4" autoPlay loop muted playsInline />
+        <video className="w-full aspect-[3840/2548]" src="https://klad.b-cdn.net/shareio/F_35%20screen%20mockup_1.mp4" autoPlay loop muted playsInline preload="none" />
       </SectionMedia>
 
        <SectionMedia>
