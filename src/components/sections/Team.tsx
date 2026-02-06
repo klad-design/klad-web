@@ -54,7 +54,7 @@ const team: TeamMember[] = [
                 Egor
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/team/85.avif"
+                  src="/images/team-fav/egor.avif"
                   alt="Egor 3d model preview"
                   width={11}
                   height={14}
@@ -98,7 +98,7 @@ const team: TeamMember[] = [
                 Dasha
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/team/121.avif"
+                  src="/images/team-fav/dasha.avif"
                   alt="Dasha 3d model preview"
                   width={11}
                   height={14}
@@ -157,7 +157,7 @@ const team: TeamMember[] = [
                 Egor
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/team/85.avif"
+                  src="/images/team-fav/egor.avif"
                   alt="Egor 3d model preview"
                   width={11}
                   height={14}
@@ -202,7 +202,7 @@ const team: TeamMember[] = [
                 Ksusha
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/team/0.avif"
+                  src="/images/team-fav/ksusha.avif"
                   alt="Ksusha 3d model preview"
                   width={11}
                   height={14}
@@ -222,8 +222,8 @@ const team: TeamMember[] = [
                 Lena R
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/team/60.avif"
-                  alt="Lena R 3d model preview"
+                  src="/images/team-fav/lenar.avif"
+                  alt="Lena Ryazantseva 3d model preview"
                   width={11}
                   height={14}
                 />
@@ -274,8 +274,8 @@ const team: TeamMember[] = [
                 Lena S
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/team/30.avif"
-                  alt="Lena S 3d model preview"
+                  src="/images/team-fav/lenas.avif"
+                  alt="Lena Sivakova 3d model preview"
                   width={11}
                   height={14}
                 />
