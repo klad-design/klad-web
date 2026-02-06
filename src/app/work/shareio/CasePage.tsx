@@ -124,7 +124,7 @@ export function CasePage() {
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           title="Brand typography for Shareio"
-          className="w-full aspect-[1720/988]"
+          className="w-full aspect-[3840/2494]"
         >
         </iframe>
       </SectionMedia>
@@ -135,7 +135,7 @@ export function CasePage() {
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           title="Blue chrome sign collection"
-          className="w-full aspect-[1720/933]"
+          className="w-full aspect-[3840/2082]"
         >
         </iframe>
       </SectionMedia>
@@ -150,7 +150,7 @@ export function CasePage() {
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           title="Gemstone rocks sign collection"
-          className="w-full aspect-[1720/933]"
+          className="w-full aspect-[3840/2082]"
         >
         </iframe>
       </SectionMedia>
@@ -165,7 +165,7 @@ export function CasePage() {
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           title="Lucid aura blobs sign collection"
-          className="w-full aspect-[1720/933]"
+          className="w-full aspect-[3840/2082]"
         >
         </iframe>
       </SectionMedia>
@@ -200,7 +200,7 @@ export function CasePage() {
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           title="Quasar parametrized brand animation"
-          className="w-full aspect-[1720/1089]"
+          className="w-full aspect-[3840/2574]"
         >
         </iframe>
       </SectionMedia>
@@ -268,7 +268,7 @@ export function CasePage() {
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           title="Web design for the documentation pages"
-          className="w-full aspect-[1720/1018]"
+          className="w-full aspect-[3840/2272]"
         >
         </iframe>
       </SectionMedia>
@@ -283,7 +283,7 @@ export function CasePage() {
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           title="Brand quasar animation on a banner"
-          className="w-full aspect-[1720/1141]"
+          className="w-full aspect-[3840/2548]"
         >
         </iframe>
       </SectionMedia>
