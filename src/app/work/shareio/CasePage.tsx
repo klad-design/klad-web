@@ -125,6 +125,7 @@ export function CasePage() {
           referrerPolicy="strict-origin-when-cross-origin"
           title="Brand typography for Shareio"
           className="w-full"
+          width={1720} height={988}
         >
         </iframe>
       </SectionMedia>
@@ -136,6 +137,7 @@ export function CasePage() {
           referrerPolicy="strict-origin-when-cross-origin"
           title="Blue chrome sign collection"
           className="w-full"
+          width={1720} height={933}
         >
         </iframe>
       </SectionMedia>
@@ -151,6 +153,7 @@ export function CasePage() {
           referrerPolicy="strict-origin-when-cross-origin"
           title="Gemstone rocks sign collection"
           className="w-full"
+          width={1720} height={933}
         >
         </iframe>
       </SectionMedia>
@@ -166,6 +169,7 @@ export function CasePage() {
           referrerPolicy="strict-origin-when-cross-origin"
           title="Lucid aura blobs sign collection"
           className="w-full"
+          width={1720} height={933}
         >
         </iframe>
       </SectionMedia>
@@ -201,6 +205,7 @@ export function CasePage() {
           referrerPolicy="strict-origin-when-cross-origin"
           title="Quasar parametrized brand animation"
           className="w-full"
+          width={1720} height={1089}
         >
         </iframe>
       </SectionMedia>
@@ -269,6 +274,7 @@ export function CasePage() {
           referrerPolicy="strict-origin-when-cross-origin"
           title="Web design for the documentation pages"
           className="w-full"
+          width={1720} height={1018}
         >
         </iframe>
       </SectionMedia>
@@ -282,8 +288,9 @@ export function CasePage() {
           src="https://player.vimeo.com/video/1080521341?loop=1&autoplay=1"
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
-          title="Brand quasar animation"
+          title="Brand quasar animation on a banner"
           className="w-full"
+          width={1720} height={1141}
         >
         </iframe>
       </SectionMedia>
