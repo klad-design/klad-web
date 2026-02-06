@@ -119,7 +119,7 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2494]" src="https://klad.b-cdn.net/F_08%20font_2.mp4" autoPlay loop muted playsInline preload="auto" webkit-playsinline="true"/>
+        <video className="w-full aspect-[3840/2494]" src="https://klad.b-cdn.net/output.mp4" autoPlay loop muted playsInline/>
       </SectionMedia>
 
       <SectionMedia>
