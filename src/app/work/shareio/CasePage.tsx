@@ -43,7 +43,6 @@ export function CasePage() {
         <div className="flex flex-col items-start gap-[5px]">
           <Button as="a" href="https://shareio.webflow.io/" label="Website" />
           <Button as="a" href="https://www.behance.net/gallery/224757329/Shareio-Content-Tool" label="Behance" />
-          // <Button as="a" href="/" label="App" />
         </div>
 
         {/* Description */}
@@ -51,7 +50,7 @@ export function CasePage() {
           <div className="flex flex-col gap-[3px]">
             <h2 className="blur-regular uppercase p4">Task</h2>
             <div className="p5">
-              <p>A small team was launching a new product with a strict two-month deadline. No visual assets, no copy and a wide range of use cases to cover. The brand had to feel authentic, creator-first and flexible enough to grow fast.</p>
+              <p>Product launch with a strict two-month deadline. No visual assets, no copy and a wide range of use cases to cover. The brand had to feel authentic, creator-first and flexible enough to grow fast.</p>
             </div>
           </div>
           <div className="flex flex-col gap-[3px]">
@@ -125,7 +124,7 @@ export function CasePage() {
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           title="Brand typography for Shareio"
-          className="w-full aspect-video"
+          className="w-full"
         >
         </iframe>
       </SectionMedia>
@@ -136,7 +135,7 @@ export function CasePage() {
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           title="Blue chrome sign collection"
-          className="w-full aspect-video"
+          className="w-full"
         >
         </iframe>
       </SectionMedia>
@@ -151,7 +150,7 @@ export function CasePage() {
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           title="Gemstone rocks sign collection"
-          className="w-full aspect-video"
+          className="w-full"
         >
         </iframe>
       </SectionMedia>
@@ -166,7 +165,7 @@ export function CasePage() {
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           title="Lucid aura blobs sign collection"
-          className="w-full aspect-video"
+          className="w-full"
         >
         </iframe>
       </SectionMedia>
@@ -201,7 +200,7 @@ export function CasePage() {
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           title="Quasar parametrized brand animation"
-          className="w-full aspect-video"
+          className="w-full"
         >
         </iframe>
       </SectionMedia>
@@ -269,7 +268,7 @@ export function CasePage() {
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           title="Web design for the documentation pages"
-          className="w-full aspect-video"
+          className="w-full"
         >
         </iframe>
       </SectionMedia>
@@ -284,7 +283,7 @@ export function CasePage() {
           allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
           title="Brand quasar animation"
-          className="w-full aspect-video"
+          className="w-full"
         >
         </iframe>
       </SectionMedia>
