@@ -20,8 +20,8 @@ export function CasePage() {
 
         {/* Menu */}
         <div className="col-span-full flex gap-5 items-start justify-between md:justify-end md:gap-10 md:absolute md:top-0 md:right-0 lg:gap-[45px]">
-          <Button as="a" href="/work/another-case" label="Previous" />
-          <Button as="a" href="/work/another-case" label="Next" />
+          <Button as="a" href="/work/linux-mint" label="Previous" />
+          <Button as="a" href="/work/chainviz" label="Next" />
           <Button as="a" href="/work" label="Close" />
         </div>
 
@@ -84,7 +84,107 @@ export function CasePage() {
       </header>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/case.png" alt="Case Image" width={1920} height={1280} />
+        <video className="w-full aspect-[3840/996]" src="https://klad.b-cdn.net/stars-honey/F_02%20logo%20in.mp4" autoPlay loop muted playsInline preload="metadata" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <video className="w-full aspect-[3840/1644]" src="https://klad.b-cdn.net/stars-honey/F_02%20taste%20range%20ver%2010.mp4" autoPlay loop muted playsInline preload="none" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <video className="w-full aspect-[3840/2160]" src="https://klad.b-cdn.net/stars-honey/F_05%20brand%20brackets%202_4.mp4" autoPlay loop muted playsInline preload="none" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <video className="w-full aspect-[1080/1350]" src="https://klad.b-cdn.net/stars-honey/F_10%20phone%20mockup%203.mp4" autoPlay loop muted playsInline preload="none" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <video className="w-full aspect-[3840/3774]" src="https://klad.b-cdn.net/stars-honey/F_10%20photo%20bang_3.mp4" autoPlay loop muted playsInline preload="none" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <video className="w-full aspect-[1080/1350]" src="https://klad.b-cdn.net/stars-honey/F_10_01%20phone%20mockup%205.mp4" autoPlay loop muted playsInline preload="none" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <video className="w-full aspect-[3840/1622]" src="https://klad.b-cdn.net/stars-honey/F_15%20brand%20carousel_3.mp4" autoPlay loop muted playsInline preload="none" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <video className="w-full aspect-[1920/1280]" src="https://klad.b-cdn.net/stars-honey/F_18%20couple%20scene.mp4" autoPlay loop muted playsInline preload="none" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <video className="w-full aspect-[1920/1080]" src="https://klad.b-cdn.net/stars-honey/F_21%20ingredient%20explosion%20light.mp4" autoPlay loop muted playsInline preload="none" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <video className="w-full aspect-[1920/1080]" src="https://klad.b-cdn.net/stars-honey/F_27%20ingredient%20explosion%20dark.mp4" autoPlay loop muted playsInline preload="none" />
+      </SectionMedia>
+      
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/0.avif" alt="Two Stars+Honey bars brand poster design" width={1720} height={1375} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/1.avif" alt="Rasberry donut bar Stars+Honey brand poster design" width={1720} height={1720} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/2.avif" alt="Branded packaging boxes Stars+Honey in single flavour" width={1720} height={1164} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/3.avif" alt="Branded packaging boxes Stars+Honey in multiple flavours" width={1720} height={1164} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/4.avif" alt="Rasberry donut flavour brand poster design for Stars+Honey" width={1720} height={1053} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/5.avif" alt="Logo poster with 3D bar design and packaging overlay" width={1720} height={967} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/6.avif" alt="Art directed shot of coffee and 3D visualised bar for Stars+Honey" width={1720} height={968} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/7.avif" alt="Art directed shot of girl running in the fields with the 3D visualised bar for Stars+Honey" width={1720} height={1013} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/8.avif" alt="Photography done by Stars+Honey" width={1720} height={1053} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/9.avif" alt="Shot of a woman holding 3D visualised Stars+Honey bar in flavour-matching colour" width={1720} height={931} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/10.avif" alt="Brand shot of a couple sharing Stars+Honey" width={1720} height={966} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/11.avif" alt="All flavour 3D visualisations for Stars+Honey done by Klad" width={1720} height={1720} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/12.avif" alt="Cherry chocolate waffle cone 3D flavour visualisation" width={1720} height={1145} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/13.avif" alt="Brand photography to support new flavour launch" width={1720} height={853} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/14.avif" alt="Gingerbread cookie 3D flavour visualisation and brand packaging for Stars+Honey" width={1720} height={1092} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image className="w-full" src="/images/stars-honey/15.avif" alt="Burst of Christmas flavours 3D shot" width={1720} height={966} />
       </SectionMedia>
 
       <SectionText align="right">
@@ -94,17 +194,6 @@ export function CasePage() {
         <p>Our work isn’t about appeasing. It’s about elevating.</p>
         <p>Our work isn’t about appeasing. It’s about elevating.</p>
       </SectionText>
-
-      <SectionMedia>
-        <iframe
-          src="https://player.vimeo.com/video/723160654?loop=1&autoplay=1"
-          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-          title="[Klad] Showreel 2021"
-          className="w-full aspect-video"
-        >
-        </iframe>
-      </SectionMedia>
 
       <SectionText title="Make Mint fresh again" align="center">
         <p>
@@ -129,8 +218,8 @@ export function CasePage() {
 
       {/* Footer */}
       <footer className="flex justify-center gap-10">
-        <Button as="a" href="/work/another-case" label="Previous" />
-        <Button as="a" href="/work/another-case" label="Next" />
+        <Button as="a" href="/work/linux-mint" label="Previous" />
+        <Button as="a" href="/work/chainviz" label="Next" />
       </footer>
     </main>
   )

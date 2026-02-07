@@ -20,8 +20,8 @@ export function CasePage() {
 
         {/* Menu */}
         <div className="col-span-full flex gap-5 items-start justify-between md:justify-end md:gap-10 md:absolute md:top-0 md:right-0 lg:gap-[45px]">
-          <Button as="a" href="/work/another-case" label="Previous" />
-          <Button as="a" href="/work/another-case" label="Next" />
+          <Button as="a" href="/work/stars-honey" label="Previous" />
+          <Button as="a" href="/work/shareio" label="Next" />
           <Button as="a" href="/work" label="Close" />
         </div>
 
@@ -84,6 +84,30 @@ export function CasePage() {
       </header>
 
       <SectionMedia>
+        <video className="w-full aspect-[2800/1570]" src="https://klad.b-cdn.net/chainviz/1_logo%20block%20animation_3.mp4" autoPlay loop muted playsInline preload="metadata" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <video className="w-full aspect-[2800/1606]" src="https://klad.b-cdn.net/chainviz/3_blockchain%20rythm%20animation.mp4" autoPlay loop muted playsInline preload="none" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <video className="w-full aspect-[2800/1578]" src="https://klad.b-cdn.net/chainviz/4_blockchain%20model%20preview%20animation.mp4" autoPlay loop muted playsInline preload="none" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <video className="w-full aspect-[2800/2760]" src="https://klad.b-cdn.net/chainviz/5_means%20of%20ui%20animation_3.mp4" autoPlay loop muted playsInline preload="none" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <video className="w-full aspect-[2800/1682]" src="https://klad.b-cdn.net/chainviz/6_validator%20hover%20animation.mp4" autoPlay loop muted playsInline preload="none" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <video className="w-full aspect-[2800/2066]" src="https://klad.b-cdn.net/chainviz/7_load%20and%20era%20animation.mp4" autoPlay loop muted playsInline preload="none" />
+      </SectionMedia>
+
+      <SectionMedia>
         <Image className="w-full" src="/images/shareio/1.avif" alt="Shareio ase cover image" width={1720} height={1030} />
       </SectionMedia>
 
@@ -92,26 +116,14 @@ export function CasePage() {
         <p>We built a visual identity around the idea of creativity as an endless dimension. Simple but expressive, confident with a subtle nostalgic edge. A brand system designed to feel clear, creator-first, and distinct - positioning Shareio as a bridge between making and earning, without anything in between.</p>
       </SectionText>
 
-      <SectionMedia>
-        <Image className="w-full" src="/images/shareio/21.avif" alt="Three metaphors behind Shareio logo design" width={1720} height={978} />
-      </SectionMedia>
-
       <SectionText title="Sign of three metaphors" align="center">
         <p>The logo is built around the idea of connection. Two forms merging into one suggest sharing, collaboration and the constant flow between creators and their audiences. In interface context, it subtly echoes the familiar logic of a share icon.</p>
         <p>The coin-like geometry hints at the economic layer beneath it all. Flow, impact and value converge into a single shape, pointing to the financial side of sharing — where creativity turns into income, and content becomes a sustainable asset.</p>
       </SectionText>
 
-      <SectionMedia>
-        <Image className="w-full" src="/images/shareio/5.avif" alt="Logo design for Shareio originally done by Klad" width={1720} height={385} />
-      </SectionMedia>
-
        <SectionText align="center">
         <p>A sequence of three dots, scaling from large to small, introduces a sense of movement. It reflects the journey of content: from creation to distribution to monetization. A quiet visual metaphor for progression, reach, and the ripple effect, which we later translated into a subtle logo animation.</p>
       </SectionText>
-
-      <SectionMedia>
-        <Image className="w-full" src="/images/shareio/27.avif" alt="App icon design and the way it looks on the phone screen" width={1720} height={845} />
-      </SectionMedia>
 
       <SectionText align="left">
         <p>Shareio is positioned as a pure tool accessible through a mobile app and built to give creators full control over how their work is shared and monetized. It doesn’t host feeds or shape visibility. Instead, it provides the infrastructure for secure ownership and payments, leaving creative freedom entirely in the hands of users.</p>
@@ -119,184 +131,10 @@ export function CasePage() {
         <p>The logo is set in Averia - a typeface created by blending the shapes of many different fonts into one. Its layered origin gives it a distinct personality: slightly imperfect and human at its core. The choice was intentional. As a tool built for a wide range of creators, the identity needed to feel approachable and individual. Averia brings familiarity with a subtle nostalgic tone, reinforcing the idea that creative work should feel personal.</p>
       </SectionText>
 
-      <SectionMedia>
-        <iframe
-          src="https://player.vimeo.com/video/1161365788?loop=1&autoplay=1"
-          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-          title="Brand typography for Shareio"
-          className="w-full aspect-video"
-        >
-        </iframe>
-      </SectionMedia>
-
-      <SectionMedia>
-        <iframe
-          src="https://player.vimeo.com/video/1079901521?loop=1&autoplay=1"
-          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-          title="Blue chrome sign collection"
-          className="w-full aspect-video"
-        >
-        </iframe>
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/10.avif" alt="Chromark collection of 3D brand assets" width={1720} height={788} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <iframe
-          src="https://player.vimeo.com/video/1080784050?loop=1&autoplay=1"
-          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-          title="Gemstone rocks sign collection"
-          className="w-full aspect-video"
-        >
-        </iframe>
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/12.avif" alt="Emerald collection of 3D brand assets" width={1720} height={788} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <iframe
-          src="https://player.vimeo.com/video/1080222543?loop=1&autoplay=1"
-          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-          title="Lucid aura blobs sign collection"
-          className="w-full aspect-video"
-        >
-        </iframe>
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/14.avif" alt="Luminous collection of 3D brand assets" width={1720} height={788} />
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/24.avif" alt="First tool for content creators to enable monetization using their existing cloud storage providers." width={1720} height={988} />
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/19.avif" alt="Branded tote bag design for Shareio" width={1720} height={978} />
-      </SectionMedia>
-
-      <SectionText align="center">
-        <p>At the core of the product is a simple design idea: your cloud becomes your storefront. Instead of pushing creators into new platforms or complex systems, Shareio connects to the storage they already use and turns existing files into monetizable assets. This principle shaped the UX into a lightweight layer on top of existing content, where selling, licensing and sharing feel like natural extensions. Focused on clarity, the interface keeps control visible and understandable while the infrastructure stays in the background, allowing the content itself to remain at the center.</p>
-      </SectionText>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/20.avif" alt="Layout design for the content banner" width={1720} height={978} />
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/28.avif" alt="Poster design made by Klad for Shareio" width={1720} height={1089} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <iframe
-          src="https://player.vimeo.com/video/1081455090?loop=1&autoplay=1"
-          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-          title="Quasar parametrized brand animation"
-          className="w-full aspect-video"
-        >
-        </iframe>
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/37.avif" alt="Hero section web design for Shareio by Klad" width={1720} height={1304} />
-      </SectionMedia>
-
-      <SectionText align="right">
-        <p>The quasar became more than a visual centerpiece. It represents the core ideas behind Shareio: decentralization as movement, ownership as a strong center, and monetization as a continuous flow of energy. It works as a visual thesis for the product, where every creator adds to a shared pulse that grows and evolves.</p>
-        <p>Instead of relying on a static illustration, we designed it as a fully parametric brand artifact that adapts to context. The form changes based on input variables. Color gradients shift depending on user scenarios, animation speed responds to tone, and particle density reflects different content categories. For onboarding it appears calm and open, while product updates bring faster motion and more intensity.</p>
-        <p>We built custom Blender Python scripts to generate high resolution stills and animations, allowing the quasar to live across touchpoints as a looping motion element, editorial visual, app header, or background. This turned a single concept into a flexible system that keeps the brand expressive and consistent without feeling repetitive.</p>
-      </SectionText>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/39.avif" alt="Shareio content dashboard design" width={1720} height={915} />
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/38.avif" alt="Shareio content e-commerce design" width={1720} height={1030} />
-      </SectionMedia>
-
-      <SectionText align="center">
-        <p>Shareio brings together cloud integration, blockchain, DRM, monetization, tokenomics, and creator dashboards into a single tool. Despite the technical depth, the experience had to feel familiar, trustworthy, and lightweight. The goal was to design something powerful that still feels like a simple utility, not a complex platform.</p>
-        <p>We intentionally made blockchain invisible in the interface. Users do not need to understand smart contracts, gas fees, or token mechanics. These layers exist, but they are translated into clear actions, human language, and smart defaults that cover most use cases. The focus stays on the outcome, not the technology behind it.</p>
-      </SectionText>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/30.avif" alt="Shareio UI design" width={1720} height={1049} />
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/31.avif" alt="Shareio UI mobile design" width={1720} height={1049} />
-      </SectionMedia>
-
-      <SectionText align="right">
-        <p>Content sharing became the core logic of the entire app. Everything is built around the idea that distributing work should feel as easy as sending a link. At the same time, all essential tools remain accessible, from analytics to subscription management, without breaking the sense of simplicity.</p>
-        <p>Magic Links form the backbone of this system. Each link carries built-in parameters like access, pricing, expiration, and DRM, so the UI had to stay clear without exposing technical complexity. We designed a modular link builder that is simple by default and expands when needed, supported by real-time previews and smart presets. Subscriptions are treated as extended Magic Links that renew automatically and adapt to access rules. Links can be shared privately or publicly, include affiliate tracking, and be updated without breaking.</p>
-        <p>The monetization UX focused on simplifying a complex set of options without removing control. One-time sales, subscriptions, crypto and fiat pricing, and access settings all sit within a clean, structured flow. Visual hierarchy, modular components, and precise microcopy help advanced features feel like a natural extension of the upload process rather than separate systems.</p>
-      </SectionText>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/22.avif" alt="Brand banner design for Shareio by Klad" width={1720} height={978} />
-      </SectionMedia>
-
-      <SectionText align="center">
-        <p>Knowing that most creators and their audiences engage on the go, we approached the project with a mobile first mindset. Every element was designed and optimized for smaller screens, from layout to interactions.</p>
-      </SectionText>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/23.avif" alt="Magic link UI design" width={1720} height={1049} />
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/36.avif" alt="Shareio web UI mobile design for benefits section" width={1720} height={1049} />
-      </SectionMedia>
-
-      <SectionText align="center">
-        <p>We placed strong focus on performance and reducing load times and refining asset delivery to keep the experience fast. The result is an app that feels as lightweight and focused as the product itself.</p>
-      </SectionText>
-
-      <SectionMedia>
-        <iframe
-          src="https://player.vimeo.com/video/1080583775?loop=1&autoplay=1"
-          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-          title="Web design for the documentation pages"
-          className="w-full aspect-video"
-        >
-        </iframe>
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/32.avif" alt="Merch design for Shareio by Klad" width={1720} height={1049} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <iframe
-          src="https://player.vimeo.com/video/1080521341?loop=1&autoplay=1"
-          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-          title="Brand quasar animation"
-          className="w-full aspect-video"
-        >
-        </iframe>
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/4.avif" alt="Footer design for Shareio by Klad" width={1720} height={697} />
-      </SectionMedia>
-
       {/* Footer */}
       <footer className="flex justify-center gap-10">
-        <Button as="a" href="/work/another-case" label="Previous" />
-        <Button as="a" href="/work/another-case" label="Next" />
+        <Button as="a" href="/work/stars-honey" label="Previous" />
+        <Button as="a" href="/work/shareio" label="Next" />
       </footer>
     </main>
   )

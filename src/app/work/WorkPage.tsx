@@ -12,93 +12,54 @@ import { TextBlur } from '@/components/ui/TextBlur'
 
 const cases = [
   {
-    title: 'Chainviz',
-    info: ['Lifestyle & Well-being', 'Netherlands', '2022', '9 weeks, ongoing'],
-    tags: ['Branding', 'Web, UI/UX', '3d'],
+    title: 'Stars+Honey',
+    info: ['Food & Beverage', 'United States', '2026', '12 weeks, ongoing'],
+    tags: ['Product 3D', 'Brand motion', 'Packaging'],
     image: '/images/case.png',
-    link: '/work/case',
+    link: '/work/stars-honey',
     description: () => (
       <>
-        <p>Started website update and markup. Discovered and fixed redundant web infrastructure. Redesigned website, created new brand visuals & elements for windows decals. Developing brand starter packs for new clients as a part of the ongoing collaboration.</p>
-        <p>Company wanted to do the redesign without actual redesign as they had a lot of physical materials and interior design that has old visuals.</p>
+        <p>As a fast-growing brand with an active presence across social media, Stars+Honey needed a large volume of consistent, premium visuals to present the product in a refined and engaging way.</p>
+        <p>We developed a complete 3D product line: wrapped bars, unwrapped formats and packaging. For every flavor, we created ingredient-specific explosion renders, designed to highlight the flavor profile while staying fully on-brand.</p>
+      </>
+    ),
+  },
+  {
+    title: 'Linux Mint',
+    info: ['Open Source Software', 'United States', '2024', '3 weeks'],
+    tags: ['Branding', 'UI/UX', 'Brand motion'],
+    image: '/images/case.png',
+    link: '/work/linux-mint',
+    description: () => (
+      <>
+        <p>A visual redesign initiative for Linux Mint, aiming to modernize its identity and enhance consistency across platforms, proving that open-source software can be both user-friendly and beautifully designed by default.</p>
+        <p>Our goal wasn’t to change what people love about Mint, but to give it the design foundation it needs and deserves.</p>
       </>
     ),
   },
   {
     title: 'Shareio',
-    info: ['Lifestyle & Well-being', 'Netherlands', '2022', '9 weeks, ongoing'],
-    tags: ['Branding', 'Web, UI/UX', '3d'],
+    info: ['Web3 & Blockchain', 'United States', '2025', '9 weeks'],
+    tags: ['Branding', 'Web, UI/UX', 'Brand motion'],
     image: '/images/case.png',
-    link: '/work/case',
+    link: '/work/shareio',
     description: () => (
       <>
-        <p>Started website update and markup. Discovered and fixed redundant web infrastructure. Redesigned website, created new brand visuals & elements for windows decals. Developing brand starter packs for new clients as a part of the ongoing collaboration.</p>
-        <p>Company wanted to do the redesign without actual redesign as they had a lot of physical materials and interior design that has old visuals.</p>
+        <p>Product launch with a strict two-month deadline. The brand had to feel authentic, creator-first and flexible enough to grow fast.</p>
+        <p>We've created dentity driven by parametrised motion. Expressive typography layered with 3D elements, shaped into a cohesive system across web and product.</p>
       </>
     ),
   },
   {
-    title: 'Process',
-    info: ['Lifestyle & Well-being', 'Netherlands', '2022', '9 weeks, ongoing'],
+    title: 'Chainviz',
+    info: ['Web3 & Blockchain', 'Turkey', '2023', '16 weeks'],
     tags: ['Branding', 'Web, UI/UX', '3d'],
     image: '/images/case.png',
-    link: '/work/case',
+    link: '/work/chainviz',
     description: () => (
       <>
-        <p>Started website update and markup. Discovered and fixed redundant web infrastructure. Redesigned website, created new brand visuals & elements for windows decals. Developing brand starter packs for new clients as a part of the ongoing collaboration.</p>
-        <p>Company wanted to do the redesign without actual redesign as they had a lot of physical materials and interior design that has old visuals.</p>
-      </>
-    ),
-  },
-  {
-    title: 'Omnia',
-    info: ['Lifestyle & Well-being', 'Netherlands', '2022', '9 weeks, ongoing'],
-    tags: ['Branding', 'Web, UI/UX', '3d'],
-    image: '/images/case.png',
-    link: '/work/case',
-    description: () => (
-      <>
-        <p>Started website update and markup. Discovered and fixed redundant web infrastructure. Redesigned website, created new brand visuals & elements for windows decals. Developing brand starter packs for new clients as a part of the ongoing collaboration.</p>
-        <p>Company wanted to do the redesign without actual redesign as they had a lot of physical materials and interior design that has old visuals.</p>
-      </>
-    ),
-  },
-  {
-    title: 'Veev',
-    info: ['Lifestyle & Well-being', 'Netherlands', '2022', '9 weeks, ongoing'],
-    tags: ['Branding', 'Web, UI/UX', '3d'],
-    image: '/images/case.png',
-    link: '/work/case',
-    description: () => (
-      <>
-        <p>Started website update and markup. Discovered and fixed redundant web infrastructure. Redesigned website, created new brand visuals & elements for windows decals. Developing brand starter packs for new clients as a part of the ongoing collaboration.</p>
-        <p>Company wanted to do the redesign without actual redesign as they had a lot of physical materials and interior design that has old visuals.</p>
-      </>
-    ),
-  },
-  {
-    title: 'Subvt',
-    info: ['Lifestyle & Well-being', 'Netherlands', '2022', '9 weeks, ongoing'],
-    tags: ['Branding', 'Web, UI/UX', '3d'],
-    image: '/images/case.png',
-    link: '/work/case',
-    description: () => (
-      <>
-        <p>Started website update and markup. Discovered and fixed redundant web infrastructure. Redesigned website, created new brand visuals & elements for windows decals. Developing brand starter packs for new clients as a part of the ongoing collaboration.</p>
-        <p>Company wanted to do the redesign without actual redesign as they had a lot of physical materials and interior design that has old visuals.</p>
-      </>
-    ),
-  },
-  {
-    title: 'Namefolio',
-    info: ['Lifestyle & Well-being', 'Netherlands', '2022', '9 weeks, ongoing'],
-    tags: ['Branding', 'Web, UI/UX', '3d'],
-    image: '/images/case.png',
-    link: '/work/case',
-    description: () => (
-      <>
-        <p>Started website update and markup. Discovered and fixed redundant web infrastructure. Redesigned website, created new brand visuals & elements for windows decals. Developing brand starter packs for new clients as a part of the ongoing collaboration.</p>
-        <p>Company wanted to do the redesign without actual redesign as they had a lot of physical materials and interior design that has old visuals.</p>
+        <p>App for exploration of blockchain validator infrastructure.</p>
+        <p>A real-time, 3D navigable visualization of the validator space, tailored for both Polkadot and Kusama ecosystems.</p>
       </>
     ),
   },
