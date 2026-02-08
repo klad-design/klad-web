@@ -13,9 +13,9 @@ import { TextBlur } from '@/components/ui/TextBlur'
 const cases = [
   {
     title: 'Stars+Honey',
-    info: ['Food & Beverage', 'United States', '2026', '12 weeks, ongoing'],
+    info: ['Food & Beverage', 'United States', '2026', '20 weeks'],
     tags: ['Product 3D', 'Brand motion', 'Packaging'],
-    image: '/images/case.png',
+    image: '/images/stars-honey/s+h.avif',
     link: '/work/stars-honey',
     description: () => (
       <>
@@ -26,40 +26,40 @@ const cases = [
   },
   {
     title: 'Linux Mint',
-    info: ['Open Source Software', 'United States', '2024', '3 weeks'],
-    tags: ['Branding', 'UI/UX', 'Brand motion'],
-    image: '/images/case.png',
+    info: ['Open-source software', 'Worldwide', '2024', '3 weeks'],
+    tags: ['Brand identity', 'UI/UX', 'Brand motion'],
+    image: '/images/linux-mint/linux-mint.avif',
     link: '/work/linux-mint',
     description: () => (
       <>
         <p>A visual redesign initiative for Linux Mint, aiming to modernize its identity and enhance consistency across platforms, proving that open-source software can be both user-friendly and beautifully designed by default.</p>
-        <p>Our goal wasn’t to change what people love about Mint, but to give it the design foundation it needs and deserves.</p>
+        <p>Our goal wasn’t to change what people love about Mint, but to give it the design foundation it currently lacks.</p>
       </>
     ),
   },
   {
     title: 'Shareio',
-    info: ['Web3 & Blockchain', 'United States', '2025', '9 weeks'],
-    tags: ['Branding', 'Web, UI/UX', 'Brand motion'],
-    image: '/images/case.png',
+    info: ['Creator economy & Web3', 'United States', '2025', '9 weeks'],
+    tags: ['Branding', '3D & Motion', 'UI/UX'],
+    image: '/images/shareio/shareio.avif',
     link: '/work/shareio',
     description: () => (
       <>
-        <p>Product launch with a strict two-month deadline. The brand had to feel authentic, creator-first and flexible enough to grow fast.</p>
-        <p>We've created dentity driven by parametrised motion. Expressive typography layered with 3D elements, shaped into a cohesive system across web and product.</p>
+        <p>Product launch with a strict two-month deadline. No visual assets, no copy and a wide range of use cases to cover. The brand had to feel authentic, creator-first and flexible enough to grow fast.</p>
+        <p>We've created identity driven by parametrised motion. Expressive typography layered with 3D elements, shaped into a cohesive system across web and product.</p>
       </>
     ),
   },
   {
     title: 'Chainviz',
-    info: ['Web3 & Blockchain', 'Turkey', '2023', '16 weeks'],
-    tags: ['Branding', 'Web, UI/UX', '3d'],
-    image: '/images/case.png',
+    info: ['Web3 & Blockchain', 'Turkey', '2022', '19 weeks'],
+    tags: ['UI/UX', 'Brand identity', '3d'],
+    image: '/images/chainviz/chainviz.avif',
     link: '/work/chainviz',
     description: () => (
       <>
-        <p>App for exploration of blockchain validator infrastructure.</p>
-        <p>A real-time, 3D navigable visualization of the validator space, tailored for both Polkadot and Kusama ecosystems.</p>
+        <p>W3F funded project to create a realtime WebGL Polkadot and Kusama valiadtor ecosystem visualisation, including parachain views and validator explorer.</p>
+        <p>We've created a brand concept suitable for a minimalistic data visualisation. Developed a 3D model to display the validator space. Assembled panel-based web app UI/UX.</p>
       </>
     ),
   },
