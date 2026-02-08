@@ -24,7 +24,7 @@ export default function Pricing() {
         <div className="absolute left-[75px] md:left-[120px] xl:left-[200px] 2xl:left-[276px] w-[90px] md:w-[134px] xl:w-[230px] 2xl:w-[300px] top-1/2 -translate-y-1/2 text-center text-p2-2xl md:text-[28px] xl:text-p1 2xl:text-p1-2xl 2x uppercase">
           <TextBlur isBold>€90 / hr</TextBlur>
         </div>
-        <Image className="dark:invert w-auto max-w-fit h-[122px] md:h-[194px] xl:h-[332px] 2xl:h-[440px] -ml-10 md:-ml-[68px] xl:-ml-[120px] 2xl:-ml-[150px]" src="/images/coins.svg" alt="Coins" width={1900} height={440} />
+        <Image className="dark:invert w-auto max-w-fit h-[122px] md:h-[194px] xl:h-[332px] 2xl:h-[440px] -ml-10 md:-ml-[68px] xl:-ml-[120px] 2xl:-ml-[150px]" src="/images/coins.svg" alt="Coins" width={1900} height={440} priority />
       </div>
       <div className="grid-container grid-cols-1 md:grid-cols-6 gap-y-[30px] mt-12 md:mt-9 lg:mt-16 2xl:mt-[86px]">
         <div className="md:col-span-2 lg:col-span-2 xl:col-span-1">

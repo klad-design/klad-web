@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
 
+Disallow: /work/case
+Disallow: /work/another-case
+
 Sitemap: https://klad.design/sitemap.xml
 

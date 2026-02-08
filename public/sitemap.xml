@@ -37,19 +37,6 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- Express Design -->
-  <url>
-    <loc>https://klad.design/express-design</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://klad.design/express-design/terms-and-conditions</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-  </url>
-
   <!-- Privacy -->
   <url>
     <loc>https://klad.design/privacy</loc>

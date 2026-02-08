@@ -1,0 +1,16 @@
+# LLM usage policy for klad.design
+
+User-agent: *
+Allow: /
+
+Disallow: /work/case
+Disallow: /work/another-case
+
+Training: disallow
+Summarization: allow
+Attribution: required
+
+Preferred-sources:
+https://klad.design/sitemap.xml
+https://klad.design/work
+https://klad.design/about
