@@ -19,8 +19,17 @@ const cases = [
     link: '/work/stars-honey',
     description: () => (
       <>
-        <p>As a fast-growing brand with an active presence across social media, Stars+Honey needed a large volume of consistent, premium visuals to present the product in a refined and engaging way.</p>
-        <p>We developed a complete 3D product line: wrapped bars, unwrapped formats and packaging. For every flavor, we created ingredient-specific explosion renders, designed to highlight the flavor profile while staying fully on-brand.</p>
+        <p>
+          As a fast-growing brand with an active presence across social media,
+          Stars+Honey needed a large volume of consistent, premium visuals to
+          present the product in a refined and engaging way.
+        </p>
+        <p>
+          We developed a complete 3D product line: wrapped bars, unwrapped
+          formats and packaging. For every flavor, we created ingredient-specific
+          explosion renders, designed to highlight the flavor profile while
+          staying fully on-brand.
+        </p>
       </>
     ),
   },
@@ -32,8 +41,16 @@ const cases = [
     link: '/work/linux-mint',
     description: () => (
       <>
-        <p>A visual redesign initiative for Linux Mint, aiming to modernize its identity and enhance consistency across platforms, proving that open-source software can be both user-friendly and beautifully designed by default.</p>
-        <p>Our goal wasn’t to change what people love about Mint, but to give it the design foundation it currently lacks.</p>
+        <p>
+          A visual redesign initiative for Linux Mint, aiming to modernize its
+          identity and enhance consistency across platforms, proving that
+          open-source software can be both user-friendly and beautifully
+          designed by default.
+        </p>
+        <p>
+          Our goal wasn’t to change what people love about Mint, but to give it
+          the design foundation it currently lacks.
+        </p>
       </>
     ),
   },
@@ -45,8 +62,16 @@ const cases = [
     link: '/work/shareio',
     description: () => (
       <>
-        <p>Product launch with a strict two-month deadline. No visual assets, no copy and a wide range of use cases to cover. The brand had to feel authentic, creator-first and flexible enough to grow fast.</p>
-        <p>We've created identity driven by parametrised motion. Expressive typography layered with 3D elements, shaped into a cohesive system across web and product.</p>
+        <p>
+          Product launch with a strict two-month deadline. No visual assets, no
+          copy and a wide range of use cases to cover. The brand had to feel
+          authentic, creator-first and flexible enough to grow fast.
+        </p>
+        <p>
+          We&apos;ve created identity driven by parametrised motion. Expressive
+          typography layered with 3D elements, shaped into a cohesive system
+          across web and product.
+        </p>
       </>
     ),
   },
@@ -58,8 +83,16 @@ const cases = [
     link: '/work/chainviz',
     description: () => (
       <>
-        <p>W3F funded project to create a realtime WebGL Polkadot and Kusama valiadtor ecosystem visualisation, including parachain views and validator explorer.</p>
-        <p>We've created a brand concept suitable for a minimalistic data visualisation. Developed a 3D model to display the validator space. Assembled panel-based web app UI/UX.</p>
+        <p>
+          W3F funded project to create a realtime WebGL Polkadot and Kusama
+          valiadtor ecosystem visualisation, including parachain views and
+          validator explorer.
+        </p>
+        <p>
+          We&apos;ve created a brand concept suitable for a minimalistic data
+          visualisation. Developed a 3D model to display the validator space.
+          Assembled panel-based web app UI/UX.
+        </p>
       </>
     ),
   },
@@ -70,83 +103,128 @@ export default function WorkPage() {
   const cursorAreaRef = useRef<HTMLDivElement>(null)
   const cursorRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  const activeLayerRef = useRef<HTMLAnchorElement>(null)
+  const nextLayerRef = useRef<HTMLAnchorElement>(null)
+  const pendingTargetRef = useRef<number | null>(null)
+
   const [activeIndex, setActiveIndex] = useState(1)
   const [selectedIndex, setSelectedIndex] = useState(1)
+  const [pendingIndex, setPendingIndex] = useState<number | null>(null)
 
-  useGSAP(() => {
-    gsap.registerPlugin(ScrollTrigger)
+  useGSAP(
+    () => {
+      gsap.registerPlugin(ScrollTrigger)
 
-    const mm = gsap.matchMedia()
+      const mm = gsap.matchMedia()
 
-    mm.add('(min-width: 768px)', () => {
-      if (menuRef.current) {
-        ScrollTrigger.create({
-          trigger: menuRef.current,
-          start: `top +=${menuRef.current.offsetTop}px`,
-          pin: true,
-          scrub: 1,
-        })
-      }
-
-      if (cursorRef.current && cursorAreaRef.current) {
-        const xTo = gsap.quickTo(cursorRef.current, 'x', { ease: 'power3' })
-        const yTo = gsap.quickTo(cursorRef.current, 'y', { ease: 'power3' })
-
-        function onMove(e: MouseEvent) {
-          if (!cursorRef.current || !cursorAreaRef.current)
-            return
-
-          const cursorRect = cursorRef.current.getBoundingClientRect()
-          const areaRect = cursorAreaRef.current.getBoundingClientRect()
-          const relX = e.pageX - areaRect.left
-          const relY = e.pageY - areaRect.top
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-          const x = relX - cursorRect.width / 2
-          const y = relY - cursorRect.height / 2 - scrollTop
-
-          gsap.to(cursorRef.current, { opacity: 1 })
-
-          xTo(x)
-          yTo(y)
+      mm.add('(min-width: 768px)', () => {
+        if (menuRef.current) {
+          ScrollTrigger.create({
+            trigger: menuRef.current,
+            start: `top +=${menuRef.current.offsetTop}px`,
+            pin: true,
+            scrub: 1,
+          })
         }
 
-        function onLeave() {
-          gsap.to(cursorRef.current, { opacity: 0 })
+        if (cursorRef.current && cursorAreaRef.current) {
+          const xTo = gsap.quickTo(cursorRef.current, 'x', { ease: 'power3' })
+          const yTo = gsap.quickTo(cursorRef.current, 'y', { ease: 'power3' })
+
+          function onMove(e: MouseEvent) {
+            if (!cursorRef.current || !cursorAreaRef.current) return
+
+            const cursorRect = cursorRef.current.getBoundingClientRect()
+            const areaRect = cursorAreaRef.current.getBoundingClientRect()
+            const relX = e.pageX - areaRect.left
+            const relY = e.pageY - areaRect.top
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+            const x = relX - cursorRect.width / 2
+            const y = relY - cursorRect.height / 2 - scrollTop
+
+            gsap.to(cursorRef.current, { opacity: 1 })
+
+            xTo(x)
+            yTo(y)
+          }
+
+          function onLeave() {
+            gsap.to(cursorRef.current, { opacity: 0 })
+          }
+
+          cursorAreaRef.current.addEventListener('mousemove', onMove)
+          cursorAreaRef.current.addEventListener('mouseleave', onLeave)
         }
+      })
+    },
+    { scope: containerRef }
+  )
 
-        cursorAreaRef.current.addEventListener('mousemove', onMove)
-        cursorAreaRef.current.addEventListener('mouseleave', onLeave)
-      }
-    })
-  }, { scope: containerRef })
-
-  const { contextSafe } = useGSAP(() => {
-    gsap.fromTo('.case-anim-target', { opacity: 0 }, { opacity: 1, duration: 0.5 })
-  }, { scope: containerRef, dependencies: [activeIndex] })
+  const { contextSafe } = useGSAP(
+    () => {
+      gsap.fromTo('.case-anim-target', { opacity: 0 }, { opacity: 1, duration: 0.5 })
+    },
+    { scope: containerRef, dependencies: [activeIndex] }
+  )
 
   const handleCaseChange = contextSafe((index: number) => {
-    if (index === selectedIndex)
-      return
+    if (index === selectedIndex) return
 
     setSelectedIndex(index)
 
-    gsap.to('.case-anim-target', {
-      opacity: 0,
-      duration: 0.1,
-      onComplete: () => {
-          setActiveIndex(index)
-          gsap.to('.case-anim-target', { opacity: 1, duration: 0.3 })
-          },
-    })
+    // If a transition is already in progress, ignore until it's done
+    if (pendingTargetRef.current !== null) return
+
+    pendingTargetRef.current = index
+    setPendingIndex(index)
+
+    // Ensure predictable start state for layers
+    if (activeLayerRef.current) gsap.set(activeLayerRef.current, { opacity: 1 })
+    if (nextLayerRef.current) gsap.set(nextLayerRef.current, { opacity: 0 })
+  })
+
+  const handleNextImageReady = contextSafe(() => {
+    const target = pendingTargetRef.current
+    if (target === null) return
+
+    // Crossfade: old -> 0, new -> 1
+    if (activeLayerRef.current) {
+      gsap.to(activeLayerRef.current, { opacity: 0, duration: 0.2, ease: 'power2.out' })
+    }
+
+    if (nextLayerRef.current) {
+      gsap.to(nextLayerRef.current, {
+        opacity: 1,
+        duration: 0.3,
+        ease: 'power2.out',
+        onComplete: () => {
+          // Commit new case after the next image is fully visible
+          setActiveIndex(target)
+          setPendingIndex(null)
+          pendingTargetRef.current = null
+
+          // Reset opacity for the newly-rendered active layer
+          if (activeLayerRef.current) gsap.set(activeLayerRef.current, { opacity: 1 })
+        },
+      })
+    } else {
+      // Fallback: if for some reason the next layer ref isn't available
+      setActiveIndex(target)
+      setPendingIndex(null)
+      pendingTargetRef.current = null
+    }
   })
 
   return (
     <section ref={containerRef} className="pt-[97px] pb-2.5 md:pt-[150px] lg:pt-0 lg:h-svh">
       <div className="grid-container lg:h-full lg:grid-rows-[auto_1fr_1fr]">
-
         {/* Menu */}
         <div className="col-span-full md:col-span-1 md:row-start-2 md:row-end-4 lg:row-end-3">
-          <div ref={menuRef} className="overflow-auto md:overflow-visible flex gap-4 -mx-2.5 px-2.5 md:mx-0 md:px-0 md:items-start md:gap-[3px] md:flex-col">
+          <div
+            ref={menuRef}
+            className="overflow-auto md:overflow-visible flex gap-4 -mx-2.5 px-2.5 md:mx-0 md:px-0 md:items-start md:gap-[3px] md:flex-col"
+          >
             {cases.map(({ title }, index) => (
               <Button
                 key={title}
@@ -165,18 +243,51 @@ export default function WorkPage() {
           </div>
         </div>
 
-        {/* Media */}
-        <div ref={cursorAreaRef} className="case-anim-target bg-black/10 dark:bg-white/10 col-span-full aspect-[355/295] grayscale relative md:col-start-2 md:col-end-5 mb-7 md:mb-5 lg:row-end-4 lg:row-start-2 lg:mb-0 lg:aspect-auto xl:mr-[130px]">
-          <Link href={cases[activeIndex].link}>
+        {/* Media (two-layer crossfade) */}
+        <div
+          ref={cursorAreaRef}
+          className="case-anim-target bg-black/10 dark:bg-white/10 col-span-full aspect-[355/295] grayscale relative md:col-start-2 md:col-end-5 mb-7 md:mb-5 lg:row-end-4 lg:row-start-2 lg:mb-0 lg:aspect-auto xl:mr-[130px]"
+        >
+          {/* Active layer */}
+          <Link
+            ref={activeLayerRef}
+            href={cases[activeIndex].link}
+            className="absolute inset-0"
+            style={{ opacity: 1 }}
+          >
             <Image
               className="size-full object-cover"
               src={cases[activeIndex].image}
               alt={`${cases[activeIndex].title} poster`}
               fill
               priority
+              sizes="(min-width: 1280px) 60vw, (min-width: 768px) 70vw, 100vw"
             />
           </Link>
-          <div ref={cursorRef} className="text-white blur-regular mix-blend-difference text-p2-2xl uppercase absolute pointer-events-none opacity-0 hidden lg:block">
+
+          {/* Next layer (renders only during transition) */}
+          {pendingIndex !== null && (
+            <Link
+              ref={nextLayerRef}
+              href={cases[pendingIndex].link}
+              className="absolute inset-0"
+              style={{ opacity: 0 }}
+            >
+              <Image
+                className="size-full object-cover"
+                src={cases[pendingIndex].image}
+                alt={`${cases[pendingIndex].title} poster`}
+                fill
+                sizes="(min-width: 1280px) 60vw, (min-width: 768px) 70vw, 100vw"
+                onLoadingComplete={handleNextImageReady}
+              />
+            </Link>
+          )}
+
+          <div
+            ref={cursorRef}
+            className="text-white blur-regular mix-blend-difference text-p2-2xl uppercase absolute pointer-events-none opacity-0 hidden lg:block"
+          >
             View case
           </div>
         </div>
@@ -184,14 +295,16 @@ export default function WorkPage() {
         {/* Description */}
         <div className="case-anim-target col-span-full md:col-start-2 md:col-end-3 lg:col-start-1 lg:col-end-2 lg:row-start-3 lg:flex lg:flex-col lg:justify-end">
           <div className="p4 blur-regular uppercase">
-            {cases[activeIndex].info.map(tag => <div key={tag}>{tag}</div>)}
+            {cases[activeIndex].info.map(tag => (
+              <div key={tag}>{tag}</div>
+            ))}
           </div>
           <div className="p4 blur-regular uppercase flex flex-wrap gap-2.5 mt-4 md:mt-3">
-            {cases[activeIndex].tags.map(tag => <span key={tag}>{tag}</span>)}
+            {cases[activeIndex].tags.map(tag => (
+              <span key={tag}>{tag}</span>
+            ))}
           </div>
-          <div className="p5 flex flex-col gap-4 mt-[30px] md:gap-2 md:mt-4">
-            {cases[activeIndex].description()}
-          </div>
+          <div className="p5 flex flex-col gap-4 mt-[30px] md:gap-2 md:mt-4">{cases[activeIndex].description()}</div>
         </div>
 
         {/* Link */}
