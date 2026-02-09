@@ -77,7 +77,6 @@ export default function WorkPage() {
   useEffect(() => {
     cases.forEach(({ image }) => {
       const img = new window.Image()
-      img.decoding = 'async'
       img.src = image
     })
   }, [])
@@ -185,7 +184,7 @@ export default function WorkPage() {
               src={cases[activeIndex].image}
               alt={`${cases[activeIndex].title} poster`}
               fill
-              priority
+              unoptimized
             />
           </Link>
 
