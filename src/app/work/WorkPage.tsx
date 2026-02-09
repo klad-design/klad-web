@@ -44,8 +44,8 @@ const cases = [
         <p>
           A visual redesign initiative for Linux Mint, aiming to modernize its
           identity and enhance consistency across platforms, proving that
-          open-source software can be both user-friendly and beautifully
-          designed by default.
+          open-source software can be both user-friendly and beautifully designed
+          by default.
         </p>
         <p>
           Our goal wasn’t to change what people love about Mint, but to give it
@@ -104,13 +104,17 @@ export default function WorkPage() {
   const cursorRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  const activeLayerRef = useRef<HTMLAnchorElement>(null)
-  const nextLayerRef = useRef<HTMLAnchorElement>(null)
-  const pendingTargetRef = useRef<number | null>(null)
+  // Two-layer media refs
+  const mediaActiveRef = useRef<HTMLAnchorElement>(null)
+  const mediaNextRef = useRef<HTMLAnchorElement>(null)
 
+  // State
   const [activeIndex, setActiveIndex] = useState(1)
   const [selectedIndex, setSelectedIndex] = useState(1)
   const [pendingIndex, setPendingIndex] = useState<number | null>(null)
+
+  // used to prevent double-click races during transition
+  const isTransitioningRef = useRef(false)
 
   useGSAP(
     () => {
@@ -144,7 +148,6 @@ export default function WorkPage() {
             const y = relY - cursorRect.height / 2 - scrollTop
 
             gsap.to(cursorRef.current, { opacity: 1 })
-
             xTo(x)
             yTo(y)
           }
@@ -161,59 +164,57 @@ export default function WorkPage() {
     { scope: containerRef }
   )
 
-  const { contextSafe } = useGSAP(
-    () => {
-      gsap.fromTo('.case-anim-target', { opacity: 0 }, { opacity: 1, duration: 0.5 })
-    },
-    { scope: containerRef, dependencies: [activeIndex] }
-  )
+  const { contextSafe } = useGSAP(() => {}, { scope: containerRef })
 
+  // This is your requested structure, but cleaned:
+  // - Fade out TEXT blocks (.case-anim-target)
+  // - Start loading next image via pendingIndex (two-layer)
+  // - When next image is loaded, do media crossfade + commit activeIndex
   const handleCaseChange = contextSafe((index: number) => {
     if (index === selectedIndex) return
+    if (isTransitioningRef.current) return
 
+    isTransitioningRef.current = true
     setSelectedIndex(index)
 
-    // If a transition is already in progress, ignore until it's done
-    if (pendingTargetRef.current !== null) return
+    // Fade out text blocks (ONLY text blocks have this class)
+    gsap.to('.case-anim-target', {
+      opacity: 0,
+      duration: 0.2,
+      onComplete: () => {
+        // Start loading the next image layer
+        setPendingIndex(index)
 
-    pendingTargetRef.current = index
-    setPendingIndex(index)
-
-    // Ensure predictable start state for layers
-    if (activeLayerRef.current) gsap.set(activeLayerRef.current, { opacity: 1 })
-    if (nextLayerRef.current) gsap.set(nextLayerRef.current, { opacity: 0 })
+        // Ensure crossfade starts from a known state
+        if (mediaActiveRef.current) gsap.set(mediaActiveRef.current, { opacity: 1 })
+        if (mediaNextRef.current) gsap.set(mediaNextRef.current, { opacity: 0 })
+        // NOTE: we do NOT setActiveIndex here; we wait for onLoadingComplete
+      },
+    })
   })
 
-  const handleNextImageReady = contextSafe(() => {
-    const target = pendingTargetRef.current
-    if (target === null) return
+  const handleNextImageLoaded = contextSafe(() => {
+    if (pendingIndex === null) return
 
-    // Crossfade: old -> 0, new -> 1
-    if (activeLayerRef.current) {
-      gsap.to(activeLayerRef.current, { opacity: 0, duration: 0.2, ease: 'power2.out' })
-    }
+    // Media crossfade
+    gsap.to(mediaActiveRef.current, { opacity: 0, duration: 0.2, ease: 'power2.out' })
+    gsap.to(mediaNextRef.current, {
+      opacity: 1,
+      duration: 0.3,
+      ease: 'power2.out',
+      onComplete: () => {
+        // Commit the new case once the new image is fully visible
+        setActiveIndex(pendingIndex)
+        setPendingIndex(null)
 
-    if (nextLayerRef.current) {
-      gsap.to(nextLayerRef.current, {
-        opacity: 1,
-        duration: 0.3,
-        ease: 'power2.out',
-        onComplete: () => {
-          // Commit new case after the next image is fully visible
-          setActiveIndex(target)
-          setPendingIndex(null)
-          pendingTargetRef.current = null
+        // Fade text blocks back in (your requested "fade in")
+        gsap.to('.case-anim-target', { opacity: 1, duration: 0.3 })
 
-          // Reset opacity for the newly-rendered active layer
-          if (activeLayerRef.current) gsap.set(activeLayerRef.current, { opacity: 1 })
-        },
-      })
-    } else {
-      // Fallback: if for some reason the next layer ref isn't available
-      setActiveIndex(target)
-      setPendingIndex(null)
-      pendingTargetRef.current = null
-    }
+        // Reset for next transition
+        if (mediaActiveRef.current) gsap.set(mediaActiveRef.current, { opacity: 1 })
+        isTransitioningRef.current = false
+      },
+    })
   })
 
   return (
@@ -236,25 +237,20 @@ export default function WorkPage() {
           </div>
         </div>
 
-        {/* Title */}
+        {/* Title (text animates) */}
         <div className="case-anim-target mb-2.5 md:mb-6 col-span-full mt-9 md:mt-0 md:col-start-2 md:col-end-5">
           <div className="text-[20vw] md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase -ml-3 lg:-ml-2.5 -rotate-2">
             <TextBlur isBold>{cases[activeIndex].title}</TextBlur>
           </div>
         </div>
 
-        {/* Media (two-layer crossfade) */}
+        {/* Media (NO case-anim-target here — prevents flicker) */}
         <div
           ref={cursorAreaRef}
-          className="case-anim-target bg-black/10 dark:bg-white/10 col-span-full aspect-[355/295] grayscale relative md:col-start-2 md:col-end-5 mb-7 md:mb-5 lg:row-end-4 lg:row-start-2 lg:mb-0 lg:aspect-auto xl:mr-[130px]"
+          className="bg-black/10 dark:bg-white/10 col-span-full aspect-[355/295] grayscale relative md:col-start-2 md:col-end-5 mb-7 md:mb-5 lg:row-end-4 lg:row-start-2 lg:mb-0 lg:aspect-auto xl:mr-[130px]"
         >
-          {/* Active layer */}
-          <Link
-            ref={activeLayerRef}
-            href={cases[activeIndex].link}
-            className="absolute inset-0"
-            style={{ opacity: 1 }}
-          >
+          {/* Active image layer */}
+          <Link ref={mediaActiveRef} href={cases[activeIndex].link} className="absolute inset-0" style={{ opacity: 1 }}>
             <Image
               className="size-full object-cover"
               src={cases[activeIndex].image}
@@ -265,21 +261,16 @@ export default function WorkPage() {
             />
           </Link>
 
-          {/* Next layer (renders only during transition) */}
+          {/* Next image layer (only during transition) */}
           {pendingIndex !== null && (
-            <Link
-              ref={nextLayerRef}
-              href={cases[pendingIndex].link}
-              className="absolute inset-0"
-              style={{ opacity: 0 }}
-            >
+            <Link ref={mediaNextRef} href={cases[pendingIndex].link} className="absolute inset-0" style={{ opacity: 0 }}>
               <Image
                 className="size-full object-cover"
                 src={cases[pendingIndex].image}
                 alt={`${cases[pendingIndex].title} poster`}
                 fill
                 sizes="(min-width: 1280px) 60vw, (min-width: 768px) 70vw, 100vw"
-                onLoadingComplete={handleNextImageReady}
+                onLoadingComplete={handleNextImageLoaded}
               />
             </Link>
           )}
@@ -292,18 +283,20 @@ export default function WorkPage() {
           </div>
         </div>
 
-        {/* Description */}
+        {/* Description (text animates) */}
         <div className="case-anim-target col-span-full md:col-start-2 md:col-end-3 lg:col-start-1 lg:col-end-2 lg:row-start-3 lg:flex lg:flex-col lg:justify-end">
           <div className="p4 blur-regular uppercase">
             {cases[activeIndex].info.map(tag => (
               <div key={tag}>{tag}</div>
             ))}
           </div>
+
           <div className="p4 blur-regular uppercase flex flex-wrap gap-2.5 mt-4 md:mt-3">
             {cases[activeIndex].tags.map(tag => (
               <span key={tag}>{tag}</span>
             ))}
           </div>
+
           <div className="p5 flex flex-col gap-4 mt-[30px] md:gap-2 md:mt-4">{cases[activeIndex].description()}</div>
         </div>
 
