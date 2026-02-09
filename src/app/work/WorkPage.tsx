@@ -12,7 +12,7 @@ import { TextBlur } from '@/components/ui/TextBlur'
 
 const cases = [
   {
-    title: 'Stars+Honey',
+    title: 'S+H',
     info: ['Food & Beverage', 'United States', '2026', '20 weeks'],
     tags: ['Product 3D', 'Brand motion', 'Packaging'],
     image: '/images/stars-honey/s+h.avif',
@@ -170,6 +170,7 @@ export default function WorkPage() {
               src={cases[activeIndex].image}
               alt={`${cases[activeIndex].title} poster`}
               fill
+              priority
             />
           </Link>
           <div ref={cursorRef} className="text-white blur-regular mix-blend-difference text-p2-2xl uppercase absolute pointer-events-none opacity-0 hidden lg:block">
