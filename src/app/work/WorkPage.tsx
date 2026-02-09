@@ -131,7 +131,7 @@ export default function WorkPage() {
     setSelectedIndex(index)
 
     gsap.to('.case-anim-target', {
-      opacity: 0
+      opacity: 0,
       onComplete: () => setActiveIndex(index),
     })
   })
