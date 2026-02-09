@@ -12,7 +12,7 @@ import { TextBlur } from '@/components/ui/TextBlur'
 
 const cases = [
   {
-    title: 'Stars + Honey',
+    title: 'Stars+Honey',
     info: ['Food & Beverage', 'United States', '2026', '20 weeks'],
     tags: ['Product 3D', 'Brand motion', 'Packaging'],
     image: '/images/stars-honey/s+h.avif',
@@ -132,7 +132,11 @@ export default function WorkPage() {
 
     gsap.to('.case-anim-target', {
       opacity: 0,
-      onComplete: () => setActiveIndex(index),
+      duration: 0.1,
+      onComplete: () => {
+          setActiveIndex(index)
+          gsap.to('.case-anim-target', { opacity: 1, duration: 0.3 })
+          },
     })
   })
 
