@@ -56,7 +56,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="bg-gray dark:bg-black dark:text-gray transition-colors duration-200 selection:bg-[#ADADAD]/60">
-        <ThemeProvider attribute="class" enableSystem={false} defaultTheme="light">
+        <ThemeProvider enableSystem={false} defaultTheme="light">
           <Header />
 
           <SmoothScroll>
