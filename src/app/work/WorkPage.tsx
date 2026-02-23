@@ -12,6 +12,19 @@ import { TextBlur } from '@/components/ui/TextBlur'
 
 const cases = [
   {
+    title: 'Circus Group',
+    info: ['Robotics', 'Germany', '2024', '6 weeks'],
+    tags: ['Web design', '3D & Motion', 'Webflow'],
+    image: '/images/circus/circus.avif',
+    link: '/work/circus',
+    description: () => (
+      <>
+        <p>After rebranding, Circus Group needed a full revamp of their website to match the new visual language of the company.</p>
+        <p>We've completely redesigned the client’s existing website, adding a strong product focus with 3D visualisation of the robot and motion design.</p>
+      </>
+    ),
+  },
+  {
     title: 'Stars+Honey',
     info: ['Food & Beverage', 'United States', '2026', '20 weeks'],
     tags: ['Product 3D', 'Brand motion', 'Packaging'],

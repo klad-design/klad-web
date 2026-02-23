@@ -21,7 +21,7 @@ export function CasePage() {
         {/* Menu */}
         <div className="col-span-full flex gap-5 items-start justify-between md:justify-end md:gap-10 md:absolute md:top-0 md:right-0 lg:gap-[45px]">
           <Button as="a" href="/work/linux-mint" label="Previous" />
-          <Button as="a" href="/work/chainviz" label="Next" />
+          <Button as="a" href="/work/circus" label="Next" />
           <Button as="a" href="/work" label="Close" />
         </div>
 
@@ -221,7 +221,7 @@ export function CasePage() {
       {/* Footer */}
       <footer className="flex justify-center gap-10">
         <Button as="a" href="/work/linux-mint" label="Previous" />
-        <Button as="a" href="/work/chainviz" label="Next" />
+        <Button as="a" href="/work/circus" label="Next" />
       </footer>
     </main>
   )
