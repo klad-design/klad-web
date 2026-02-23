@@ -12,7 +12,7 @@ import { TextBlur } from '@/components/ui/TextBlur'
 
 const cases = [
   {
-    title: 'Circus Group',
+    title: 'Circus',
     info: ['Robotics', 'Germany', '2024', '6 weeks'],
     tags: ['Web design', '3D & Motion', 'Webflow'],
     image: '/images/circus/circus.avif',

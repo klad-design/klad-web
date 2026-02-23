@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import { CasePage } from '@/app/work/shareio/CasePage'
+import { CasePage } from '@/app/work/circus/CasePage'
 
 export const metadata: Metadata = {
   title: 'Circus Group – 3D Product Website Design & Webflow Development – KLAD',
