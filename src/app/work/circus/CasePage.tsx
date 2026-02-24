@@ -81,7 +81,7 @@ export function CasePage() {
         </div>
       </header>
 
-      <SectionText title="Circus Group - roboticscentered website" align="center">
+      <SectionText title="Robotics-centered website" align="center">
         <p>For this project, we were invited to rethink Circus’ digital presence through a 3D-focused web experience. Working carefully within the provided brand system, our goal was to create a product-driven website that feels impressive, immersive and visually compelling. Through realistic 3D and with some motion design, we transformed the website so the product takes center stage - tactile and impossible to ignore.</p>
       </SectionText>
 
