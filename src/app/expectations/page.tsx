@@ -38,7 +38,7 @@ export default function Expectations() {
         </div>
         <div className="md:col-span-4 lg:col-span-1 lg:col-start-1">
           <div className="p4 uppercase">
-            <TextBlur isBold>Clients isn't always right</TextBlur>
+            <TextBlur isBold>Client isn't always right</TextBlur>
           </div>
           <div className="p5 flex flex-col gap-1.5 md:max-w-[180px] 2xl:max-w-[240px] mt-3">
             <p>When you seek help from a lawyer, you expect a solution tailored to your situation. Similarly, we offer design solutions based on your input and our expertise. Just as you wouldn't edit a lawyer’s work, we don’t expect interference in our workflow if we’re to deliver high-quality results.</p>
