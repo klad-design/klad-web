@@ -253,10 +253,6 @@
     display: none;
   }
 
-  .team-biographies {
-    clip-path: none;
-  }
-
   .team-track {
     width: 100%;
     flex-direction: column;

@@ -26,8 +26,12 @@ export function CaseVideo({ src, poster, className }: { src: string, poster: str
         video.src = src
       }
 
-      if (!reducedMotion)
-        video.play().catch(() => { /* Native controls remain available when autoplay is blocked. */ })
+      if (!reducedMotion) {
+        video.play().catch((error: DOMException) => {
+          if (error.name !== 'AbortError')
+            setFailed(true)
+        })
+      }
     }, { rootMargin: '300px' })
 
     observer.observe(video)
@@ -39,7 +43,7 @@ export function CaseVideo({ src, poster, className }: { src: string, poster: str
 
   return (
     <>
-      <video ref={videoRef} className={className} controls loop muted playsInline preload="none" aria-label="Motion design showcase" onError={() => setFailed(true)} />
+      <video ref={videoRef} className={className} controls={reducedMotion} loop muted playsInline preload="none" aria-label="Motion design showcase" onError={() => setFailed(true)} />
       {failed && <a className="p4 underline" href={src}>Open video</a>}
     </>
   )

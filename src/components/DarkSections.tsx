@@ -18,6 +18,11 @@ export function DarkSections({ children }: SectionProps) {
   const { setTheme } = useTheme()
   const smoother = useLenis()
   const reducedMotion = useReducedMotion()
+  const setThemeRef = useRef(setTheme)
+
+  useEffect(() => {
+    setThemeRef.current = setTheme
+  }, [setTheme])
 
   useEffect(() => {
     if (ScrollTrigger.isTouch || reducedMotion) {
@@ -25,7 +30,7 @@ export function DarkSections({ children }: SectionProps) {
 
       ScrollTrigger.refresh()
 
-      setTheme('light')
+      setThemeRef.current('light')
 
       return
     }
@@ -41,29 +46,15 @@ export function DarkSections({ children }: SectionProps) {
       start: `top center`,
       end: 'bottom center',
       onEnter: () => {
-        const theme = localStorage.getItem('theme')
-
-        if (theme === 'dark') {
-          setTheme('light')
-        }
-        else {
-          setTheme('dark')
-        }
+        setThemeRef.current(theme => theme === 'dark' ? 'light' : 'dark')
       },
     })
 
-    const timer = setTimeout(() => {
-      st.refresh()
-    }, 1000)
-
-    return () => {
-      st.kill()
-      clearTimeout(timer)
-    }
-  }, [smoother, reducedMotion, setTheme])
+    return () => st.kill()
+  }, [smoother, reducedMotion])
 
   return (
-    <div ref={sectionRef} className="home-loop h-svh overflow-hidden" aria-hidden inert>
+    <div ref={sectionRef} className="home-loop h-svh" aria-hidden inert>
       {children}
     </div>
   )

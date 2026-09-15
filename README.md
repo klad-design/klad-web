@@ -39,4 +39,6 @@ pnpm test:staging
 
 The browser smoke check expects the local staging server at `http://127.0.0.1:3100`. Set `STAGING_URL` to check another preview. Install its Chromium browser once with `pnpm exec playwright install chromium`.
 
-Visual acceptance preserves the 10px desktop text, grain, blur treatment, monochrome portfolio covers, and scroll-driven portrait sequence. Check the work title, Team section, mobile menu, and a case study at desktop, tablet, and mobile widths before merging.
+For Firefox or WebKit, install that browser with Playwright and run the same check with `STAGING_BROWSER=firefox` or `STAGING_BROWSER=webkit`. The check includes two complete homepage scroll cycles and a reload from the Team section.
+
+Visual acceptance preserves the 10px desktop text, grain, blur treatment, intentional Team/menu overlap, monochrome portfolio covers, and scroll-driven portrait sequence. Video controls stay hidden during normal autoplay; reduced-motion mode keeps manual playback controls. Check the work title, Team section, mobile menu, and a case study at desktop, tablet, and mobile widths before merging.

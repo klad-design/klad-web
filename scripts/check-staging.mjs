@@ -2,12 +2,15 @@ import assert from 'node:assert/strict'
 import { mkdir } from 'node:fs/promises'
 import process from 'node:process'
 
-import { chromium } from 'playwright'
+import { chromium, firefox, webkit } from 'playwright'
 
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
-const browser = await chromium.launch()
+const browserType = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
+assert.ok(browserType, 'STAGING_BROWSER must be chromium, firefox or webkit')
+const browser = await browserType.launch()
 const errors = []
-await mkdir('artifacts/staging', { recursive: true })
+const artifacts = `artifacts/staging/${browserType.name()}`
+await mkdir(artifacts, { recursive: true })
 
 try {
   for (const width of [1440, 768, 390, 320]) {
@@ -41,7 +44,47 @@ try {
       await member.press('Enter')
       await page.waitForFunction(() => document.querySelector('.memberLink.button--active')?.textContent?.includes('Dasha'))
       await page.waitForTimeout(1200)
-      await page.screenshot({ path: 'artifacts/staging/team-desktop.png' })
+      await page.screenshot({ path: `${artifacts}/team-desktop.png` })
+
+      assert.equal(await page.locator('.team-track').evaluate(el => getComputedStyle(el).clipPath), 'none')
+      assert.equal(await page.locator('.home-loop').evaluate(el => getComputedStyle(el).overflow), 'visible')
+      await page.reload()
+      await page.waitForTimeout(800)
+      assert.equal(await page.evaluate(() => scrollY), 0, 'Refreshing the homepage must start at the hero')
+      for (const theme of ['dark', 'light']) {
+        await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight - innerHeight - 300))
+        await page.waitForFunction(expected => document.documentElement.dataset.theme === expected, theme)
+        await page.waitForTimeout(400)
+        assert.equal(await page.locator('html').getAttribute('data-theme'), theme, 'The loop theme must persist')
+        await page.screenshot({ path: `${artifacts}/loop-${theme}.png` })
+        await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight - innerHeight - 100))
+        await page.waitForTimeout(300)
+        const recording = page.evaluate(() => new Promise((resolve) => {
+          const frames = []
+          const end = performance.now() + 1600
+          function sample() {
+            const map = document.querySelector('section .grid-container .textBlur')
+            frames.push({ y: scrollY, value: Number(map.style.getPropertyValue('--value')) })
+            if (performance.now() < end)
+              requestAnimationFrame(sample)
+            else
+              resolve(frames)
+          }
+          sample()
+        }))
+        await page.mouse.wheel(0, 200)
+        const frames = await recording
+        const wrap = frames.findIndex((frame, index) => index > 0 && frames[index - 1].y - frame.y > 1000)
+        assert.ok(wrap > 0, 'Wheel scrolling must wrap back to the hero')
+        assert.equal(frames[wrap].value, 0, 'Map layers must already align on the first frame after wrapping')
+        assert.equal(await page.locator('html').getAttribute('data-theme'), theme)
+      }
+
+      await page.evaluate(() => window.scrollTo(0, 2200))
+      await page.waitForTimeout(300)
+      await page.reload()
+      await page.waitForTimeout(800)
+      assert.equal(await page.evaluate(() => scrollY), 0, 'Refreshing the homepage must start at the hero')
     }
 
     await page.goto(`${baseURL}/work`)
@@ -54,7 +97,7 @@ try {
       return range.getBoundingClientRect().right <= window.innerWidth
     })
     assert.ok(titleFits, `Project title is clipped at ${width}px`)
-    await page.screenshot({ path: `artifacts/staging/work-${width}.png` })
+    await page.screenshot({ path: `${artifacts}/work-${width}.png` })
 
     const circus = page.getByRole('button', { name: 'Circus', exact: true })
     await page.keyboard.press('Tab')
@@ -80,7 +123,7 @@ try {
     const video = page.locator('video').first()
     await video.scrollIntoViewIfNeeded()
     await page.waitForFunction(() => !!document.querySelector('video')?.getAttribute('src'))
-    assert.equal(await video.evaluate(el => el.controls), true)
+    assert.equal(await video.evaluate(el => el.controls), false)
     assert.ok(await video.getAttribute('poster'))
     assert.ok((await page.request.get(await page.locator('link[rel="icon"]').first().getAttribute('href'))).ok())
 
@@ -107,11 +150,15 @@ try {
   assert.equal(await marquee.evaluate(el => getComputedStyle(el).transform), before, 'Reduced motion must stop the marquee')
   assert.equal(await page.locator('.team-track').evaluate(el => getComputedStyle(el).flexDirection), 'column')
   assert.equal(await page.locator('.home-loop').evaluate(el => getComputedStyle(el).display), 'none')
+  await page.goto(`${baseURL}/work/stars-honey`)
+  await page.locator('video').first().scrollIntoViewIfNeeded()
+  await page.waitForFunction(() => !!document.querySelector('video')?.getAttribute('src'))
+  assert.equal(await page.locator('video').first().evaluate(el => el.paused && el.controls), true, 'Reduced motion keeps manual video playback available')
   const sitemap = await page.request.get(`${baseURL}/sitemap.xml`)
   assert.ok(!(await sitemap.text()).includes('/work/datalane'), 'DataLane must remain hidden')
   assert.deepEqual(errors, [], 'Browser runtime errors')
   await context.close()
-  console.log('Staging smoke check passed at 1440, 768, 390 and 320px, including keyboard and reduced-motion checks.')
+  console.log(`Staging smoke check passed in ${browserType.name()} at 1440, 768, 390 and 320px, including scroll cycles, refresh, keyboard and reduced motion.`)
 }
 finally {
   await browser.close()

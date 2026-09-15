@@ -442,6 +442,7 @@ export function Team() {
 
       ScrollTrigger.create({
         id: 'global',
+        refreshPriority: 1,
         trigger: teamSection,
         start: `bottom bottom`,
         end: () => `+=${endPosition()}px bottom`,
@@ -580,21 +581,19 @@ export function Team() {
             </div>
           </div>
         </div>
-        <div className="team-biographies min-w-0 md:[clip-path:inset(-100vh_0_-100vh_-100vw)]">
-          <div ref={descriptionsRef} className="team-track flex flex-col md:w-max md:flex-row">
-            {team.map((member, index) => (
-              <div key={member.name} className={`memberDescription ${team.length - 2 === index ? 'memberDescriptionEnd' : ''} flex justify-center lg:justify-start w-full md:w-[calc(42vw_-_20px)] lg:w-[calc(43.5vw_-_29px)] shrink-0 pt-6 md:pt-0`}>
-                <div className="max-w-[264px] md:max-w-[180px] 2xl:max-w-[240px]">
-                  <h3 className="p1 uppercase -rotate-2">
-                    <TextBlur isHorizontal>{member.name}</TextBlur>
-                  </h3>
-                  <div className="flex flex-col gap-1.5 p5 mt-6">
-                    {member.description()}
-                  </div>
+        <div ref={descriptionsRef} className="team-track flex flex-col md:flex-row">
+          {team.map((member, index) => (
+            <div key={member.name} className={`memberDescription ${team.length - 2 === index ? 'memberDescriptionEnd' : ''} flex justify-center lg:justify-start w-full md:w-[calc(42vw_-_20px)] lg:w-[calc(43.5vw_-_29px)] shrink-0 pt-6 md:pt-0`}>
+              <div className="max-w-[264px] md:max-w-[180px] 2xl:max-w-[240px]">
+                <h3 className="p1 uppercase -rotate-2">
+                  <TextBlur isHorizontal>{member.name}</TextBlur>
+                </h3>
+                <div className="flex flex-col gap-1.5 p5 mt-6">
+                  {member.description()}
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

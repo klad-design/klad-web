@@ -6,7 +6,7 @@ import type { ReactNode } from 'react'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ReactLenis } from 'lenis/react'
+import { ReactLenis, useLenis } from 'lenis/react'
 import { useTheme } from 'next-themes'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
@@ -22,8 +22,22 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
   const pathname = usePathname()
   const { setTheme } = useTheme()
   const reducedMotion = useReducedMotion()
+  const themePathRef = useRef<string | null>(null)
+  const previousScrollRef = useRef(0)
+
+  useLenis((lenis) => {
+    ScrollTrigger.update()
+    if (lenis.options.infinite && Math.abs(lenis.scroll - previousScrollRef.current) > lenis.limit / 2) {
+      // Match the repeated hero immediately when the infinite scroll wraps.
+      ScrollTrigger.getAll().forEach(trigger => trigger.getTween()?.progress(1))
+    }
+    previousScrollRef.current = lenis.scroll
+  })
 
   useEffect(() => {
+    if (themePathRef.current === pathname)
+      return
+    themePathRef.current = pathname
     setTheme(pathname.startsWith('/work/') ? 'dark' : 'light')
   }, [pathname, setTheme])
 
@@ -36,6 +50,19 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
 
     return () => gsap.ticker.remove(update)
   }, [pathname])
+
+  useGSAP(() => {
+    gsap.registerPlugin(ScrollTrigger)
+
+    if (pathname !== '/' || window.location.hash)
+      return
+
+    const restoration = window.history.scrollRestoration
+    ScrollTrigger.clearScrollMemory('manual')
+    window.scrollTo({ top: 0, behavior: 'instant' })
+
+    return () => ScrollTrigger.clearScrollMemory(restoration)
+  }, { dependencies: [pathname], revertOnUpdate: true })
 
   useGSAP(() => {
     gsap.registerPlugin(ScrollTrigger)
@@ -56,20 +83,18 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
         'ease': 'none',
       })
 
-      const st = ScrollTrigger.create({
+      ScrollTrigger.create({
         trigger: el,
         animation: tl,
         start: 'center center',
         end: 'bottom top',
         scrub: 1,
       })
-
-      gsap.delayedCall(0.1, () => st.refresh())
     })
   }, { dependencies: [pathname, reducedMotion], revertOnUpdate: true })
 
   useEffect(() => {
-    const timer = setTimeout(() => ScrollTrigger.refresh(), 100)
+    const timer = setTimeout(() => ScrollTrigger.refresh(true), 100)
     return () => clearTimeout(timer)
   }, [pathname])
 
