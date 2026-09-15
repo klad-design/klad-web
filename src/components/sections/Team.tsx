@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
+import { useReducedMotion } from '@/components/useReducedMotion'
 
 interface TeamMember {
   name: string
@@ -123,7 +124,7 @@ const team: TeamMember[] = [
     description: () => (
       <>
         <p>
-          Brand designer with X years of experience. She has provided solutions for large-scale physical brands (see
+          Brand designer. She has provided solutions for large-scale physical brands (see
           {' '}
           <Link href="https://www.behance.net/gallery/110329005/Perekrestok" className="underline">Perekrestok</Link>
           ) and digital startups (see
@@ -290,6 +291,7 @@ const team: TeamMember[] = [
 ]
 
 const mobileGap = 30
+const lastFrame = 121
 
 export function Team() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -299,17 +301,15 @@ export function Team() {
   const descriptionsRef = useRef<HTMLDivElement>(null)
 
   const imagesRef = useRef<HTMLImageElement[]>([])
+  const frameRef = useRef(0)
 
   const [activeMemberIndex, setActiveMemberIndex] = useState(0)
 
   const smoother = useLenis()
-
-  const canvasFrames = {
-    currentIndex: 0,
-    maxIndex: 121,
-  }
+  const reducedMotion = useReducedMotion()
 
   const loadImageOnCanvas = useCallback((index: number) => {
+    frameRef.current = index
     const canvas = canvasRef.current
     const context = canvas?.getContext('2d')
     const images = imagesRef.current
@@ -317,11 +317,15 @@ export function Team() {
     if (index >= 0 && index < images.length && canvas && context) {
       const img = images[index]
 
-      if (!img)
+      if (!img?.complete || !img.naturalWidth)
         return
 
-      canvas.width = canvas.clientWidth * window.devicePixelRatio
-      canvas.height = canvas.clientHeight * window.devicePixelRatio
+      const width = Math.round(canvas.clientWidth * window.devicePixelRatio)
+      const height = Math.round(canvas.clientHeight * window.devicePixelRatio)
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width
+        canvas.height = height
+      }
 
       const scaleX = canvas.width / img.width
       const scaleY = canvas.height / img.height
@@ -340,6 +344,9 @@ export function Team() {
 
   // Mobile scroll
   useGSAP(() => {
+    if (reducedMotion)
+      return
+
     const mm = gsap.matchMedia()
 
     gsap.registerPlugin(ScrollTrigger)
@@ -355,7 +362,7 @@ export function Team() {
         scrub: 1,
         onUpdate: (self) => {
           const progress = self.progress
-          const frameIndex = Math.round(progress * (canvasFrames.maxIndex - 1))
+          const frameIndex = Math.round(progress * lastFrame)
 
           loadImageOnCanvas(frameIndex)
         },
@@ -384,10 +391,13 @@ export function Team() {
     })
 
     return () => mm.revert()
-  })
+  }, { scope: sectionRef, dependencies: [reducedMotion], revertOnUpdate: true })
 
   // Desktop scroll
   useGSAP(() => {
+    if (reducedMotion)
+      return
+
     const mm = gsap.matchMedia()
 
     gsap.registerPlugin(ScrollTrigger)
@@ -400,11 +410,11 @@ export function Team() {
       if (!teamSection || !teamContent || !teamDescription || !smoother)
         return
 
-      const descriptionItemWidth = teamDescription.clientWidth / team.length
-      const endPosition = descriptionItemWidth * (team.length - 1)
+      const itemWidth = () => teamDescription.firstElementChild?.getBoundingClientRect().width || 0
+      const endPosition = () => itemWidth() * (team.length - 1)
 
       const animation = gsap.to(teamDescription, {
-        x: endPosition * -1,
+        x: () => -endPosition(),
         ease: 'none',
       })
 
@@ -422,8 +432,9 @@ export function Team() {
           ScrollTrigger.create({
             trigger: teamContent,
             animation: tl,
-            start: `${teamContent.clientHeight + descriptionItemWidth * index + 10}px bottom`,
-            end: `+=${descriptionItemWidth} bottom`,
+            start: () => `${teamContent.clientHeight + itemWidth() * index + 10}px bottom`,
+            end: () => `+=${itemWidth()} bottom`,
+            invalidateOnRefresh: true,
             scrub: 1,
           })
         }
@@ -433,14 +444,15 @@ export function Team() {
         id: 'global',
         trigger: teamSection,
         start: `bottom bottom`,
-        end: `+=${endPosition}px bottom`,
+        end: () => `+=${endPosition()}px bottom`,
+        invalidateOnRefresh: true,
         pin: true,
         scrub: 1,
         animation,
         onUpdate: (self) => {
           const progress = self.progress
           const currentMemberIndex = Math.min(Math.floor(progress * team.length), team.length - 1)
-          const frameIndex = Math.round(progress * (canvasFrames.maxIndex - 1))
+          const frameIndex = Math.round(progress * lastFrame)
 
           setActiveMemberIndex(currentMemberIndex)
           loadImageOnCanvas(frameIndex)
@@ -449,11 +461,10 @@ export function Team() {
     })
 
     return () => mm.revert()
-  }, { dependencies: [smoother], scope: sectionRef })
+  }, { dependencies: [smoother, reducedMotion], scope: sectionRef, revertOnUpdate: true })
 
   // Scroll to member handler
   useEffect(() => {
-    const isHorizontalView = window.matchMedia('(min-width: 768px)').matches
     const teamSection = sectionRef.current
     const teamContent = contentRef.current
     const teamDescription = descriptionsRef.current
@@ -466,17 +477,23 @@ export function Team() {
       if (!target || !smoother || !teamSection || !teamContent || !teamDescription)
         return
 
-      const startPosition = isHorizontalView
-        ? (teamSection.parentElement?.offsetTop || 0) - (window.innerHeight - teamSection.clientHeight)
-        : teamContent.offsetTop
       const memberIndex = Number(target.dataset.member) || 0
-      const memberOffset = team.reduce((prev, _, index) => {
-        const section = teamDescription.querySelector(`.memberDescription:nth-child(${index + 1})`)
+      const member = teamDescription.children[memberIndex] as HTMLElement | undefined
+      if (!member)
+        return
 
-        return section && index < memberIndex ? prev + section.getBoundingClientRect()[isHorizontalView ? 'width' : 'height'] : prev
-      }, 0)
+      if (reducedMotion) {
+        member.scrollIntoView({ block: 'center', behavior: 'instant' })
+        return
+      }
 
-      smoother.scrollTo(startPosition + memberOffset - (isHorizontalView ? 0 : mobileGap))
+      const trigger = ScrollTrigger.getAll().find(item => item.trigger === teamSection && item.pin)
+      if (window.matchMedia('(min-width: 768px)').matches && trigger) {
+        smoother.scrollTo(trigger.start + member.clientWidth * memberIndex)
+      }
+      else {
+        smoother.scrollTo(member, { offset: -(modelsRef.current?.clientHeight || 0) - mobileGap })
+      }
     }
 
     if (buttons && buttons.length) {
@@ -492,32 +509,48 @@ export function Team() {
         })
       }
     }
-  }, [smoother])
+  }, [smoother, reducedMotion])
 
   useEffect(() => {
-    let imagesLoaded = 0
-    const totalImages = canvasFrames.maxIndex
-
-    const preloadImages = () => {
-      for (let i = 0; i <= totalImages; i++) {
-        const imageUrl = `/images/team/${i}.avif`
-        const img = new Image()
-
-        img.src = imageUrl
-
-        img.onload = () => {
-          imagesLoaded++
-
-          if (imagesLoaded === totalImages)
-            loadImageOnCanvas(canvasFrames.currentIndex)
-        }
-
-        imagesRef.current[i] = img
+    let disposed = false
+    const loadFrame = (index: number) => {
+      const img = imagesRef.current[index] || new Image()
+      imagesRef.current[index] = img
+      img.onload = () => {
+        if (!disposed && index === frameRef.current)
+          loadImageOnCanvas(index)
       }
+      if (!img.src)
+        img.src = `/images/team/${index}.avif`
+      if (img.complete && index === frameRef.current)
+        loadImageOnCanvas(index)
     }
 
-    preloadImages()
-  }, [canvasFrames.currentIndex, canvasFrames.maxIndex, loadImageOnCanvas])
+    frameRef.current = 0
+    loadFrame(0)
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting || reducedMotion)
+        return
+      for (let index = 1; index <= lastFrame; index++)
+        loadFrame(index)
+      observer.disconnect()
+    }, { rootMargin: '400px' })
+
+    if (sectionRef.current)
+      observer.observe(sectionRef.current)
+
+    const resize = new ResizeObserver(() => loadImageOnCanvas(frameRef.current))
+    if (canvasRef.current)
+      resize.observe(canvasRef.current)
+
+    return () => {
+      disposed = true
+      observer.disconnect()
+      resize.disconnect()
+      imagesRef.current.forEach(img => img.onload = null)
+    }
+  }, [reducedMotion, loadImageOnCanvas])
 
   return (
     <section id="team" ref={sectionRef} className="md:min-h-svh md:flex md:flex-col pt-20 md:pt-28 md:pb-2.5 z-1">
@@ -547,19 +580,21 @@ export function Team() {
             </div>
           </div>
         </div>
-        <div ref={descriptionsRef} className="flex flex-col md:flex-row">
-          {team.map((member, index) => (
-            <div key={member.name} className={`memberDescription ${team.length - 2 === index ? 'memberDescriptionEnd' : ''} flex justify-center lg:justify-start w-full md:w-[calc(42vw_-_20px)] lg:w-[calc(43.5vw_-_29px)] shrink-0 pt-6 md:pt-0`}>
-              <div className="max-w-[264px] md:max-w-[180px] 2xl:max-w-[240px]">
-                <h3 className="p1 uppercase -rotate-2">
-                  <TextBlur isHorizontal>{member.name}</TextBlur>
-                </h3>
-                <div className="flex flex-col gap-1.5 p5 mt-6">
-                  {member.description()}
+        <div className="team-biographies min-w-0 md:[clip-path:inset(-100vh_0_-100vh_-100vw)]">
+          <div ref={descriptionsRef} className="team-track flex flex-col md:w-max md:flex-row">
+            {team.map((member, index) => (
+              <div key={member.name} className={`memberDescription ${team.length - 2 === index ? 'memberDescriptionEnd' : ''} flex justify-center lg:justify-start w-full md:w-[calc(42vw_-_20px)] lg:w-[calc(43.5vw_-_29px)] shrink-0 pt-6 md:pt-0`}>
+                <div className="max-w-[264px] md:max-w-[180px] 2xl:max-w-[240px]">
+                  <h3 className="p1 uppercase -rotate-2">
+                    <TextBlur isHorizontal>{member.name}</TextBlur>
+                  </h3>
+                  <div className="flex flex-col gap-1.5 p5 mt-6">
+                    {member.description()}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>

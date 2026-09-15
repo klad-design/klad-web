@@ -48,7 +48,7 @@ export function Button({
         },
         className,
       )}
-      aria-label={label}
+      aria-label={rest['aria-label'] ?? (typeof label === 'string' ? label : undefined)}
     >
       {children || <span>{label}</span>}
     </Component>

@@ -5,6 +5,8 @@ import { gsap } from 'gsap'
 import { Observer } from 'gsap/Observer'
 import { useRef } from 'react'
 
+import { useReducedMotion } from '@/components/useReducedMotion'
+
 const titles = ['Branding', 'Experience', 'Product']
 
 const services = [
@@ -77,9 +79,13 @@ const advantages = [
 
 export function Services() {
   const wordsRef = useRef<HTMLDivElement | null>(null)
+  const reducedMotion = useReducedMotion()
 
   useGSAP(() => {
     gsap.registerPlugin(Observer)
+
+    if (reducedMotion)
+      return
 
     const tween = gsap.to('.service', {
       xPercent: -100,
@@ -92,7 +98,7 @@ export function Services() {
 
     const quickSpeed = gsap.quickTo(velocity, 'value', {
       onUpdate: () => {
-        gsap.to(tween, { timeScale: 1 + velocity.value })
+        tween.timeScale(1 + velocity.value)
       },
     })
 
@@ -105,7 +111,7 @@ export function Services() {
         quickSpeed(Math.abs(v))
       },
     })
-  }, { scope: wordsRef })
+  }, { scope: wordsRef, dependencies: [reducedMotion], revertOnUpdate: true })
 
   return (
     <section className="-mt-6 md:-mt-14 lg:-mt-20">
@@ -117,7 +123,7 @@ export function Services() {
             </div>
           ))}
         </div>
-        <div className="service w-fit flex gap-[0.3em] pl-[0.3em]">
+        <div className="service w-fit flex gap-[0.3em] pl-[0.3em]" aria-hidden inert>
           {titles.map((service, index) => (
             <div key={service + index} className="blur-xs hover:blur-none transition-all duration-500 cursor-pointer">
               {service}

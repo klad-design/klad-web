@@ -1,17 +1,11 @@
-'use client'
-
-import { useTheme } from 'next-themes'
 import Image from 'next/image'
 
 import { SectionMedia, SectionText } from '@/app/work/sections'
 import { Button } from '@/components/ui/Button'
+import { CaseVideo } from '@/components/ui/CaseVideo'
 import { TextBlur } from '@/components/ui/TextBlur'
 
 export function CasePage() {
-  const { setTheme } = useTheme()
-
-  setTheme('dark')
-
   return (
     <main className="pb-10">
 
@@ -83,7 +77,7 @@ export function CasePage() {
       </header>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/1.avif" alt="Shareio ase cover image" width={1720} height={1030} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/1.avif" alt="Shareio ase cover image" width={1720} height={1030} />
       </SectionMedia>
 
       <SectionText align="right">
@@ -92,7 +86,7 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/21.avif" alt="Three metaphors behind Shareio logo design" width={1720} height={978} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/21.avif" alt="Three metaphors behind Shareio logo design" width={1720} height={978} />
       </SectionMedia>
 
       <SectionText title="Sign of three metaphors" align="center">
@@ -101,15 +95,15 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/5.avif" alt="Logo design for Shareio originally done by Klad" width={1720} height={385} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/5.avif" alt="Logo design for Shareio originally done by Klad" width={1720} height={385} />
       </SectionMedia>
 
-       <SectionText align="center">
+      <SectionText align="center">
         <p>A sequence of three dots, scaling from large to small, introduces a sense of movement. It reflects the journey of content: from creation to distribution to monetization. A quiet visual metaphor for progression, reach, and the ripple effect, which we later translated into a subtle logo animation.</p>
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/27.avif" alt="App icon design and the way it looks on the phone screen" width={1720} height={845} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/27.avif" alt="App icon design and the way it looks on the phone screen" width={1720} height={845} />
       </SectionMedia>
 
       <SectionText align="left">
@@ -119,59 +113,59 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2494]" src="https://klad.b-cdn.net/shareio/F_08%20font_2.mp4" autoPlay loop muted playsInline preload="metadata" />
+        <CaseVideo className="w-full aspect-[3840/2494]" src="https://klad.b-cdn.net/shareio/F_08%20font_2.mp4" poster="/images/posters/shareio/1.jpg" />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2082]" src="https://klad.b-cdn.net/shareio/F_09_chrome_11.mp4" autoPlay loop muted playsInline preload="none" />
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/10.avif" alt="Chromark collection of 3D brand assets" width={1720} height={788} />
+        <CaseVideo className="w-full aspect-[3840/2082]" src="https://klad.b-cdn.net/shareio/F_09_chrome_11.mp4" poster="/images/posters/shareio/2.jpg" />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2114]" src="https://klad.b-cdn.net/shareio/F_11%20gems_10.mp4" autoPlay loop muted playsInline preload="none" />
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/12.avif" alt="Emerald collection of 3D brand assets" width={1720} height={788} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/10.avif" alt="Chromark collection of 3D brand assets" width={1720} height={788} />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2082]" src="https://klad.b-cdn.net/shareio/F_13%20aura_7.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[3840/2114]" src="https://klad.b-cdn.net/shareio/F_11%20gems_10.mp4" poster="/images/posters/shareio/3.jpg" />
       </SectionMedia>
 
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/14.avif" alt="Luminous collection of 3D brand assets" width={1720} height={788} />
+      <SectionMedia>
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/12.avif" alt="Emerald collection of 3D brand assets" width={1720} height={788} />
       </SectionMedia>
 
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/24.avif" alt="First tool for content creators to enable monetization using their existing cloud storage providers." width={1720} height={988} />
+      <SectionMedia>
+        <CaseVideo className="w-full aspect-[3840/2082]" src="https://klad.b-cdn.net/shareio/F_13%20aura_7.mp4" poster="/images/posters/shareio/4.jpg" />
       </SectionMedia>
 
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/19.avif" alt="Branded tote bag design for Shareio" width={1720} height={978} />
+      <SectionMedia>
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/14.avif" alt="Luminous collection of 3D brand assets" width={1720} height={788} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/24.avif" alt="First tool for content creators to enable monetization using their existing cloud storage providers." width={1720} height={988} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/19.avif" alt="Branded tote bag design for Shareio" width={1720} height={978} />
       </SectionMedia>
 
       <SectionText align="center">
         <p>At the core of the product is a simple design idea: your cloud becomes your storefront. Instead of pushing creators into new platforms or complex systems, Shareio connects to the storage they already use and turns existing files into monetizable assets. This principle shaped the UX into a lightweight layer on top of existing content, where selling, licensing and sharing feel like natural extensions. Focused on clarity, the interface keeps control visible and understandable while the infrastructure stays in the background, allowing the content itself to remain at the center.</p>
       </SectionText>
 
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/20.avif" alt="Layout design for the content banner" width={1720} height={978} />
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/28.avif" alt="Poster design made by Klad for Shareio" width={1720} height={1089} />
+      <SectionMedia>
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/20.avif" alt="Layout design for the content banner" width={1720} height={978} />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2574]" src="https://klad.b-cdn.net/shareio/F_18%20quasar_7.mp4" autoPlay loop muted playsInline preload="none" />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/28.avif" alt="Poster design made by Klad for Shareio" width={1720} height={1089} />
       </SectionMedia>
 
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/37.avif" alt="Hero section web design for Shareio by Klad" width={1720} height={1304} />
+      <SectionMedia>
+        <CaseVideo className="w-full aspect-[3840/2574]" src="https://klad.b-cdn.net/shareio/F_18%20quasar_7.mp4" poster="/images/posters/shareio/5.jpg" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/37.avif" alt="Hero section web design for Shareio by Klad" width={1720} height={1304} />
       </SectionMedia>
 
       <SectionText align="right">
@@ -180,12 +174,12 @@ export function CasePage() {
         <p>We built custom Blender Python scripts to generate high resolution stills and animations, allowing the quasar to live across touchpoints as a looping motion element, editorial visual, app header, or background. This turned a single concept into a flexible system that keeps the brand expressive and consistent without feeling repetitive.</p>
       </SectionText>
 
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/39.avif" alt="Shareio content dashboard design" width={1720} height={915} />
+      <SectionMedia>
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/39.avif" alt="Shareio content dashboard design" width={1720} height={915} />
       </SectionMedia>
 
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/38.avif" alt="Shareio content e-commerce design" width={1720} height={1030} />
+      <SectionMedia>
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/38.avif" alt="Shareio content e-commerce design" width={1720} height={1030} />
       </SectionMedia>
 
       <SectionText align="center">
@@ -193,12 +187,12 @@ export function CasePage() {
         <p>We intentionally made blockchain invisible in the interface. Users do not need to understand smart contracts, gas fees, or token mechanics. These layers exist, but they are translated into clear actions, human language, and smart defaults that cover most use cases. The focus stays on the outcome, not the technology behind it.</p>
       </SectionText>
 
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/30.avif" alt="Shareio UI design" width={1720} height={1049} />
+      <SectionMedia>
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/30.avif" alt="Shareio UI design" width={1720} height={1049} />
       </SectionMedia>
 
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/31.avif" alt="Shareio UI mobile design" width={1720} height={1049} />
+      <SectionMedia>
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/31.avif" alt="Shareio UI mobile design" width={1720} height={1049} />
       </SectionMedia>
 
       <SectionText align="right">
@@ -207,20 +201,20 @@ export function CasePage() {
         <p>The monetization UX focused on simplifying a complex set of options without removing control. One-time sales, subscriptions, crypto and fiat pricing, and access settings all sit within a clean, structured flow. Visual hierarchy, modular components, and precise microcopy help advanced features feel like a natural extension of the upload process rather than separate systems.</p>
       </SectionText>
 
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/22.avif" alt="Brand banner design for Shareio by Klad" width={1720} height={978} />
+      <SectionMedia>
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/22.avif" alt="Brand banner design for Shareio by Klad" width={1720} height={978} />
       </SectionMedia>
 
       <SectionText align="center">
         <p>Knowing that most creators and their audiences engage on the go, we approached the project with a mobile first mindset. Every element was designed and optimized for smaller screens, from layout to interactions.</p>
       </SectionText>
 
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/23.avif" alt="Magic link UI design" width={1720} height={1049} />
+      <SectionMedia>
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/23.avif" alt="Magic link UI design" width={1720} height={1049} />
       </SectionMedia>
 
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/36.avif" alt="Shareio web UI mobile design for benefits section" width={1720} height={1049} />
+      <SectionMedia>
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/36.avif" alt="Shareio web UI mobile design for benefits section" width={1720} height={1049} />
       </SectionMedia>
 
       <SectionText align="center">
@@ -228,19 +222,19 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2272]" src="https://klad.b-cdn.net/shareio/F_34_1.mp4" autoPlay loop muted playsInline preload="none" />
-      </SectionMedia>
-
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/32.avif" alt="Merch design for Shareio by Klad" width={1720} height={1049} />
+        <CaseVideo className="w-full aspect-[3840/2272]" src="https://klad.b-cdn.net/shareio/F_34_1.mp4" poster="/images/posters/shareio/6.jpg" />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2548]" src="https://klad.b-cdn.net/shareio/F_35%20screen%20mockup_1.mp4" autoPlay loop muted playsInline preload="none" />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/32.avif" alt="Merch design for Shareio by Klad" width={1720} height={1049} />
       </SectionMedia>
 
-       <SectionMedia>
-        <Image className="w-full" src="/images/shareio/4.avif" alt="Footer design for Shareio by Klad" width={1720} height={697} />
+      <SectionMedia>
+        <CaseVideo className="w-full aspect-[3840/2548]" src="https://klad.b-cdn.net/shareio/F_35%20screen%20mockup_1.mp4" poster="/images/posters/shareio/7.jpg" />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/4.avif" alt="Footer design for Shareio by Klad" width={1720} height={697} />
       </SectionMedia>
 
       {/* Footer */}

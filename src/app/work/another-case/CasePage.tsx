@@ -1,6 +1,3 @@
-'use client'
-
-import { useTheme } from 'next-themes'
 import Image from 'next/image'
 
 import { SectionMedia, SectionText } from '@/app/work/sections'
@@ -8,10 +5,6 @@ import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
 
 export function CasePage() {
-  const { setTheme } = useTheme()
-
-  setTheme('dark')
-
   return (
     <main className="pb-10">
 
@@ -84,7 +77,7 @@ export function CasePage() {
       </header>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/case.png" alt="Case Image" width={1920} height={1280} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/case.png" alt="Case Image" width={1920} height={1280} />
       </SectionMedia>
 
       <SectionText align="right">
@@ -96,7 +89,7 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/case.png" alt="Case Image" width={1920} height={1280} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/case.png" alt="Case Image" width={1920} height={1280} />
       </SectionMedia>
 
       <SectionText title="Make Mint fresh again" align="center">
@@ -104,7 +97,7 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/case.png" alt="Case Image" width={1920} height={1280} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/case.png" alt="Case Image" width={1920} height={1280} />
       </SectionMedia>
 
       <SectionText align="left">

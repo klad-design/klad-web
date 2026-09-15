@@ -1,5 +1,3 @@
-'use client'
-
 import Image from 'next/image'
 
 import { Button } from '@/components/ui/Button'
@@ -32,9 +30,9 @@ export function Call() {
       <div className="grid-container mt-10 lg:mt-[90px]">
         <div className="col-span-2 md:col-span-full lg:col-span-2 lg:col-start-2 lg:pr-5">
           <div className="md:max-w-[560px] lg:max-w-full md:mx-auto grid grid-cols-3 gap-2.5">
-            <Image className="saturate-0 contrast-100 brightness-90" src="/images/call-1.png" alt="City image" width={900} height={600} />
-            <Image className="saturate-0 contrast-100 brightness-90" src="/images/call-2.png" alt="City image" width={900} height={600} />
-            <Image className="saturate-0 contrast-100 brightness-90" src="/images/call-3.png" alt="City image" width={900} height={600} />
+            <Image className="saturate-0 contrast-100 brightness-90" src="/images/call-1.png" alt="City image" width={900} height={600} sizes="(min-width: 1024px) 14vw, (min-width: 768px) 180px, 33vw" />
+            <Image className="saturate-0 contrast-100 brightness-90" src="/images/call-2.png" alt="City image" width={900} height={600} sizes="(min-width: 1024px) 14vw, (min-width: 768px) 180px, 33vw" />
+            <Image className="saturate-0 contrast-100 brightness-90" src="/images/call-3.png" alt="City image" width={900} height={600} sizes="(min-width: 1024px) 14vw, (min-width: 768px) 180px, 33vw" />
           </div>
         </div>
         <div className="flex flex-col items-start gap-[30px] col-span-2 lg:col-span-1 md:col-start-2 lg:col-start-4 mt-10 md:mt-[50px] lg:mt-0 lg:max-w-[320px]">

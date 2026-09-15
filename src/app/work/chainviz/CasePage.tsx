@@ -1,17 +1,11 @@
-'use client'
-
-import { useTheme } from 'next-themes'
 import Image from 'next/image'
 
 import { SectionMedia, SectionText } from '@/app/work/sections'
 import { Button } from '@/components/ui/Button'
+import { CaseVideo } from '@/components/ui/CaseVideo'
 import { TextBlur } from '@/components/ui/TextBlur'
 
 export function CasePage() {
-  const { setTheme } = useTheme()
-
-  setTheme('dark')
-
   return (
     <main className="pb-10">
 
@@ -51,7 +45,7 @@ export function CasePage() {
           <div className="flex flex-col gap-[3px]">
             <h2 className="blur-regular uppercase p4">Task</h2>
             <div className="p5">
-              <p>W3F funded project to create a realtime WebGL Polkadot and Kusama valiadtor ecosystem visualisation, including parachain views and validator explorer.</p>
+              <p>W3F funded project to create a realtime WebGL Polkadot and Kusama validator ecosystem visualisation, including parachain views and validator explorer.</p>
             </div>
           </div>
           <div className="flex flex-col gap-[3px]">
@@ -84,7 +78,7 @@ export function CasePage() {
       </header>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/1.avif" alt="Chainviz brand graphics poster" width={1720} height={1029} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/1.avif" alt="Chainviz brand graphics poster" width={1720} height={1029} />
       </SectionMedia>
 
       <SectionText align="right">
@@ -94,11 +88,11 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/2.avif" alt="Logo emphasises the interdependence of elements within the validator space through the dynamic information display" width={1720} height={1496} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/2.avif" alt="Logo emphasises the interdependence of elements within the validator space through the dynamic information display" width={1720} height={1496} />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[2800/1570]" src="https://klad.b-cdn.net/chainviz/1_logo%20block%20animation_3.mp4" autoPlay loop muted playsInline preload="metadata" />
+        <CaseVideo className="w-full aspect-[2800/1570]" src="https://klad.b-cdn.net/chainviz/1_logo%20block%20animation_3.mp4" poster="/images/posters/chainviz/1.jpg" />
       </SectionMedia>
 
       <SectionText title="A Living Mark for a Living Network" align="center">
@@ -107,7 +101,7 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <video className="w-full aspect-[2800/1606]" src="https://klad.b-cdn.net/chainviz/3_blockchain%20rythm%20animation.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[2800/1606]" src="https://klad.b-cdn.net/chainviz/3_blockchain%20rythm%20animation.mp4" poster="/images/posters/chainviz/2.jpg" />
       </SectionMedia>
 
       <SectionText align="right">
@@ -116,7 +110,7 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/5.avif" alt="Graphic planes 3D model anatomy" width={1720} height={752} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/5.avif" alt="Graphic planes 3D model anatomy" width={1720} height={752} />
       </SectionMedia>
 
       <SectionText align="left">
@@ -125,11 +119,11 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/6.avif" alt="Visualisation of the validator space" width={1720} height={1331} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/6.avif" alt="Visualisation of the validator space" width={1720} height={1331} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/7.avif" alt="Contextual brand graphics for Chainviz" width={1720} height={1749} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/7.avif" alt="Contextual brand graphics for Chainviz" width={1720} height={1749} />
       </SectionMedia>
 
       <SectionText align="center">
@@ -138,7 +132,7 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/8.avif" alt="3D visualisation of the validator space in light theme" width={1720} height={1878} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/8.avif" alt="3D visualisation of the validator space in light theme" width={1720} height={1878} />
       </SectionMedia>
 
       <SectionText align="right">
@@ -147,45 +141,45 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <video className="w-full aspect-[2800/1578]" src="https://klad.b-cdn.net/chainviz/4_blockchain%20model%20preview%20animation.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[2800/1578]" src="https://klad.b-cdn.net/chainviz/4_blockchain%20model%20preview%20animation.mp4" poster="/images/posters/chainviz/3.jpg" />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/10.avif" alt="Mobile responsive UI design for the app Chainviz" width={1720} height={1146} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/10.avif" alt="Mobile responsive UI design for the app Chainviz" width={1720} height={1146} />
       </SectionMedia>
 
       <SectionText align="left">
         <p>Parachains are presented as parallel layers within the validator space, helping users understand how multiple chains operate simultaneously within a single ecosystem. Instead of treating them as separate datasets, the UI integrates them into the same spatial logic as the relay chain, making their relationships immediately visible.</p>
         <p>Each parachain can be surfaced as its own structured grouping, where validators are visually distributed across arcs and clusters, allowing users to see how responsibility, activity, and coverage shift across the network.</p>
-        <p>n the interface, switching to a parachain view refocuses the main screen on that chain’s data while preserving the overall spatial context. Validators connected to a selected parachain become more prominent, and their distribution reveals how validation is allocated across different parts of the ecosystem.</p>
+        <p>In the interface, switching to a parachain view refocuses the main screen on that chain’s data while preserving the overall spatial context. Validators connected to a selected parachain become more prominent, and their distribution reveals how validation is allocated across different parts of the ecosystem.</p>
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/11.avif" alt="Blockchain app visualisation preview" width={1720} height={1394} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/11.avif" alt="Blockchain app visualisation preview" width={1720} height={1394} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/12.avif" alt="Parachains visualisation for Chainviz app" width={1720} height={2050} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/12.avif" alt="Parachains visualisation for Chainviz app" width={1720} height={2050} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/13.avif" alt="SParachains interconnected future of blockchains, where every chain plays pivotal role in a seamless digital ecosystem." width={1720} height={1468} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/13.avif" alt="SParachains interconnected future of blockchains, where every chain plays pivotal role in a seamless digital ecosystem." width={1720} height={1468} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/14.avif" alt="Parachain view with use of sub-graphs in the app UI" width={1720} height={1133} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/14.avif" alt="Parachain view with use of sub-graphs in the app UI" width={1720} height={1133} />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[2800/2760]" src="https://klad.b-cdn.net/chainviz/5_means%20of%20ui%20animation_3.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[2800/2760]" src="https://klad.b-cdn.net/chainviz/5_means%20of%20ui%20animation_3.mp4" poster="/images/posters/chainviz/4.jpg" />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/15.avif" alt="UI for selection and rich view of validators in Chainviz" width={1720} height={1192} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/15.avif" alt="UI for selection and rich view of validators in Chainviz" width={1720} height={1192} />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[2800/1682]" src="https://klad.b-cdn.net/chainviz/6_validator%20hover%20animation.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[2800/1682]" src="https://klad.b-cdn.net/chainviz/6_validator%20hover%20animation.mp4" poster="/images/posters/chainviz/5.jpg" />
       </SectionMedia>
 
       <SectionText align="right">
@@ -194,7 +188,7 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <video className="w-full aspect-[2800/2066]" src="https://klad.b-cdn.net/chainviz/7_load%20and%20era%20animation.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[2800/2066]" src="https://klad.b-cdn.net/chainviz/7_load%20and%20era%20animation.mp4" poster="/images/posters/chainviz/6.jpg" />
       </SectionMedia>
 
       <SectionText align="center">
@@ -203,19 +197,19 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/16.avif" alt="UI design for the XCM messages visualisation" width={1720} height={1263} />
-      </SectionMedia>        
-
-      <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/19.avif" alt="Light theme app UI design for Chainviz" width={1720} height={1152} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/16.avif" alt="UI design for the XCM messages visualisation" width={1720} height={1263} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/20.avif" alt="Chainviz brand logo on hardware" width={1720} height={910} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/19.avif" alt="Light theme app UI design for Chainviz" width={1720} height={1152} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/chainviz/21.avif" alt="Brand identity t-shirt design Chainviz" width={1720} height={1363} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/20.avif" alt="Chainviz brand logo on hardware" width={1720} height={910} />
+      </SectionMedia>
+
+      <SectionMedia>
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/21.avif" alt="Brand identity t-shirt design Chainviz" width={1720} height={1363} />
       </SectionMedia>
 
       {/* Footer */}

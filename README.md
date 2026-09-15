@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KLAD website
 
-## Getting Started
+Next.js website for Klad Syndicate. Use pnpm; `pnpm-lock.yaml` is the dependency lockfile.
 
-First, run the development server:
+## Development
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
+Use Node.js 22.13 or later and pnpm 11.24.0.
+
+```sh
+pnpm install --frozen-lockfile
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Staging
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Deploy the `staging/audit-fixes` branch with these settings:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Install command: `pnpm install --frozen-lockfile`
+- Build command: `pnpm build:staging`
+- Start command, when required by the host: `pnpm start`
+- Environment variable: `STAGING=1`
 
-## Learn More
+The staging build sends `X-Robots-Tag: noindex, nofollow` and includes matching page metadata. Use a separate preview deployment/domain; `main` remains the production branch. DataLane stays accessible by its direct URL and is intentionally absent from portfolio navigation and the sitemap.
 
-To learn more about Next.js, take a look at the following resources:
+To review the staging build locally:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```sh
+pnpm build:staging
+STAGING=1 pnpm start --hostname 127.0.0.1 --port 3100
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Checks
 
-## Deploy on Vercel
+```sh
+pnpm lint
+pnpm build:staging
+pnpm test:staging
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The browser smoke check expects the local staging server at `http://127.0.0.1:3100`. Set `STAGING_URL` to check another preview. Install its Chromium browser once with `pnpm exec playwright install chromium`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Visual acceptance preserves the 10px desktop text, grain, blur treatment, monochrome portfolio covers, and scroll-driven portrait sequence. Check the work title, Team section, mobile menu, and a case study at desktop, tablet, and mobile widths before merging.

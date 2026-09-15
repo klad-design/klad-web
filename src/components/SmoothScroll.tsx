@@ -7,8 +7,11 @@ import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ReactLenis } from 'lenis/react'
+import { useTheme } from 'next-themes'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
+
+import { useReducedMotion } from '@/components/useReducedMotion'
 
 interface SmoothScrollProps {
   children: ReactNode
@@ -17,6 +20,12 @@ interface SmoothScrollProps {
 export function SmoothScroll({ children }: SmoothScrollProps) {
   const lenisRef = useRef<LenisRef>(null)
   const pathname = usePathname()
+  const { setTheme } = useTheme()
+  const reducedMotion = useReducedMotion()
+
+  useEffect(() => {
+    setTheme(pathname.startsWith('/work/') ? 'dark' : 'light')
+  }, [pathname, setTheme])
 
   useEffect(() => {
     function update(time: number) {
@@ -30,6 +39,9 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
 
   useGSAP(() => {
     gsap.registerPlugin(ScrollTrigger)
+
+    if (reducedMotion)
+      return
 
     document.querySelectorAll('.textBlur').forEach((el) => {
       const isHorizontal = el.classList.contains('textBlurHorizontal')
@@ -52,12 +64,13 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
         scrub: 1,
       })
 
-      setTimeout(() => st.refresh(), 100)
+      gsap.delayedCall(0.1, () => st.refresh())
     })
-  }, { dependencies: [pathname] })
+  }, { dependencies: [pathname, reducedMotion], revertOnUpdate: true })
 
   useEffect(() => {
-    ScrollTrigger.getAll().forEach(t => t.refresh())
+    const timer = setTimeout(() => ScrollTrigger.refresh(), 100)
+    return () => clearTimeout(timer)
   }, [pathname])
 
   return (
@@ -65,7 +78,7 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
       key={pathname}
       root
       ref={lenisRef}
-      options={{ lerp: 0.1, duration: 1.5, infinite: pathname === '/' }}
+      options={{ autoRaf: false, lerp: 0.1, smoothWheel: !reducedMotion, infinite: pathname === '/' && !reducedMotion }}
     >
       <div className="overflow-hidden">
         {children}

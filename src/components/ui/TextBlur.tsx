@@ -1,5 +1,3 @@
-'use client'
-
 import type { ReactNode } from 'react'
 
 import clsx from 'clsx'
@@ -10,11 +8,11 @@ interface TextBlurProps {
   children: ReactNode
 }
 
-function Text({ children, isAbsolute }: TextBlurProps & { isAbsolute?: boolean }) {
+function Text({ children }: TextBlurProps) {
   return (
-    <div className={clsx({ absolute: isAbsolute, relative: !isAbsolute })}>
-      <div className="absolute inset-0 blur-[3px] transform-gpu" aria-hidden>{children}</div>
-      <div className="absolute inset-0 blur-[1.5px] transform-gpu" aria-hidden>{children}</div>
+    <div className="relative">
+      <div className="absolute inset-0 blur-[3px] transform-gpu" aria-hidden inert>{children}</div>
+      <div className="absolute inset-0 blur-[1.5px] transform-gpu" aria-hidden inert>{children}</div>
       <div className="relative blur-[0.6px] transform-gpu">{children}</div>
     </div>
   )
@@ -32,6 +30,7 @@ export function TextBlur({ isBold, isHorizontal, children }: TextBlurProps) {
                 'translate-y-[calc(var(--value)_*_3_*_1%)] md:translate-y-0 md:translate-x-[calc(var(--value)_*_3_*_1%)]': isHorizontal,
               })}
               aria-hidden
+              inert
             >
               {children}
             </span>
@@ -41,6 +40,7 @@ export function TextBlur({ isBold, isHorizontal, children }: TextBlurProps) {
                 'translate-y-[calc(var(--value)_*_2_*_1%)] md:translate-y-0 md:translate-x-[calc(var(--value)_*_2_*_1%)]': isHorizontal,
               })}
               aria-hidden
+              inert
             >
               {children}
             </span>
@@ -50,6 +50,7 @@ export function TextBlur({ isBold, isHorizontal, children }: TextBlurProps) {
                 'translate-y-[calc(var(--value)_*_1_*_1%)] md:translate-y-0 md:translate-x-[calc(var(--value)_*_1_*_1%)]': isHorizontal,
               })}
               aria-hidden
+              inert
             >
               {children}
             </span>

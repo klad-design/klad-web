@@ -1,17 +1,11 @@
-'use client'
-
-import { useTheme } from 'next-themes'
 import Image from 'next/image'
 
 import { SectionMedia, SectionText } from '@/app/work/sections'
 import { Button } from '@/components/ui/Button'
+import { CaseVideo } from '@/components/ui/CaseVideo'
 import { TextBlur } from '@/components/ui/TextBlur'
 
 export function CasePage() {
-  const { setTheme } = useTheme()
-
-  setTheme('dark')
-
   return (
     <main className="pb-10">
 
@@ -86,7 +80,7 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <video className="w-full aspect-[1720/1152]" src="https://klad.b-cdn.net/circus/1.mp4" autoPlay loop muted playsInline preload="metadata" />
+        <CaseVideo className="w-full aspect-[1720/1152]" src="https://klad.b-cdn.net/circus/1.mp4" poster="/images/posters/circus/1.jpg" />
       </SectionMedia>
 
       <SectionText align="right">
@@ -95,49 +89,49 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <video className="w-full aspect-[1720/1062]" src="https://klad.b-cdn.net/circus/2.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[1720/1062]" src="https://klad.b-cdn.net/circus/2.mp4" poster="/images/posters/circus/2.jpg" />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/circus/3.avif" alt="Kitchen robots blueprints done by Klad" width={1720} height={660} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/circus/3.avif" alt="Kitchen robots blueprints done by Klad" width={1720} height={660} />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[3440/1860]" src="https://klad.b-cdn.net/circus/3.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[3440/1860]" src="https://klad.b-cdn.net/circus/3.mp4" poster="/images/posters/circus/3.jpg" />
       </SectionMedia>
 
-       <SectionText align="center">
+      <SectionText align="center">
         <p>One of the standout features is an interactive “look inside” effect. By moving the cursor across the machine, users can reveal its internal structure and explore how the system operates beneath the surface. This interaction transforms technical complexity into an intuitive, exploratory experience.</p>
       </SectionText>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2168]" src="https://klad.b-cdn.net/circus/4.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[3840/2168]" src="https://klad.b-cdn.net/circus/4.mp4" poster="/images/posters/circus/4.jpg" />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/circus/6.avif" alt="Rethinking food with AI-robotics brand gradient done by Klad" width={1720} height={1071} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/circus/6.avif" alt="Rethinking food with AI-robotics brand gradient done by Klad" width={1720} height={1071} />
       </SectionMedia>
 
-       <SectionText align="left">
+      <SectionText align="left">
         <p>Alongside the 3D layer, we animated existing 2D brand elements - gradients, logo and graphic accents - carefully integrating them into the motion language of the website. This ensured that the immersive visuals remained fully aligned with the established identity.</p>
         <p>As a result, we designed a highly engaging, visually striking website that not only showcases the product in depth but elevates the entire brand presence. The project was fully implemented in Webflow, translating complex 3D and motion ideas into a smooth and production-ready experience.</p>
         <p>Website design, development and 3D were provided by our team at Klad. The branding and website copy was provided by Ming Labs.</p>
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/circus/7.avif" alt="Mainframe 3D render for Circus Group done by Klad" width={1720} height={1188} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/circus/7.avif" alt="Mainframe 3D render for Circus Group done by Klad" width={1720} height={1188} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/circus/8.avif" alt="Refridgerator bluebrint render" width={1720} height={590} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/circus/8.avif" alt="Refridgerator bluebrint render" width={1720} height={590} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/circus/9.avif" alt="Roboarm render for Circus Group done by Klad" width={1720} height={820} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/circus/9.avif" alt="Roboarm render for Circus Group done by Klad" width={1720} height={820} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/circus/10.avif" alt="Brand gradient Circus Group banner done by Klad" width={1720} height={667} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/circus/10.avif" alt="Brand gradient Circus Group banner done by Klad" width={1720} height={667} />
       </SectionMedia>
 
       {/* Footer */}

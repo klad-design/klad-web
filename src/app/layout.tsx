@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
+import process from 'node:process'
+
 import { ThemeProvider } from 'next-themes'
 
 import { Header } from '@/components/Header'
@@ -10,6 +12,8 @@ import '@/styles/globals.css'
 import 'lenis/dist/lenis.css'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://klad.design'),
+  robots: process.env.STAGING === '1' ? { index: false, follow: false } : undefined,
   title: 'Klad Syndicate',
   description: 'Klad Syndicate',
   icons: {
@@ -17,35 +21,35 @@ export const metadata: Metadata = {
       {
         rel: 'icon',
         type: 'image/ico',
-        url: 'images/favicon/favicon.ico',
+        url: '/images/favicon/favicon.ico',
       },
       {
         rel: 'icon',
         type: 'image/png',
         sizes: '16x16',
-        url: 'images/favicon/favicon-16x16.png',
+        url: '/images/favicon/favicon-16x16.png',
       },
       {
         rel: 'icon',
         type: 'image/png',
         sizes: '32x32',
-        url: 'images/favicon/favicon-32x32.png',
+        url: '/images/favicon/favicon-32x32.png',
       },
       {
         rel: 'icon',
         type: 'image/png',
         sizes: '192x192',
-        url: 'images/favicon/android-chrome-192x192.png',
+        url: '/images/favicon/android-chrome-192x192.png',
       },
       {
         rel: 'icon',
         type: 'image/png',
         sizes: '512x512',
-        url: 'images/favicon/android-chrome-512x512.png',
+        url: '/images/favicon/android-chrome-512x512.png',
       },
     ],
   },
-  manifest: 'images/favicon/site.webmanifest',
+  manifest: '/images/favicon/site.webmanifest',
 }
 
 interface RootLayoutProps {

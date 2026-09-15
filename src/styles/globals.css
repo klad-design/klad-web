@@ -170,6 +170,11 @@
     @apply relative uppercase leading-none outline-0;
   }
 
+  a:focus-visible, button:focus-visible {
+    outline: 1px solid currentColor;
+    outline-offset: 4px;
+  }
+
   .button::before,
   .button::after {
     @apply inline-flex items-center absolute inset-0 content-[attr(aria-label)] transition-all duration-150 opacity-0 transform-gpu;
@@ -234,5 +239,31 @@
 
   .blurred.blurred--active > span {
     @apply relative blur-regular z-10 transform-gpu;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .home-loop {
+    display: none;
+  }
+
+  .team-biographies {
+    clip-path: none;
+  }
+
+  .team-track {
+    width: 100%;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  .team-track .memberDescription {
+    width: 100%;
   }
 }

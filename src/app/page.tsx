@@ -112,8 +112,6 @@ export default function Home() {
       <DarkSections>
         <Hero />
         <Services />
-        <Team />
-        <Call />
       </DarkSections>
       <script
         type="application/ld+json"

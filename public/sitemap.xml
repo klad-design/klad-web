@@ -39,9 +39,15 @@
 
   <!-- Privacy -->
   <url>
-    <loc>https://klad.design/privacy</loc>
+    <loc>https://klad.design/privacy.txt</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
+
+  <url><loc>https://klad.design/work/circus</loc></url>
+  <url><loc>https://klad.design/work/stars-honey</loc></url>
+  <url><loc>https://klad.design/work/linux-mint</loc></url>
+  <url><loc>https://klad.design/work/shareio</loc></url>
+  <url><loc>https://klad.design/work/chainviz</loc></url>
 
 </urlset>

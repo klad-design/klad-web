@@ -10,6 +10,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
+import { useReducedMotion } from '@/components/useReducedMotion'
 
 const cities = [
   { name: 'TBILISI', timeZone: 'Asia/Tbilisi' },
@@ -34,11 +35,12 @@ export function Header() {
 
   const smoother = useLenis()
   const pathname = usePathname()
+  const reducedMotion = useReducedMotion()
 
   // Menu items animation
   const { contextSafe } = useGSAP({ scope: menuRef })
   const handleOpenAutoFocus = contextSafe(() => {
-    if (!menuRef.current)
+    if (!menuRef.current || reducedMotion)
       return
 
     const ctx = gsap.context(() => {
@@ -67,7 +69,7 @@ export function Header() {
     })
 
     return () => mm.revert()
-  }, [isOpenMenu])
+  }, [isOpenMenu, smoother])
 
   // Update time
   useEffect(() => {

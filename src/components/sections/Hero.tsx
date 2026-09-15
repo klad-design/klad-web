@@ -1,5 +1,3 @@
-'use client'
-
 import Image from 'next/image'
 
 import { TextBlur } from '@/components/ui/TextBlur'
@@ -25,6 +23,7 @@ export function Hero() {
             alt="World map"
             width={1410}
             height={928}
+            sizes="(min-width: 1024px) 90vw, (min-width: 768px) 133vw, 140vw"
             aria-hidden
           />
           <Image
@@ -33,6 +32,7 @@ export function Hero() {
             alt="World map"
             width={1410}
             height={928}
+            sizes="(min-width: 1024px) 90vw, (min-width: 768px) 133vw, 140vw"
             aria-hidden
           />
           <Image
@@ -41,6 +41,7 @@ export function Hero() {
             alt="World map"
             width={1410}
             height={928}
+            sizes="(min-width: 1024px) 90vw, (min-width: 768px) 133vw, 140vw"
             aria-hidden
           />
           <Image
@@ -49,6 +50,7 @@ export function Hero() {
             alt="World map"
             width={1410}
             height={928}
+            sizes="(min-width: 1024px) 90vw, (min-width: 768px) 133vw, 140vw"
           />
         </div>
       </div>

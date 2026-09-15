@@ -1,17 +1,11 @@
-'use client'
-
-import { useTheme } from 'next-themes'
 import Image from 'next/image'
 
 import { SectionMedia, SectionText } from '@/app/work/sections'
 import { Button } from '@/components/ui/Button'
+import { CaseVideo } from '@/components/ui/CaseVideo'
 import { TextBlur } from '@/components/ui/TextBlur'
 
 export function CasePage() {
-  const { setTheme } = useTheme()
-
-  setTheme('dark')
-
   return (
     <main className="pb-10">
 
@@ -83,7 +77,7 @@ export function CasePage() {
       </header>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2024]" src="https://klad.b-cdn.net/linux-mint/F_31_2.mp4" autoPlay loop muted playsInline preload="metadata" />
+        <CaseVideo className="w-full aspect-[3840/2024]" src="https://klad.b-cdn.net/linux-mint/F_31_2.mp4" poster="/images/posters/linux-mint/1.jpg" />
       </SectionMedia>
 
       <SectionText align="right">
@@ -93,11 +87,11 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <video className="w-full aspect-[1920/1080]" src="https://klad.b-cdn.net/linux-mint/F_02%20build%20for%20connection.mp4" autoPlay loop muted playsInline preload="metadata" />
+        <CaseVideo className="w-full aspect-[1920/1080]" src="https://klad.b-cdn.net/linux-mint/F_02%20build%20for%20connection.mp4" poster="/images/posters/linux-mint/2.jpg" />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[1920/1168]" src="https://klad.b-cdn.net/linux-mint/F_03%20lm%20logo_2.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[1920/1168]" src="https://klad.b-cdn.net/linux-mint/F_03%20lm%20logo_2.mp4" poster="/images/posters/linux-mint/3.jpg" />
       </SectionMedia>
 
       <SectionText title="Make Mint fresh again" align="center">
@@ -105,7 +99,7 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/1.avif" alt="Social media posts design concepts for Linux Mint by Klad" width={1720} height={974} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/1.avif" alt="Social media posts design concepts for Linux Mint by Klad" width={1720} height={974} />
       </SectionMedia>
 
       <SectionText align="right">
@@ -114,7 +108,7 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/2.avif" alt="Next wave of software banner design for Linux Mint by Klad" width={1720} height={1690} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/2.avif" alt="Next wave of software banner design for Linux Mint by Klad" width={1720} height={1690} />
       </SectionMedia>
 
       <SectionText align="left">
@@ -123,11 +117,11 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <video className="w-full aspect-[1920/1052]" src="https://klad.b-cdn.net/linux-mint/F_07%20banner_3.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[1920/1052]" src="https://klad.b-cdn.net/linux-mint/F_07%20banner_3.mp4" poster="/images/posters/linux-mint/4.jpg" />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/4.avif" alt="Reddit and Twitter social media post layout design for Linux Mint by Klad" width={1720} height={860} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/4.avif" alt="Reddit and Twitter social media post layout design for Linux Mint by Klad" width={1720} height={860} />
       </SectionMedia>
 
       <SectionText align="center">
@@ -135,35 +129,35 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/9.avif" alt="Clarity, identity, freedom poster design concept for Linux MInt by Klad" width={1720} height={1963} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/9.avif" alt="Clarity, identity, freedom poster design concept for Linux MInt by Klad" width={1720} height={1963} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/12.avif" alt="Brand shot compilation accenting user-centricity" width={1720} height={1296} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/12.avif" alt="Brand shot compilation accenting user-centricity" width={1720} height={1296} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/13.avif" alt="USB stick brand design concept and website browser look concept for Linux Mint" width={1720} height={860} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/13.avif" alt="USB stick brand design concept and website browser look concept for Linux Mint" width={1720} height={860} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/14.avif" alt="Mobile website design and custom keyboard keys in branded colours for Linux Mint" width={1720} height={860} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/14.avif" alt="Mobile website design and custom keyboard keys in branded colours for Linux Mint" width={1720} height={860} />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[1920/1032]" src="https://klad.b-cdn.net/linux-mint/F_13%20open-source.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[1920/1032]" src="https://klad.b-cdn.net/linux-mint/F_13%20open-source.mp4" poster="/images/posters/linux-mint/5.jpg" />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/16.avif" alt="New desktop menu UI look concept proposal for Linux Mint on a brand patter" width={1720} height={860} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/16.avif" alt="New desktop menu UI look concept proposal for Linux Mint on a brand patter" width={1720} height={860} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/15.avif" alt="Where Linux journey begins in Linux suggested brand typography" width={1720} height={672} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/15.avif" alt="Where Linux journey begins in Linux suggested brand typography" width={1720} height={672} />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[1920/1080]" src="https://klad.b-cdn.net/linux-mint/F_16%20web%20mockup_7.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[1920/1080]" src="https://klad.b-cdn.net/linux-mint/F_16%20web%20mockup_7.mp4" poster="/images/posters/linux-mint/6.jpg" />
       </SectionMedia>
 
       <SectionText align="right">
@@ -174,51 +168,51 @@ export function CasePage() {
       </SectionText>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/18.avif" alt="Dark version of website redesign for Linux Mint" width={1720} height={1998} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/18.avif" alt="Dark version of website redesign for Linux Mint" width={1720} height={1998} />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/2846]" src="https://klad.b-cdn.net/linux-mint/F_18%20launch_2.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[3840/2846]" src="https://klad.b-cdn.net/linux-mint/F_18%20launch_2.mp4" poster="/images/posters/linux-mint/7.jpg" />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/19.avif" alt="New login UI desktop design for Cinnamon" width={1720} height={1078} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/19.avif" alt="New login UI desktop design for Cinnamon" width={1720} height={1078} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/20.avif" alt="Redefined desktop interface dark poster design for Linux Mint by Klad" width={1720} height={2231} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/20.avif" alt="Redefined desktop interface dark poster design for Linux Mint by Klad" width={1720} height={2231} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/21.avif" alt="Crisp new look desktop UI concept banner" width={1720} height={1152} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/21.avif" alt="Crisp new look desktop UI concept banner" width={1720} height={1152} />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[1920/1080]" src="https://klad.b-cdn.net/linux-mint/F_21%20install%20process.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[1920/1080]" src="https://klad.b-cdn.net/linux-mint/F_21%20install%20process.mp4" poster="/images/posters/linux-mint/8.jpg" />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/23.avif" alt="Desktop UI redesign for menus, icons and loaders" width={1720} height={899} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/23.avif" alt="Desktop UI redesign for menus, icons and loaders" width={1720} height={899} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/26.avif" alt="Still Mint, just better concept banner design" width={1720} height={1146} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/26.avif" alt="Still Mint, just better concept banner design" width={1720} height={1146} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/27.avif" alt="What if Mint goes mobile concept shot design" width={1720} height={1491} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/27.avif" alt="What if Mint goes mobile concept shot design" width={1720} height={1491} />
       </SectionMedia>
 
       <SectionMedia>
-        <video className="w-full aspect-[3840/1700]" src="https://klad.b-cdn.net/linux-mint/F_25%20phone%20mockup_1.mp4" autoPlay loop muted playsInline preload="none" />
+        <CaseVideo className="w-full aspect-[3840/1700]" src="https://klad.b-cdn.net/linux-mint/F_25%20phone%20mockup_1.mp4" poster="/images/posters/linux-mint/9.jpg" />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/28.avif" alt="Light theme terminal UI design" width={1720} height={965} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/28.avif" alt="Light theme terminal UI design" width={1720} height={965} />
       </SectionMedia>
 
       <SectionMedia>
-        <Image className="w-full" src="/images/linux-mint/29.avif" alt="Tote bag merch design in Linux Mint brand green" width={1720} height={1511} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/linux-mint/29.avif" alt="Tote bag merch design in Linux Mint brand green" width={1720} height={1511} />
       </SectionMedia>
 
       {/* Footer */}

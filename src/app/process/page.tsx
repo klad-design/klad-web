@@ -10,7 +10,9 @@ export const metadata: Metadata = {
   description: 'A transparent process for your project, from discovery to execution. Clear scoping, dedicated management and a structure built for long-term collaboration.',
 }
 
-function getNextStartDate(daysToAdd: number = 7) {
+export const revalidate = 3600
+
+function getNextStartDate(daysToAdd: number) {
   const date = new Date()
 
   date.setDate(date.getDate() + daysToAdd)
@@ -22,11 +24,11 @@ function getNextStartDate(daysToAdd: number = 7) {
   })
 }
 
-const brandingDate = getNextStartDate(7)
-const designDate = getNextStartDate(12)
-const motionDate = getNextStartDate(3)
-
 export default function Process() {
+  const brandingDate = getNextStartDate(7)
+  const designDate = getNextStartDate(12)
+  const motionDate = getNextStartDate(3)
+
   return (
     <section className="md:flex md:flex-col md:min-h-svh pb-2.5 pt-[65px] md:pt-[150px] lg:pt-0">
       <h1 className="md:text-nowrap text-[20vw] md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase -ml-1.5 lg:-ml-2.5 -rotate-2">

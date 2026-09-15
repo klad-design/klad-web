@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
+import { useReducedMotion } from '@/components/useReducedMotion'
 
 const cases = [
   {
@@ -71,7 +72,7 @@ const cases = [
     link: '/work/chainviz',
     description: () => (
       <>
-        <p>W3F funded project to create a realtime WebGL Polkadot and Kusama valiadtor ecosystem visualisation, including parachain views and validator explorer.</p>
+        <p>W3F funded project to create a realtime WebGL Polkadot and Kusama validator ecosystem visualisation, including parachain views and validator explorer.</p>
         <p>We've created a brand concept suitable for a minimalistic data visualisation. Developed a 3D model to display the validator space. Assembled panel-based web app UI/UX.</p>
       </>
     ),
@@ -85,6 +86,7 @@ export default function WorkPage() {
   const menuRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(1)
   const [selectedIndex, setSelectedIndex] = useState(1)
+  const reducedMotion = useReducedMotion()
 
   // ✅ Minimal fix: warm the browser cache for all case images once.
   useEffect(() => {
@@ -109,12 +111,14 @@ export default function WorkPage() {
         })
       }
 
-      if (cursorRef.current && cursorAreaRef.current) {
+      if (cursorRef.current && cursorAreaRef.current && !reducedMotion) {
+        const area = cursorAreaRef.current
         const xTo = gsap.quickTo(cursorRef.current, 'x', { ease: 'power3' })
         const yTo = gsap.quickTo(cursorRef.current, 'y', { ease: 'power3' })
 
         function onMove(e: MouseEvent) {
-          if (!cursorRef.current || !cursorAreaRef.current) return
+          if (!cursorRef.current || !cursorAreaRef.current)
+            return
 
           const cursorRect = cursorRef.current.getBoundingClientRect()
           const areaRect = cursorAreaRef.current.getBoundingClientRect()
@@ -134,27 +138,34 @@ export default function WorkPage() {
           gsap.to(cursorRef.current, { opacity: 0 })
         }
 
-        cursorAreaRef.current.addEventListener('mousemove', onMove)
-        cursorAreaRef.current.addEventListener('mouseleave', onLeave)
+        area.addEventListener('mousemove', onMove)
+        area.addEventListener('mouseleave', onLeave)
+
+        return () => {
+          area.removeEventListener('mousemove', onMove)
+          area.removeEventListener('mouseleave', onLeave)
+        }
       }
     })
-  }, { scope: containerRef })
+  }, { scope: containerRef, dependencies: [reducedMotion], revertOnUpdate: true })
 
   const { contextSafe } = useGSAP(() => {
-    gsap.fromTo('.case-anim-target', { opacity: 0 }, { opacity: 1, duration: 0.5 })
-  }, { scope: containerRef, dependencies: [activeIndex] })
+    gsap.fromTo('.case-anim-target', { opacity: 0 }, { opacity: 1, duration: reducedMotion ? 0 : 0.5 })
+  }, { scope: containerRef, dependencies: [activeIndex, reducedMotion], revertOnUpdate: true })
 
   const handleCaseChange = contextSafe((index: number) => {
-    if (index === selectedIndex) return
+    if (index === selectedIndex)
+      return
 
     setSelectedIndex(index)
 
+    gsap.killTweensOf('.case-anim-target')
+
     gsap.to('.case-anim-target', {
       opacity: 0,
-      duration: 0.1,
+      duration: reducedMotion ? 0 : 0.1,
       onComplete: () => {
         setActiveIndex(index)
-        gsap.to('.case-anim-target', { opacity: 1, duration: 0.3 })
       },
     })
   })
@@ -173,6 +184,8 @@ export default function WorkPage() {
                 key={title}
                 label={title}
                 isActive={selectedIndex === index}
+                aria-pressed={selectedIndex === index}
+                className="shrink-0"
                 onClick={() => handleCaseChange(index)}
               />
             ))}
@@ -180,10 +193,10 @@ export default function WorkPage() {
         </div>
 
         {/* Title */}
-        <div className="case-anim-target mb-2.5 md:mb-6 col-span-full mt-9 md:mt-0 md:col-start-2 md:col-end-5">
-          <div className="text-[20vw] md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase -ml-3 lg:-ml-2.5 -rotate-2">
+        <div className="case-anim-target @container mb-2.5 md:mb-6 col-span-full mt-9 md:mt-0 md:col-start-2 md:col-end-5">
+          <h1 className="text-[14cqw] md:text-[min(100px,14cqw)] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase -ml-1.5 lg:-ml-2.5 -rotate-2">
             <TextBlur isBold>{cases[activeIndex].title}</TextBlur>
-          </div>
+          </h1>
         </div>
 
         {/* Media */}
@@ -191,7 +204,7 @@ export default function WorkPage() {
           ref={cursorAreaRef}
           className="case-anim-target bg-black/10 dark:bg-white/10 col-span-full aspect-[355/295] grayscale relative md:col-start-2 md:col-end-5 mb-7 md:mb-5 lg:row-end-4 lg:row-start-2 lg:mb-0 lg:aspect-auto xl:mr-[130px]"
         >
-          <Link href={cases[activeIndex].link}>
+          <Link className="absolute inset-0" href={cases[activeIndex].link} aria-label={`View ${cases[activeIndex].title} case study`}>
             <Image
               className="size-full object-cover"
               src={cases[activeIndex].image}
