@@ -114,17 +114,29 @@ try {
     const context = await browser.newContext({ viewport: { width, height: 900 } })
     if (width === 1440) {
       // A real decoder failure must recover through the smaller rendition.
-      await context.route('**/videos/stars-honey/1-hd.mp4', route => route.fulfill({ contentType: 'video/mp4', body: 'invalid video' }))
+      await context.route('https://klad.b-cdn.net/stars-honey/1-hd.mp4', route => route.fulfill({ contentType: 'video/mp4', body: 'invalid video' }))
     }
     const page = await visit(context, '/work/stars-honey')
     const video = page.locator('video').first()
     await video.scrollIntoViewIfNeeded()
     await page.waitForFunction(() => {
       const video = document.querySelector('video')
-      return video?.currentSrc.endsWith('/videos/stars-honey/1.mp4') && video.currentTime > 0.1 && !video.paused
+      return video?.currentSrc === 'https://klad.b-cdn.net/stars-honey/1.mp4' && video.currentTime > 0.1 && !video.paused
     })
     assert.equal(await video.evaluate(el => el.controls), false)
     assert.equal(await page.getByRole('link', { name: 'Open video' }).count(), 0, 'Successful fallback must clear the error UI')
+    await page.goto(`${baseURL}/work/circus`)
+    const circusVideos = page.locator('video')
+    assert.equal(await circusVideos.count(), 4)
+    for (let index = 0; index < 4; index++) {
+      const clip = circusVideos.nth(index)
+      await clip.scrollIntoViewIfNeeded()
+      await page.waitForFunction((index) => {
+        const video = document.querySelectorAll('video')[index]
+        return video.currentSrc === `https://klad.b-cdn.net/circus/${index + 1}.mp4` && video.currentTime > 0.1 && !video.paused
+      }, index)
+    }
+    assert.equal(await page.getByRole('link', { name: 'Open video' }).count(), 0, 'Circus must play from the shared CDN files on desktop and mobile')
     await context.close()
   }
   console.log(`Responsive fixes passed in ${type.name()}: hybrid/touch scrolling, tablet headings, landscape Team, short desktop navigation, touch case selection and video fallback.`)

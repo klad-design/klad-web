@@ -63,7 +63,10 @@ await Promise.all(Array.from({ length: 2 }, async () => {
     await exec('ffmpeg', ['-v', 'error', '-y', '-i', cached, '-map', '0:v:0', '-an', '-vf', `scale=w='min(1920,iw)':h='min(1080,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2:flags=lanczos,setsar=1,fps=${fps}`, '-c:v', 'libx264', '-threads', '2', '-preset', 'medium', '-crf', '18', '-profile:v', 'high', '-level:v', '4.1', '-pix_fmt', 'yuv420p', '-maxrate', '12M', '-bufsize', '24M', '-movflags', '+faststart', `public${standard}`])
     const compatible = await probe(`public${standard}`)
     assert.ok(fitsLevel(compatible) && compatible.level === 41 && compatible.width <= 1920 && compatible.height <= 1080 && compatible.pix_fmt === 'yuv420p', `Invalid compatibility rendition: ${standard}`)
-    manifest[src] = { high, standard }
+    manifest[src] = {
+      high: high.replace(/^\/videos\//, 'https://klad.b-cdn.net/'),
+      standard: standard.replace(/^\/videos\//, 'https://klad.b-cdn.net/'),
+    }
     console.log(`Prepared ${standard}`)
   }
 }))

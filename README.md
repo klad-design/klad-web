@@ -48,6 +48,6 @@ Visual acceptance preserves the 10px desktop text, grain, blur treatment, intent
 
 ## Video assets
 
-`public/videos` contains smaller H.264 Level 4.1 renditions and full-resolution copies with corrected encoding metadata. Desktop playback preserves the original resolution; phones and tablets use the smaller files. A decode or loading failure retries the smaller file automatically.
+Videos load from the project folders on `https://klad.b-cdn.net/`, as mapped in `src/data/videos.json`. Desktop playback uses full-resolution files; phones and tablets use smaller H.264 Level 4.1 files. A decode or loading failure retries the smaller file automatically. Circus uses the same approved smaller files on all devices.
 
-To regenerate the assets and `src/data/videos.json`, install FFmpeg and run `node scripts/prepare-videos.mjs`. The script downloads the original CDN files into ignored `artifacts/video-sources`, repairs full-resolution metadata without re-encoding, and validates the generated files. These files deploy with the site, so staging does not require changes to the production CDN.
+`public/videos` retains the prepared upload files. To regenerate them and `src/data/videos.json`, install FFmpeg and run `node scripts/prepare-videos.mjs`. The script caches source files in ignored `artifacts/video-sources`, repairs full-resolution metadata without re-encoding, and validates the generated files. Upload each project folder directly to Bunny storage: `public/videos/chainviz/1-hd.mp4` maps to `https://klad.b-cdn.net/chainviz/1-hd.mp4`. Purge affected URLs after replacing existing files.
