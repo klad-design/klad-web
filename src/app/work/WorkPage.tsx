@@ -154,6 +154,15 @@ export default function WorkPage() {
   }, { scope: containerRef, dependencies: [activeIndex, reducedMotion], revertOnUpdate: true })
 
   const handleCaseChange = contextSafe((index: number) => {
+    const menu = menuRef.current
+    if (menu && menu.scrollWidth > menu.clientWidth) {
+      menu.children[index]?.scrollIntoView({
+        behavior: reducedMotion ? 'instant' : 'smooth',
+        block: 'nearest',
+        inline: 'nearest',
+      })
+    }
+
     if (index === selectedIndex)
       return
 
@@ -177,7 +186,7 @@ export default function WorkPage() {
         <div className="col-span-full md:col-span-1 md:row-start-2 md:row-end-4 lg:row-end-3">
           <div
             ref={menuRef}
-            className="overflow-auto md:overflow-visible flex gap-4 -mx-2.5 px-2.5 md:mx-0 md:px-0 md:items-start md:gap-[3px] md:flex-col"
+            className="overflow-x-auto overflow-y-hidden scroll-px-2.5 py-1 -my-1 md:overflow-visible md:py-0 md:my-0 flex gap-4 -mx-2.5 px-2.5 md:mx-0 md:px-0 md:items-start md:gap-[3px] md:flex-col"
           >
             {cases.map(({ title }, index) => (
               <Button

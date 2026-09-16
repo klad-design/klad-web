@@ -88,6 +88,28 @@ try {
   await work.waitForURL('**/pricing')
   await short.close()
 
+  for (const reducedMotion of ['no-preference', 'reduce']) {
+    const context = await browser.newContext({ viewport: { width: 390, height: 650 }, hasTouch: true, reducedMotion })
+    const page = await visit(context, '/work')
+    await page.evaluate(() => scrollTo(0, 40))
+    for (const name of ['Chainviz', 'Circus', 'Chainviz']) {
+      const button = page.getByRole('button', { name, exact: true })
+      const before = await button.boundingBox()
+      // Tap the visible edge: locator.click() would scroll the title for us.
+      await page.touchscreen.tap(Math.max(12, Math.min(378, before.x + before.width / 2)), before.y + before.height / 2)
+      await page.waitForFunction(name => document.querySelector('button[aria-pressed="true"]')?.getAttribute('aria-label') === name, name)
+      await page.waitForTimeout(650)
+      const after = await button.boundingBox()
+      assert.ok(after.x >= 9 && after.x + after.width <= 381, `${name}: selected title must be fully visible`)
+      assert.ok(Math.abs(await page.evaluate(() => scrollY) - 40) <= 1, 'Selecting a title must not move the page vertically')
+      const menu = await button.evaluate(el => ({ height: el.parentElement.clientHeight, scrollHeight: el.parentElement.scrollHeight, y: el.parentElement.scrollTop }))
+      assert.equal(menu.scrollHeight, menu.height, 'The case selector must have no vertical scroll range')
+      assert.equal(menu.y, 0)
+    }
+    await page.screenshot({ path: `${artifacts}/work-selected-${reducedMotion}.png` })
+    await context.close()
+  }
+
   for (const width of [390, 1440]) {
     const context = await browser.newContext({ viewport: { width, height: 900 } })
     if (width === 1440) {
@@ -105,7 +127,7 @@ try {
     assert.equal(await page.getByRole('link', { name: 'Open video' }).count(), 0, 'Successful fallback must clear the error UI')
     await context.close()
   }
-  console.log(`Responsive fixes passed in ${type.name()}: hybrid/touch scrolling, tablet headings, landscape Team, short desktop navigation and video fallback.`)
+  console.log(`Responsive fixes passed in ${type.name()}: hybrid/touch scrolling, tablet headings, landscape Team, short desktop navigation, touch case selection and video fallback.`)
 }
 finally {
   await browser.close()
