@@ -13,7 +13,7 @@ pnpm dev
 
 ## Staging
 
-Deploy the `staging/audit-fixes` branch with these settings:
+Reuse the `staging` branch for all review builds. Deploy it with these settings:
 
 - Install command: `pnpm install --frozen-lockfile`
 - Build command: `pnpm build:staging`
