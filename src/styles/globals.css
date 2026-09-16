@@ -130,6 +130,10 @@
     z-index: 30;
   }
 
+  body:has([data-case-page])::after {
+    display: none;
+  }
+
   a, button {
     font-family: var(--font-helvetica), sans-serif;
     transition: all .15s linear;

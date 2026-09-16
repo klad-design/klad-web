@@ -107,7 +107,7 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
       ref={lenisRef}
       options={{ autoRaf: false, lerp: 0.1, smoothWheel: !reducedMotion, infinite: pathname === '/' && homeLoop }}
     >
-      <div className="overflow-hidden">
+      <div className="overflow-hidden" data-case-page={pathname.startsWith('/work/') || undefined}>
         {children}
       </div>
     </ReactLenis>

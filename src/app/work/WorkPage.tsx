@@ -84,9 +84,24 @@ export default function WorkPage() {
   const cursorAreaRef = useRef<HTMLDivElement>(null)
   const cursorRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
-  const [activeIndex, setActiveIndex] = useState(1)
-  const [selectedIndex, setSelectedIndex] = useState(1)
+  const swipeStart = useRef<{ x: number, y: number } | null>(null)
+  const suppressClick = useRef(false)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [selectedIndex, setSelectedIndex] = useState(0)
   const reducedMotion = useReducedMotion()
+
+  useGSAP(() => {
+    function restoreSelection() {
+      const project = new URLSearchParams(window.location.search).get('case')
+      const index = Math.max(0, cases.findIndex(({ link }) => link === `/work/${project}`))
+      setActiveIndex(index)
+      setSelectedIndex(index)
+    }
+
+    restoreSelection()
+    window.addEventListener('popstate', restoreSelection)
+    return () => window.removeEventListener('popstate', restoreSelection)
+  }, [])
 
   // ✅ Minimal fix: warm the browser cache for all case images once.
   useEffect(() => {
@@ -153,22 +168,33 @@ export default function WorkPage() {
     gsap.fromTo('.case-anim-target', { opacity: 0 }, { opacity: 1, duration: reducedMotion ? 0 : 0.5 })
   }, { scope: containerRef, dependencies: [activeIndex, reducedMotion], revertOnUpdate: true })
 
-  const handleCaseChange = contextSafe((index: number) => {
+  useGSAP(() => {
     const menu = menuRef.current
     if (menu && menu.scrollWidth > menu.clientWidth) {
-      menu.children[index]?.scrollIntoView({
+      const button = menu.children[selectedIndex].getBoundingClientRect()
+      const bounds = menu.getBoundingClientRect()
+      menu.scrollBy({
+        left: Math.min(button.left - bounds.left - 10, 0) || Math.max(button.right - bounds.right + 10, 0),
         behavior: reducedMotion ? 'instant' : 'smooth',
-        block: 'nearest',
-        inline: 'nearest',
       })
     }
+  }, { dependencies: [selectedIndex, reducedMotion] })
 
+  const handleCaseChange = contextSafe((index: number) => {
     if (index === selectedIndex)
       return
 
     setSelectedIndex(index)
+    const url = new URL(window.location.href)
+    url.searchParams.set('case', cases[index].link.split('/').pop()!)
+    window.history.replaceState(null, '', url)
 
     gsap.killTweensOf('.case-anim-target')
+
+    if (index === activeIndex) {
+      gsap.to('.case-anim-target', { opacity: 1, duration: reducedMotion ? 0 : 0.5 })
+      return
+    }
 
     gsap.to('.case-anim-target', {
       opacity: 0,
@@ -180,8 +206,8 @@ export default function WorkPage() {
   })
 
   return (
-    <section ref={containerRef} className="pt-[97px] pb-2.5 md:pt-[150px] lg:pt-0 lg:h-svh">
-      <div className="grid-container lg:h-full lg:grid-rows-[auto_1fr_1fr]">
+    <section ref={containerRef} className="pt-[97px] pb-2.5 md:pt-[150px] lg:pt-0 lg:min-h-svh">
+      <div className="grid-container lg:min-h-[calc(100svh-10px)] lg:grid-rows-[auto_1fr_1fr]">
         {/* Menu */}
         <div className="col-span-full md:col-span-1 md:row-start-2 md:row-end-4 lg:row-end-3">
           <div
@@ -213,7 +239,34 @@ export default function WorkPage() {
           ref={cursorAreaRef}
           className="case-anim-target bg-black/10 dark:bg-white/10 col-span-full aspect-[355/295] grayscale relative md:col-start-2 md:col-end-5 mb-7 md:mb-5 lg:row-end-4 lg:row-start-2 lg:mb-0 lg:aspect-auto xl:mr-[130px]"
         >
-          <Link className="absolute inset-0" href={cases[activeIndex].link} aria-label={`View ${cases[activeIndex].title} case study`}>
+          <Link
+            className="absolute inset-0 touch-pan-y touch-pinch-zoom"
+            href={cases[activeIndex].link}
+            aria-label={`View ${cases[activeIndex].title} case study`}
+            onPointerDown={(event) => {
+              suppressClick.current = false
+              swipeStart.current = event.pointerType === 'touch' && event.isPrimary ? { x: event.clientX, y: event.clientY } : null
+            }}
+            onPointerCancel={() => { swipeStart.current = null }}
+            onPointerUp={(event) => {
+              const start = swipeStart.current
+              swipeStart.current = null
+              if (!start)
+                return
+              const x = event.clientX - start.x
+              const y = event.clientY - start.y
+              if (Math.abs(x) >= 50 && Math.abs(x) > Math.abs(y) * 1.5) {
+                suppressClick.current = true
+                handleCaseChange(Math.max(0, Math.min(cases.length - 1, selectedIndex + (x < 0 ? 1 : -1))))
+              }
+            }}
+            onClick={(event) => {
+              if (suppressClick.current) {
+                event.preventDefault()
+                suppressClick.current = false
+              }
+            }}
+          >
             <Image
               className="size-full object-cover"
               src={cases[activeIndex].image}

@@ -36,6 +36,7 @@ pnpm lint
 pnpm build:staging
 pnpm test:staging
 pnpm test:responsive
+pnpm test:work
 ```
 
 The browser smoke check expects the local staging server at `http://127.0.0.1:3100`. Set `STAGING_URL` to check another preview. Install its Chromium browser once with `pnpm exec playwright install chromium`.
@@ -45,6 +46,8 @@ For Firefox or WebKit, install that browser with Playwright and run the same che
 Visual acceptance preserves the 10px desktop text, grain, blur treatment, intentional Team/menu overlap, monochrome portfolio covers, and scroll-driven portrait sequence. Video controls stay hidden during normal autoplay; reduced-motion mode keeps manual playback controls. Check the work title, Team section, mobile menu, and a case study at desktop, tablet, and mobile widths before merging.
 
 `test:responsive` covers hybrid touch/mouse input, finite scrolling on touch-only devices, tablet headings, landscape portraits, short desktop windows, and video decoding fallback. It accepts the same `STAGING_URL` and `STAGING_BROWSER` settings.
+
+`test:work` covers the Circus default, returning to the selected project, rapid switching, short-window content, touch swipes and the case-page noise experiment. Swipe left or right on the Work cover to change projects; the first and last projects stop at the ends of the list. Project selection is kept in the URL so Close, browser Back and reload retain it. Case-study pages disable the noise overlay; Work and other pages keep it.
 
 ## Video assets
 
