@@ -242,6 +242,37 @@
   }
 }
 
+@media (max-width: 767px) and (max-height: 500px) {
+  .models {
+    max-width: calc(40svh * 264 / 357);
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 540px) {
+  .site-header {
+    position: absolute;
+    bottom: auto;
+    padding-top: 10px;
+  }
+
+  .site-header > div:first-child {
+    height: auto;
+  }
+
+  .site-header .header-details {
+    gap: 10px;
+  }
+
+  .site-header .header-copyright {
+    margin-top: 0;
+  }
+
+  .site-header img {
+    width: 60px;
+    height: 60px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

@@ -7,7 +7,7 @@ import { useLenis } from 'lenis/react'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef } from 'react'
 
-import { useReducedMotion } from '@/components/useReducedMotion'
+import { useHomeLoop } from '@/components/useHomeLoop'
 
 interface SectionProps {
   children: ReactNode
@@ -17,7 +17,7 @@ export function DarkSections({ children }: SectionProps) {
   const sectionRef = useRef<HTMLDivElement>(null)
   const { setTheme } = useTheme()
   const smoother = useLenis()
-  const reducedMotion = useReducedMotion()
+  const homeLoop = useHomeLoop()
   const setThemeRef = useRef(setTheme)
 
   useEffect(() => {
@@ -25,17 +25,13 @@ export function DarkSections({ children }: SectionProps) {
   }, [setTheme])
 
   useEffect(() => {
-    if (ScrollTrigger.isTouch || reducedMotion) {
-      sectionRef.current?.classList.add('max-h-0')
-
+    if (!homeLoop) {
       ScrollTrigger.refresh()
 
       setThemeRef.current('light')
 
       return
     }
-
-    sectionRef.current?.classList.remove('max-h-0')
 
     if (!smoother)
       return
@@ -51,10 +47,10 @@ export function DarkSections({ children }: SectionProps) {
     })
 
     return () => st.kill()
-  }, [smoother, reducedMotion])
+  }, [smoother, homeLoop])
 
   return (
-    <div ref={sectionRef} className="home-loop h-svh" aria-hidden inert>
+    <div ref={sectionRef} className={homeLoop ? 'home-loop h-svh' : 'home-loop hidden'} aria-hidden inert>
       {children}
     </div>
   )

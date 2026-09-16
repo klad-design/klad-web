@@ -35,6 +35,7 @@ STAGING=1 pnpm start --hostname 127.0.0.1 --port 3100
 pnpm lint
 pnpm build:staging
 pnpm test:staging
+pnpm test:responsive
 ```
 
 The browser smoke check expects the local staging server at `http://127.0.0.1:3100`. Set `STAGING_URL` to check another preview. Install its Chromium browser once with `pnpm exec playwright install chromium`.
@@ -42,3 +43,11 @@ The browser smoke check expects the local staging server at `http://127.0.0.1:31
 For Firefox or WebKit, install that browser with Playwright and run the same check with `STAGING_BROWSER=firefox` or `STAGING_BROWSER=webkit`. The check includes two complete homepage scroll cycles and a reload from the Team section.
 
 Visual acceptance preserves the 10px desktop text, grain, blur treatment, intentional Team/menu overlap, monochrome portfolio covers, and scroll-driven portrait sequence. Video controls stay hidden during normal autoplay; reduced-motion mode keeps manual playback controls. Check the work title, Team section, mobile menu, and a case study at desktop, tablet, and mobile widths before merging.
+
+`test:responsive` covers hybrid touch/mouse input, finite scrolling on touch-only devices, tablet headings, landscape portraits, short desktop windows, and video decoding fallback. It accepts the same `STAGING_URL` and `STAGING_BROWSER` settings.
+
+## Video assets
+
+`public/videos` contains smaller H.264 Level 4.1 renditions and full-resolution copies with corrected encoding metadata. Desktop playback preserves the original resolution; phones and tablets use the smaller files. A decode or loading failure retries the smaller file automatically.
+
+To regenerate the assets and `src/data/videos.json`, install FFmpeg and run `node scripts/prepare-videos.mjs`. The script downloads the original CDN files into ignored `artifacts/video-sources`, repairs full-resolution metadata without re-encoding, and validates the generated files. These files deploy with the site, so staging does not require changes to the production CDN.

@@ -5,7 +5,7 @@ import { TextBlur } from '@/components/ui/TextBlur'
 export function Hero() {
   return (
     <section className="pt-[60px] md:pt-[160px] lg:pt-0">
-      <h1 className="md:text-nowrap text-[20vw] md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase -ml-1.5 lg:-ml-2.5 -rotate-2">
+      <h1 className="md:text-nowrap text-[19vw] md:text-[min(100px,12vw)] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase -ml-1.5 lg:-ml-2.5 -rotate-2">
         <TextBlur>Klad Syndicate</TextBlur>
       </h1>
       <div className="grid-container mt-10 md:mt-[60px] lg:mt-20">

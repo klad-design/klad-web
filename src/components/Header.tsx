@@ -100,7 +100,7 @@ export function Header() {
     return null
 
   return (
-    <header className="fixed z-20 top-0 right-0 lg:bottom-0 w-full lg:w-auto pt-[3px] pr-[3px] pl-2.5 md:px-2.5 md:pt-2.5 lg:px-2.5 lg:pb-2.5 lg:pt-[60px]">
+    <header className="site-header fixed z-20 top-0 right-0 lg:bottom-0 w-full lg:w-auto pt-[3px] pr-[3px] pl-2.5 md:px-2.5 md:pt-2.5 lg:px-2.5 lg:pb-2.5 lg:pt-[60px]">
       <div className="relative flex lg:flex-col-reverse justify-between items-start lg:h-full lg:w-[130px]">
         <Dialog.Root open={isOpenMenu} onOpenChange={setIsOpenMenu}>
           <Dialog.Trigger asChild>
@@ -147,8 +147,8 @@ export function Header() {
             </Dialog.Content>
           </Dialog.Portal>
         </Dialog.Root>
-        <div className="hidden md:grid grid-cols-4 lg:flex lg:flex-col-reverse gap-2.5 lg:gap-[30px] grow">
-          <div className="hidden lg:flex flex-col items-start mt-6 text-[12px] leading-none uppercase">
+        <div className="header-details hidden md:grid grid-cols-4 lg:flex lg:flex-col-reverse gap-2.5 lg:gap-[30px] grow">
+          <div className="header-copyright hidden lg:flex flex-col items-start mt-6 text-[12px] leading-none uppercase">
             <div className="-rotate-2 blurred blurred--active" data-label="© Klad syndicate.">
               <span>© Klad syndicate.</span>
             </div>

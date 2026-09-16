@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function Pricing() {
   return (
     <section className="md:flex md:flex-col md:min-h-svh pb-2.5 pt-[65px] md:pt-[150px] lg:pt-0">
-      <h1 className="md:text-nowrap text-[20vw] md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase -ml-1.5 lg:-ml-2.5 -rotate-2">
+      <h1 className="md:text-nowrap text-[20vw] md:text-[min(100px,12vw)] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase -ml-1.5 lg:-ml-2.5 -rotate-2">
         <TextBlur isBold>
           Pricing
           {' '}

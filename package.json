@@ -9,6 +9,7 @@
     "build:staging": "STAGING=1 next build",
     "start": "next start",
     "test:staging": "node scripts/check-staging.mjs",
+    "test:responsive": "node scripts/check-responsive.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },

@@ -113,10 +113,13 @@ try {
       assert.equal(await page.getByRole('dialog').count(), 0)
     }
 
+    // Let link prefetches finish before replacing the document in WebKit.
+    await page.waitForLoadState('networkidle')
     await page.goto(`${baseURL}/process`)
     assert.equal(await page.locator('[aria-hidden] a:not([inert] a)').count(), 0, 'Decorative links must be inert')
     assert.ok(!(await page.locator('meta[property="og:image"]').getAttribute('content')).includes('localhost'))
 
+    await page.waitForLoadState('networkidle')
     await page.goto(`${baseURL}/work/stars-honey`)
     await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
     assert.ok(await page.locator('video[src]').count() <= 1, 'Offscreen videos should not all load at once')

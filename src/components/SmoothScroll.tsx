@@ -11,6 +11,7 @@ import { useTheme } from 'next-themes'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 
+import { useHomeLoop } from '@/components/useHomeLoop'
 import { useReducedMotion } from '@/components/useReducedMotion'
 
 interface SmoothScrollProps {
@@ -22,6 +23,7 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
   const pathname = usePathname()
   const { setTheme } = useTheme()
   const reducedMotion = useReducedMotion()
+  const homeLoop = useHomeLoop()
   const themePathRef = useRef<string | null>(null)
   const previousScrollRef = useRef(0)
 
@@ -103,7 +105,7 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
       key={pathname}
       root
       ref={lenisRef}
-      options={{ autoRaf: false, lerp: 0.1, smoothWheel: !reducedMotion, infinite: pathname === '/' && !reducedMotion }}
+      options={{ autoRaf: false, lerp: 0.1, smoothWheel: !reducedMotion, infinite: pathname === '/' && homeLoop }}
     >
       <div className="overflow-hidden">
         {children}
