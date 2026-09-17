@@ -130,8 +130,11 @@
     z-index: 30;
   }
 
-  body:has([data-case-page])::after {
-    display: none;
+  [data-case-page] img,
+  [data-case-page] video {
+    position: relative;
+    z-index: 31;
+    background-color: #000;
   }
 
   a, button {

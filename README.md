@@ -47,7 +47,7 @@ Visual acceptance preserves the 10px desktop text, grain, blur treatment, intent
 
 `test:responsive` covers hybrid touch/mouse input, finite scrolling on touch-only devices, tablet headings, landscape portraits, short desktop windows, and video decoding fallback. It accepts the same `STAGING_URL` and `STAGING_BROWSER` settings.
 
-`test:work` covers the Circus default, returning to the selected project, rapid switching, short-window content, touch swipes and the case-page noise experiment. Swipe left or right on the Work cover to change projects; the first and last projects stop at the ends of the list. Project selection is kept in the URL so Close, browser Back and reload retain it. Case-study pages disable the noise overlay; Work and other pages keep it.
+`test:work` covers the Circus default, returning to the selected project, rapid switching, short-window content, touch swipes and the case-page noise treatment. Swipe left or right on the Work cover to change projects; the first and last projects stop at the ends of the list. Project selection is kept in the URL so Close, browser Back and reload retain it. Case-study images and videos sit above the noise overlay; the background, text and surrounding spacing keep the original grain. Work and other pages retain their full noise overlay.
 
 ## Video assets
 

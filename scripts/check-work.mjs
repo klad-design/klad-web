@@ -16,9 +16,21 @@ async function selected(page, name) {
   await page.waitForFunction(() => [...document.querySelectorAll('.case-anim-target')].every(el => Number(getComputedStyle(el).opacity) > 0.99))
 }
 
-async function noise(page, visible) {
-  await page.waitForFunction(visible => (getComputedStyle(document.body, '::after').display !== 'none') === visible, visible)
-  await page.waitForFunction(visible => document.documentElement.dataset.theme === (visible ? 'light' : 'dark'), visible)
+async function noise(page, overMedia) {
+  await page.waitForFunction(overMedia => document.documentElement.dataset.theme === (overMedia ? 'light' : 'dark'), overMedia)
+  const overlay = await page.evaluate(() => {
+    const style = getComputedStyle(document.body, '::after')
+    return { display: style.display, opacity: style.opacity, zIndex: Number(style.zIndex) }
+  })
+  assert.notEqual(overlay.display, 'none', 'Noise must remain on the page background and text')
+  assert.equal(overlay.opacity, '0.15')
+  if (!overMedia) {
+    const media = await page.locator('main img, main video').evaluateAll(elements => elements.map((el) => {
+      const style = getComputedStyle(el)
+      return { position: style.position, zIndex: Number(style.zIndex), background: style.backgroundColor }
+    }))
+    assert.ok(media.length > 0 && media.every(el => el.position === 'relative' && el.zIndex > overlay.zIndex && el.background === 'rgb(0, 0, 0)'), 'Case media must cover the noise, including transparent or unloaded areas')
+  }
 }
 
 try {
@@ -44,7 +56,7 @@ try {
   await noise(page, false)
   await page.locator('main img').first().evaluate(el => el.decode())
   await page.waitForTimeout(250)
-  await page.screenshot({ path: `${artifacts}/case-without-noise.png` })
+  await page.screenshot({ path: `${artifacts}/case-clean-media.png` })
   await page.getByRole('link', { name: 'Close', exact: true }).click()
   await page.waitForURL('**/work?case=chainviz')
   await selected(page, 'Chainviz')
