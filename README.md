@@ -49,6 +49,8 @@ Visual acceptance preserves the 10px desktop text, grain, blur treatment, intent
 
 `test:work` covers the Circus default, returning to the selected project, rapid switching, short-window content, touch swipes and the case-page noise treatment. Swipe left or right on the Work cover to change projects; the first and last projects stop at the ends of the list. Project selection is kept in the URL so Close, browser Back and reload retain it. Case-study images and videos sit above the noise overlay; the background, text and surrounding spacing keep the original grain. Work and other pages retain their full noise overlay.
 
+Cover swipes lock to their initial direction and require a deliberate horizontal movement before changing projects. Partial swipes do not open a case. The right navigation remains fixed in short desktop windows, with its own scrolling when its contents cannot fit.
+
 ## Video assets
 
 Videos load from the project folders on `https://klad.b-cdn.net/`, as mapped in `src/data/videos.json`. Desktop playback uses full-resolution files; phones and tablets use smaller H.264 Level 4.1 files. A decode or loading failure retries the smaller file automatically. Circus uses the same approved smaller files on all devices.

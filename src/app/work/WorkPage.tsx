@@ -84,7 +84,7 @@ export default function WorkPage() {
   const cursorAreaRef = useRef<HTMLDivElement>(null)
   const cursorRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
-  const swipeStart = useRef<{ x: number, y: number } | null>(null)
+  const swipeStart = useRef<{ x: number, y: number, axis: 'x' | 'y' | null } | null>(null)
   const suppressClick = useRef(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -109,6 +109,33 @@ export default function WorkPage() {
       const img = new window.Image()
       img.src = image
     })
+  }, [])
+
+  useEffect(() => {
+    const area = cursorAreaRef.current
+    if (!area)
+      return
+
+    function onTouchMove(event: TouchEvent) {
+      const start = swipeStart.current
+      if (!start || event.touches.length !== 1) {
+        swipeStart.current = null
+        return
+      }
+      const x = Math.abs(event.touches[0].clientX - start.x)
+      const y = Math.abs(event.touches[0].clientY - start.y)
+      if (!start.axis && Math.max(x, y) >= 10)
+        start.axis = x > y * 1.2 ? 'x' : 'y'
+      if (start.axis === 'x') {
+        suppressClick.current = true
+        if (event.cancelable)
+          event.preventDefault()
+      }
+    }
+
+    // Lock horizontal swipes before Safari takes over for vertical scrolling.
+    area.addEventListener('touchmove', onTouchMove, { passive: false })
+    return () => area.removeEventListener('touchmove', onTouchMove)
   }, [])
 
   useGSAP(() => {
@@ -180,7 +207,7 @@ export default function WorkPage() {
     }
   }, { dependencies: [selectedIndex, reducedMotion] })
 
-  const handleCaseChange = contextSafe((index: number) => {
+  const handleCaseChange = contextSafe((index: number, fromSwipe = false) => {
     if (index === selectedIndex)
       return
 
@@ -198,7 +225,7 @@ export default function WorkPage() {
 
     gsap.to('.case-anim-target', {
       opacity: 0,
-      duration: reducedMotion ? 0 : 0.1,
+      duration: reducedMotion ? 0 : fromSwipe ? 0.2 : 0.1,
       onComplete: () => {
         setActiveIndex(index)
       },
@@ -240,31 +267,34 @@ export default function WorkPage() {
           className="case-anim-target bg-black/10 dark:bg-white/10 col-span-full aspect-[355/295] grayscale relative md:col-start-2 md:col-end-5 mb-7 md:mb-5 lg:row-end-4 lg:row-start-2 lg:mb-0 lg:aspect-auto xl:mr-[130px]"
         >
           <Link
-            className="absolute inset-0 touch-pan-y touch-pinch-zoom"
+            className="absolute inset-0 touch-pan-y touch-pinch-zoom select-none [-webkit-touch-callout:none]"
             href={cases[activeIndex].link}
             aria-label={`View ${cases[activeIndex].title} case study`}
             onPointerDown={(event) => {
-              suppressClick.current = false
-              swipeStart.current = event.pointerType === 'touch' && event.isPrimary ? { x: event.clientX, y: event.clientY } : null
+              if (event.pointerType === 'mouse')
+                suppressClick.current = false
             }}
-            onPointerCancel={() => { swipeStart.current = null }}
-            onPointerUp={(event) => {
+            onTouchStart={(event) => {
+              suppressClick.current = false
+              const touch = event.touches[0]
+              swipeStart.current = event.touches.length === 1 ? { x: touch.clientX, y: touch.clientY, axis: null } : null
+            }}
+            onTouchCancel={() => { swipeStart.current = null }}
+            onTouchEnd={(event) => {
               const start = swipeStart.current
               swipeStart.current = null
-              if (!start)
+              if (!start || start.axis !== 'x' || event.touches.length)
                 return
-              const x = event.clientX - start.x
-              const y = event.clientY - start.y
-              if (Math.abs(x) >= 50 && Math.abs(x) > Math.abs(y) * 1.5) {
-                suppressClick.current = true
-                handleCaseChange(Math.max(0, Math.min(cases.length - 1, selectedIndex + (x < 0 ? 1 : -1))))
-              }
+              event.preventDefault()
+              const x = event.changedTouches[0].clientX - start.x
+              const threshold = Math.min(110, Math.max(75, event.currentTarget.clientWidth * 0.25))
+              if (Math.abs(x) >= threshold)
+                handleCaseChange(Math.max(0, Math.min(cases.length - 1, selectedIndex + (x < 0 ? 1 : -1))), true)
             }}
             onClick={(event) => {
-              if (suppressClick.current) {
+              if (suppressClick.current && event.detail !== 0)
                 event.preventDefault()
-                suppressClick.current = false
-              }
+              suppressClick.current = false
             }}
           >
             <Image
@@ -273,6 +303,7 @@ export default function WorkPage() {
               alt={`${cases[activeIndex].title} poster`}
               fill
               unoptimized
+              draggable={false}
             />
           </Link>
 
