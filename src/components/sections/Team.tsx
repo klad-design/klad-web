@@ -327,18 +327,20 @@ export function Team() {
         canvas.height = height
       }
 
+      const sourceY = img.height * 0.14
+      const sourceHeight = img.height - sourceY
       const scaleX = canvas.width / img.width
-      const scaleY = canvas.height / img.height
-      const scale = Math.min(scaleX, scaleY)
+      const scaleY = canvas.height / sourceHeight
+      const scale = Math.max(scaleX, scaleY)
 
       const newWidth = img.width * scale
-      const newHeight = img.height * scale
+      const newHeight = sourceHeight * scale
 
       const offsetX = (canvas.width - newWidth) / 2
       const offsetY = (canvas.height - newHeight) / 2
 
       context.clearRect(0, 0, canvas.width, canvas.height)
-      context.drawImage(img, offsetX, offsetY, newWidth, newHeight)
+      context.drawImage(img, 0, sourceY, img.width, sourceHeight, offsetX, offsetY, newWidth, newHeight)
     }
   }, [])
 
@@ -575,7 +577,7 @@ export function Team() {
           ))}
         </div>
         <div className="self-stretch z-1 lg:col-span-2">
-          <div ref={modelsRef} className="models mx-auto md:w-full relative aspect-[264/357] max-w-[264px] lg:max-w-[70%] overflow-hidden will-change-transform">
+          <div ref={modelsRef} className="models mx-auto md:w-full relative aspect-[264/357] max-w-[264px] md:max-w-[314px] lg:max-w-[70%] overflow-hidden will-change-transform">
             <div className="absolute inset-0">
               <canvas ref={canvasRef} className="size-full" />
             </div>
