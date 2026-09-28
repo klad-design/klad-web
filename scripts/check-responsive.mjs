@@ -67,18 +67,29 @@ try {
   await tablet.close()
 
   const landscape = await browser.newContext({ viewport: { width: 667, height: 375 }, hasTouch: true })
+  const portraitRequests = new Set()
+  landscape.on('request', (request) => {
+    if (/\/images\/team\/\d+\.avif/.test(request.url()))
+      portraitRequests.add(request.url())
+  })
   if (type.name() === 'firefox') {
     await landscape.addInitScript(() => {
       window.__portraitBitmapDraws = 0
+      window.__portraitWidths = []
       const drawImage = CanvasRenderingContext2D.prototype.drawImage
       CanvasRenderingContext2D.prototype.drawImage = function (...args) {
-        if (this.canvas.closest?.('#team') && args[0] instanceof ImageBitmap)
-          window.__portraitBitmapDraws++
+        if (this.canvas.closest?.('#team')) {
+          if (args[0] instanceof ImageBitmap)
+            window.__portraitBitmapDraws++
+          if (innerWidth < 768)
+            window.__portraitWidths.push(args[3] / this.canvas.width)
+        }
         return drawImage.apply(this, args)
       }
     })
   }
   const team = await visit(landscape, '/')
+  assert.ok(portraitRequests.size <= 1, 'Mobile must fetch only the first portrait before Team approaches')
   await team.evaluate(() => scrollTo(0, document.querySelector('.memberDescription').getBoundingClientRect().top + scrollY - 195))
   await team.waitForTimeout(1500)
   const portrait = await team.locator('.models').boundingBox()
@@ -89,9 +100,14 @@ try {
   await team.waitForTimeout(1000)
   assert.ok(Math.abs((await team.locator('.models').boundingBox()).height - 357) < 2, 'Rotating back must restore the portrait size')
   if (type.name() === 'firefox') {
+    await team.evaluate(() => window.__portraitWidths = [])
     await team.evaluate(() => scrollTo(0, document.querySelector('.models').getBoundingClientRect().top + scrollY - 30 + 150))
     await team.waitForTimeout(500)
     assert.ok(await team.evaluate(() => window.__portraitBitmapDraws > 0), 'Firefox must draw prepared portrait bitmaps')
+    await team.evaluate(() => scrollTo(0, document.querySelectorAll('.memberDescription')[2].getBoundingClientRect().top + scrollY - 300))
+    await team.waitForTimeout(800)
+    const widths = await team.evaluate(() => window.__portraitWidths)
+    assert.ok(widths.length > 5 && Math.max(...widths) - Math.min(...widths) < 0.001, 'Mobile portraits must keep one fixed scale while scrolling')
   }
   const redrawn = await team.locator('#team canvas').evaluate((canvas) => {
     const context = canvas.getContext('2d')
