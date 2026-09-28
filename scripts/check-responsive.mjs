@@ -68,9 +68,12 @@ try {
 
   const landscape = await browser.newContext({ viewport: { width: 667, height: 375 }, hasTouch: true })
   const portraitRequests = new Set()
+  const atlasRequests = new Set()
   landscape.on('request', (request) => {
     if (/\/images\/team\/\d+\.avif/.test(request.url()))
       portraitRequests.add(request.url())
+    if (/\/images\/team-mobile\/v1\/\d+\.avif/.test(request.url()))
+      atlasRequests.add(request.url())
   })
   if (type.name() === 'firefox') {
     await landscape.addInitScript(() => {
@@ -82,7 +85,7 @@ try {
           if (args[0] instanceof ImageBitmap)
             window.__portraitBitmapDraws++
           if (innerWidth < 768)
-            window.__portraitWidths.push(args[3] / this.canvas.width)
+            window.__portraitWidths.push((args.length === 9 ? args[7] : args[3]) / this.canvas.width)
         }
         return drawImage.apply(this, args)
       }
@@ -90,6 +93,7 @@ try {
   }
   const team = await visit(landscape, '/')
   assert.ok(portraitRequests.size <= 1, 'Mobile must fetch only the first portrait before Team approaches')
+  assert.ok(atlasRequests.size <= 2, 'Mobile must defer the remaining portrait atlases until Team approaches')
   await team.evaluate(() => scrollTo(0, document.querySelector('.memberDescription').getBoundingClientRect().top + scrollY - 195))
   await team.waitForTimeout(1500)
   const portrait = await team.locator('.models').boundingBox()
@@ -122,6 +126,37 @@ try {
   })
   assert.ok(redrawn, 'Portrait must redraw when the tab becomes visible')
   await landscape.close()
+
+  if (type.name() === 'firefox') {
+    const delayed = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true })
+    const fallbackRequests = new Set()
+    delayed.on('request', (request) => {
+      if (/\/images\/team\/\d+\.avif/.test(request.url()))
+        fallbackRequests.add(request.url())
+    })
+    await delayed.route('**/images/team-mobile/v1/*.avif', async (route) => {
+      await new Promise(resolve => setTimeout(resolve, 2500))
+      await route.continue()
+    })
+    await delayed.addInitScript(() => {
+      window.__portraitSource = ''
+      const drawImage = CanvasRenderingContext2D.prototype.drawImage
+      CanvasRenderingContext2D.prototype.drawImage = function (...args) {
+        if (this.canvas.closest?.('#team'))
+          window.__portraitSource = args.length === 9 ? 'atlas' : 'original'
+        return drawImage.apply(this, args)
+      }
+    })
+    const slowTeam = await visit(delayed, '/')
+    const target = await slowTeam.locator('.models').evaluate(el => el.getBoundingClientRect().top + scrollY + 500)
+    await slowTeam.evaluate(y => scrollTo(0, y), target)
+    await slowTeam.waitForTimeout(1100)
+    assert.ok(Math.abs(await slowTeam.evaluate(() => scrollY) - target) < 2, 'Slow portrait requests must not block scrolling')
+    assert.ok(fallbackRequests.size > 1, 'A delayed atlas must request the current portrait as fallback')
+    assert.equal(await slowTeam.evaluate(() => window.__portraitSource), 'original', 'A fallback portrait must appear while the atlas is delayed')
+    await slowTeam.waitForFunction(() => window.__portraitSource === 'atlas', null, { timeout: 6000 })
+    await delayed.close()
+  }
 
   const short = await browser.newContext({ viewport: { width: 1024, height: 400 } })
   const work = await visit(short, '/work')

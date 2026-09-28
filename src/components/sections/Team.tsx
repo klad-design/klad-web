@@ -293,6 +293,9 @@ const team: TeamMember[] = [
 
 const mobileGap = 30
 const lastFrame = 121
+const atlasTile = 768
+const framesPerAtlas = 8
+const lastAtlas = Math.floor(lastFrame / framesPerAtlas)
 
 export function Team() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -302,7 +305,7 @@ export function Team() {
   const descriptionsRef = useRef<HTMLDivElement>(null)
 
   const imagesRef = useRef<HTMLImageElement[]>([])
-  const bitmapsRef = useRef<Map<number, ImageBitmap>>(new Map())
+  const atlasesRef = useRef<Map<number, ImageBitmap>>(new Map())
   const prepareRef = useRef<(index: number) => void>(() => {})
   const fitRef = useRef<{ width: number, height: number, viewport: number, value: number } | null>(null)
   const frameRef = useRef(0)
@@ -331,9 +334,9 @@ export function Team() {
       }
 
       const mobile = window.innerWidth < 768
-      const bitmaps = bitmapsRef.current
+      const atlas = atlasesRef.current.get(Math.floor(index / framesPerAtlas))
       let nearest = mobile ? index : -1
-      if (mobile && !bitmaps.has(index) && (!images[index]?.complete || !images[index].naturalWidth))
+      if (mobile && !atlas && (!images[index]?.complete || !images[index].naturalWidth))
         return
       if (!mobile) {
         for (let i = 0; i < images.length; i++) {
@@ -353,9 +356,9 @@ export function Team() {
           const halfViewport = window.innerWidth / 2 - 4
           const value = Math.min(...portraitBounds.map(([left, top, right]) => Math.min(
             1,
-            halfViewport / (canvas.clientWidth * (0.5 - left / img.width)),
-            halfViewport / (canvas.clientWidth * (right / img.width - 0.5)),
-            (mobileGap + slotHeight - 4) / (canvas.clientHeight * (1 - top / img.height)),
+            halfViewport / (canvas.clientWidth * (0.5 - left / 1080)),
+            halfViewport / (canvas.clientWidth * (right / 1080 - 0.5)),
+            (mobileGap + slotHeight - 4) / (canvas.clientHeight * (1 - top / 1080)),
           )))
           fitRef.current = { width: canvas.clientWidth, height: slotHeight, viewport: window.innerWidth, value }
         }
@@ -366,7 +369,13 @@ export function Team() {
       const drawWidth = canvas.width * fit
       const drawHeight = canvas.height * fit
       context.clearRect(0, 0, canvas.width, canvas.height)
-      context.drawImage(mobile ? bitmaps.get(nearest) || img : img, (canvas.width - drawWidth) / 2, canvas.height - drawHeight, drawWidth, drawHeight)
+      if (mobile && atlas) {
+        const cell = index % framesPerAtlas
+        context.drawImage(atlas, (cell % 4) * atlasTile, Math.floor(cell / 4) * atlasTile, atlasTile, atlasTile, (canvas.width - drawWidth) / 2, canvas.height - drawHeight, drawWidth, drawHeight)
+      }
+      else {
+        context.drawImage(img, (canvas.width - drawWidth) / 2, canvas.height - drawHeight, drawWidth, drawHeight)
+      }
     }
   }, [])
 
@@ -544,8 +553,14 @@ export function Team() {
     let disposed = false
     let nearSection = false
     let desktopLoaded = false
-    let bitmapFailed = false
-    const preparing = new Set<number>()
+    let nextAtlas = 2
+    let activeDownloads = 0
+    let prefetchStarted = false
+    let fallbackTimer: ReturnType<typeof setTimeout> | undefined
+    const blobs = new Map<number, Blob>()
+    const requests = new Map<number, Promise<void>>()
+    const decoding = new Set<number>()
+    const failed = new Set<number>()
     const loadFrame = (index: number) => {
       if (!imagesRef.current[index]) {
         const img = new Image()
@@ -558,11 +573,53 @@ export function Team() {
       }
     }
 
+    const downloadAtlas = (group: number): Promise<void> => {
+      if (blobs.has(group) || failed.has(group))
+        return Promise.resolve()
+      const pending = requests.get(group)
+      if (pending)
+        return pending
+      const request = fetch(`/images/team-mobile/v1/${group}.avif`)
+        .then((response) => {
+          if (!response.ok)
+            throw new Error(`Portrait atlas ${group}: ${response.status}`)
+          return response.blob()
+        })
+        .then((blob) => {
+          if (!disposed) {
+            blobs.set(group, blob)
+            prepareRef.current(frameRef.current)
+          }
+        })
+        .catch(() => {
+          if (!disposed) {
+            failed.add(group)
+            if (Math.floor(frameRef.current / framesPerAtlas) === group)
+              loadFrame(frameRef.current)
+          }
+        })
+      requests.set(group, request)
+      return request
+    }
+
+    const prefetch = () => {
+      while (activeDownloads < 3 && nextAtlas <= lastAtlas) {
+        const group = nextAtlas++
+        activeDownloads++
+        downloadAtlas(group).finally(() => {
+          activeDownloads--
+          if (!disposed)
+            prefetch()
+        })
+      }
+    }
+
     const prepareNear = (index: number) => {
-      const bitmaps = bitmapsRef.current
+      const atlases = atlasesRef.current
       if (window.innerWidth >= 768) {
-        bitmaps.forEach(bitmap => bitmap.close())
-        bitmaps.clear()
+        clearTimeout(fallbackTimer)
+        atlases.forEach(bitmap => bitmap.close())
+        atlases.clear()
         if (nearSection && !desktopLoaded) {
           desktopLoaded = true
           for (let i = 1; i <= lastFrame; i++)
@@ -570,48 +627,64 @@ export function Team() {
         }
         return
       }
-      if (!nearSection && index === 0)
+      if (reducedMotion)
         return
-
-      const nearby = Array.from({ length: 21 }, (_, offset) => index + offset)
-        .concat(Array.from({ length: 6 }, (_, offset) => index - offset - 1))
-        .filter(i => i >= 0 && i <= lastFrame)
-      nearby.forEach(loadFrame)
-      if (bitmapFailed || typeof createImageBitmap !== 'function')
+      if (typeof createImageBitmap !== 'function') {
+        loadFrame(index)
         return
+      }
+      if (!nearSection && index > 0)
+        nearSection = true
+      if (nearSection && !prefetchStarted) {
+        prefetchStarted = true
+        prefetch()
+      }
 
-      // Keep decoded frames near the playhead; Firefox otherwise stalls on AVIF draws.
-      for (const [i, bitmap] of bitmaps) {
-        if (Math.abs(i - index) > 28) {
+      const group = Math.floor(index / framesPerAtlas)
+      clearTimeout(fallbackTimer)
+      if (index > 0 && !atlases.has(group)) {
+        fallbackTimer = setTimeout(() => {
+          if (!disposed && frameRef.current === index && !atlasesRef.current.has(group))
+            loadFrame(index)
+        }, 180)
+      }
+      for (const [i, bitmap] of atlases) {
+        if (Math.abs(i - group) > 1) {
           bitmap.close()
-          bitmaps.delete(i)
+          atlases.delete(i)
         }
       }
-      for (const i of nearby) {
-        if (preparing.size >= 4)
-          break
-        const img = imagesRef.current[i]
-        if (!img?.complete || !img.naturalWidth || bitmaps.has(i) || preparing.has(i))
+      for (const i of [group, group + 1, group - 1]) {
+        if (i < 0 || i > lastAtlas)
           continue
-        preparing.add(i)
-        createImageBitmap(img, { resizeWidth: 768, resizeHeight: 768 }).then((bitmap) => {
-          preparing.delete(i)
-          if (disposed || bitmapFailed || Math.abs(i - frameRef.current) > 28) {
+        if (failed.has(i)) {
+          if (i === group)
+            loadFrame(index)
+          continue
+        }
+        void downloadAtlas(i)
+        const blob = blobs.get(i)
+        if (!blob || atlases.has(i) || decoding.has(i))
+          continue
+        decoding.add(i)
+        createImageBitmap(blob).then((bitmap) => {
+          decoding.delete(i)
+          if (disposed || Math.abs(i - Math.floor(frameRef.current / framesPerAtlas)) > 1) {
             bitmap.close()
           }
           else {
-            bitmaps.set(i, bitmap)
+            atlases.set(i, bitmap)
+            if (i === Math.floor(frameRef.current / framesPerAtlas))
+              drawnFrameRef.current = -1
             loadImageOnCanvas(frameRef.current)
           }
-          if (!disposed)
-            prepareNear(frameRef.current)
         }).catch(() => {
-          preparing.delete(i)
+          decoding.delete(i)
           if (disposed)
             return
-          bitmapFailed = true
-          bitmaps.forEach(bitmap => bitmap.close())
-          bitmaps.clear()
+          failed.add(i)
+          if (i === Math.floor(frameRef.current / framesPerAtlas))
+            loadFrame(frameRef.current)
         })
       }
     }
@@ -652,14 +725,15 @@ export function Team() {
 
     return () => {
       disposed = true
+      clearTimeout(fallbackTimer)
       prepareRef.current = () => {}
       observer.disconnect()
       resize.disconnect()
       document.removeEventListener('visibilitychange', restore)
       window.removeEventListener('pageshow', restore)
       imagesRef.current.forEach(img => img.onload = null)
-      bitmapsRef.current.forEach(bitmap => bitmap.close())
-      bitmapsRef.current.clear()
+      atlasesRef.current.forEach(bitmap => bitmap.close())
+      atlasesRef.current.clear()
     }
   }, [reducedMotion, loadImageOnCanvas])
 
