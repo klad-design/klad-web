@@ -302,6 +302,11 @@ export function Team() {
   const descriptionsRef = useRef<HTMLDivElement>(null)
 
   const imagesRef = useRef<HTMLImageElement[]>([])
+  const bitmapsRef = useRef<Map<number, ImageBitmap>>(new Map())
+  const preparingRef = useRef<Set<number>>(new Set())
+  const bitmapFailedRef = useRef(false)
+  const prepareRef = useRef<(index: number) => void>(() => {})
+  const fitRef = useRef<{ width: number, height: number, viewport: number, values: number[] } | null>(null)
   const frameRef = useRef(0)
   const drawnFrameRef = useRef(-1)
 
@@ -312,6 +317,7 @@ export function Team() {
 
   const loadImageOnCanvas = useCallback((index: number) => {
     frameRef.current = index
+    prepareRef.current(index)
     const canvas = canvasRef.current
     const context = canvas?.getContext('2d')
     const images = imagesRef.current
@@ -326,33 +332,52 @@ export function Team() {
         drawnFrameRef.current = -1
       }
 
+      const mobile = window.innerWidth < 768
+      const bitmaps = bitmapsRef.current
       let nearest = -1
-      for (let i = 0; i < images.length; i++) {
-        if (images[i]?.complete && images[i].naturalWidth && (nearest < 0 || Math.abs(i - index) < Math.abs(nearest - index)))
-          nearest = i
+      if (mobile && bitmaps.size) {
+        for (const i of bitmaps.keys()) {
+          if (nearest < 0 || Math.abs(i - index) < Math.abs(nearest - index))
+            nearest = i
+        }
+      }
+      else {
+        for (let i = 0; i < images.length; i++) {
+          if (images[i]?.complete && images[i].naturalWidth && (nearest < 0 || Math.abs(i - index) < Math.abs(nearest - index)))
+            nearest = i
+        }
       }
       if (nearest < 0 || nearest === drawnFrameRef.current)
         return
 
       const img = images[nearest]
       let fit = 1
-      if (window.innerWidth < 768 && modelsRef.current) {
-        // Keep the sequence's transparent edge pixels inside the phone viewport.
-        const [left, top, right] = portraitBounds[nearest]
-        const halfViewport = window.innerWidth / 2 - 4
-        fit = Math.min(
-          1,
-          halfViewport / (canvas.clientWidth * (0.5 - left / img.width)),
-          halfViewport / (canvas.clientWidth * (right / img.width - 0.5)),
-          (mobileGap + modelsRef.current.clientHeight - 4) / (canvas.clientHeight * (1 - top / img.height)),
-        )
+      if (mobile && modelsRef.current) {
+        const slotHeight = modelsRef.current.clientHeight
+        const cached = fitRef.current
+        if (!cached || cached.width !== canvas.clientWidth || cached.height !== slotHeight || cached.viewport !== window.innerWidth) {
+          const halfViewport = window.innerWidth / 2 - 4
+          const values = portraitBounds.map(([left, top, right]) => Math.min(
+            1,
+            halfViewport / (canvas.clientWidth * (0.5 - left / img.width)),
+            halfViewport / (canvas.clientWidth * (right / img.width - 0.5)),
+            (mobileGap + slotHeight - 4) / (canvas.clientHeight * (1 - top / img.height)),
+          ))
+          // Ease size changes without exceeding any frame's safe fit.
+          for (let i = 1; i <= lastFrame; i++)
+            values[i] = Math.min(values[i], values[i - 1] + 0.008)
+          for (let i = lastFrame - 1; i >= 0; i--)
+            values[i] = Math.min(values[i], values[i + 1] + 0.008)
+          fitRef.current = { width: canvas.clientWidth, height: slotHeight, viewport: window.innerWidth, values }
+        }
+        fit = fitRef.current!.values[nearest]
       }
 
       drawnFrameRef.current = nearest
       const drawWidth = canvas.width * fit
       const drawHeight = canvas.height * fit
       context.clearRect(0, 0, canvas.width, canvas.height)
-      context.drawImage(img, (canvas.width - drawWidth) / 2, canvas.height - drawHeight, drawWidth, drawHeight)
+      context.drawImage(mobile ? bitmaps.get(nearest) || img : img, (canvas.width - drawWidth) / 2, canvas.height - drawHeight, drawWidth, drawHeight)
     }
   }, [])
 
@@ -528,12 +553,53 @@ export function Team() {
 
   useEffect(() => {
     let disposed = false
+    const prepareNear = (index: number) => {
+      const bitmaps = bitmapsRef.current
+      if (window.innerWidth >= 768 || bitmapFailedRef.current || typeof createImageBitmap !== 'function') {
+        bitmaps.forEach(bitmap => bitmap.close())
+        bitmaps.clear()
+        return
+      }
+
+      // Keep decoded frames near the playhead; Firefox otherwise stalls on AVIF draws.
+      for (const [i, bitmap] of bitmaps) {
+        if (Math.abs(i - index) > 20) {
+          bitmap.close()
+          bitmaps.delete(i)
+        }
+      }
+      for (let i = Math.max(0, index - 8); i <= Math.min(lastFrame, index + 14); i++) {
+        const img = imagesRef.current[i]
+        if (!img?.complete || !img.naturalWidth || bitmaps.has(i) || preparingRef.current.has(i))
+          continue
+        preparingRef.current.add(i)
+        createImageBitmap(img, { resizeWidth: 768, resizeHeight: 768 }).then((bitmap) => {
+          preparingRef.current.delete(i)
+          if (disposed || bitmapFailedRef.current || Math.abs(i - frameRef.current) > 20) {
+            bitmap.close()
+          }
+          else {
+            bitmaps.set(i, bitmap)
+            loadImageOnCanvas(frameRef.current)
+          }
+        }).catch(() => {
+          bitmapFailedRef.current = true
+          preparingRef.current.delete(i)
+          bitmaps.forEach(bitmap => bitmap.close())
+          bitmaps.clear()
+        })
+      }
+    }
+    prepareRef.current = prepareNear
+
     const loadFrame = (index: number) => {
       const img = imagesRef.current[index] || new Image()
       imagesRef.current[index] = img
       img.onload = () => {
-        if (!disposed)
+        if (!disposed) {
+          prepareNear(frameRef.current)
           loadImageOnCanvas(frameRef.current)
+        }
       }
       if (!img.src)
         img.src = `/images/team/${index}.avif`
@@ -574,11 +640,14 @@ export function Team() {
 
     return () => {
       disposed = true
+      prepareRef.current = () => {}
       observer.disconnect()
       resize.disconnect()
       document.removeEventListener('visibilitychange', restore)
       window.removeEventListener('pageshow', restore)
       imagesRef.current.forEach(img => img.onload = null)
+      bitmapsRef.current.forEach(bitmap => bitmap.close())
+      bitmapsRef.current.clear()
     }
   }, [reducedMotion, loadImageOnCanvas])
 

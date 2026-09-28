@@ -67,6 +67,17 @@ try {
   await tablet.close()
 
   const landscape = await browser.newContext({ viewport: { width: 667, height: 375 }, hasTouch: true })
+  if (type.name() === 'firefox') {
+    await landscape.addInitScript(() => {
+      window.__portraitBitmapDraws = 0
+      const drawImage = CanvasRenderingContext2D.prototype.drawImage
+      CanvasRenderingContext2D.prototype.drawImage = function (...args) {
+        if (this.canvas.closest?.('#team') && args[0] instanceof ImageBitmap)
+          window.__portraitBitmapDraws++
+        return drawImage.apply(this, args)
+      }
+    })
+  }
   const team = await visit(landscape, '/')
   await team.evaluate(() => scrollTo(0, document.querySelector('.memberDescription').getBoundingClientRect().top + scrollY - 195))
   await team.waitForTimeout(1500)
@@ -77,6 +88,11 @@ try {
   await team.setViewportSize({ width: 390, height: 844 })
   await team.waitForTimeout(1000)
   assert.ok(Math.abs((await team.locator('.models').boundingBox()).height - 357) < 2, 'Rotating back must restore the portrait size')
+  if (type.name() === 'firefox') {
+    await team.evaluate(() => scrollTo(0, document.querySelector('.models').getBoundingClientRect().top + scrollY - 30 + 150))
+    await team.waitForTimeout(500)
+    assert.ok(await team.evaluate(() => window.__portraitBitmapDraws > 0), 'Firefox must draw prepared portrait bitmaps')
+  }
   const redrawn = await team.locator('#team canvas').evaluate((canvas) => {
     const context = canvas.getContext('2d')
     context.clearRect(0, 0, canvas.width, canvas.height)
