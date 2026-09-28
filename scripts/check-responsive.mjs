@@ -77,6 +77,18 @@ try {
   await team.setViewportSize({ width: 390, height: 844 })
   await team.waitForTimeout(1000)
   assert.ok(Math.abs((await team.locator('.models').boundingBox()).height - 357) < 2, 'Rotating back must restore the portrait size')
+  const redrawn = await team.locator('#team canvas').evaluate((canvas) => {
+    const context = canvas.getContext('2d')
+    context.clearRect(0, 0, canvas.width, canvas.height)
+    document.dispatchEvent(new Event('visibilitychange'))
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data
+    for (let i = 3; i < pixels.length; i += 4) {
+      if (pixels[i] > 4)
+        return true
+    }
+    return false
+  })
+  assert.ok(redrawn, 'Portrait must redraw when the tab becomes visible')
   await landscape.close()
 
   const short = await browser.newContext({ viewport: { width: 1024, height: 400 } })

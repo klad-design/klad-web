@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
 import { useReducedMotion } from '@/components/useReducedMotion'
+import portraitBounds from '@/data/teamPortraitBounds.json'
 
 interface TeamMember {
   name: string
@@ -302,6 +303,7 @@ export function Team() {
 
   const imagesRef = useRef<HTMLImageElement[]>([])
   const frameRef = useRef(0)
+  const drawnFrameRef = useRef(-1)
 
   const [activeMemberIndex, setActiveMemberIndex] = useState(0)
 
@@ -314,33 +316,43 @@ export function Team() {
     const context = canvas?.getContext('2d')
     const images = imagesRef.current
 
-    if (index >= 0 && index < images.length && canvas && context) {
-      const img = images[index]
-
-      if (!img?.complete || !img.naturalWidth)
-        return
-
-      const width = Math.round(canvas.clientWidth * window.devicePixelRatio)
-      const height = Math.round(canvas.clientHeight * window.devicePixelRatio)
+    if (index >= 0 && index <= lastFrame && canvas && context) {
+      const pixelRatio = Math.min(window.devicePixelRatio, 2)
+      const width = Math.round(canvas.clientWidth * pixelRatio)
+      const height = Math.round(canvas.clientHeight * pixelRatio)
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width
         canvas.height = height
+        drawnFrameRef.current = -1
       }
 
-      const sourceY = img.height * 0.14
-      const sourceHeight = img.height - sourceY
-      const scaleX = canvas.width / img.width
-      const scaleY = canvas.height / sourceHeight
-      const scale = Math.max(scaleX, scaleY)
+      let nearest = -1
+      for (let i = 0; i < images.length; i++) {
+        if (images[i]?.complete && images[i].naturalWidth && (nearest < 0 || Math.abs(i - index) < Math.abs(nearest - index)))
+          nearest = i
+      }
+      if (nearest < 0 || nearest === drawnFrameRef.current)
+        return
 
-      const newWidth = img.width * scale
-      const newHeight = sourceHeight * scale
+      const img = images[nearest]
+      let fit = 1
+      if (window.innerWidth < 768 && modelsRef.current) {
+        // Keep the sequence's transparent edge pixels inside the phone viewport.
+        const [left, top, right] = portraitBounds[nearest]
+        const halfViewport = window.innerWidth / 2 - 4
+        fit = Math.min(
+          1,
+          halfViewport / (canvas.clientWidth * (0.5 - left / img.width)),
+          halfViewport / (canvas.clientWidth * (right / img.width - 0.5)),
+          (mobileGap + modelsRef.current.clientHeight - 4) / (canvas.clientHeight * (1 - top / img.height)),
+        )
+      }
 
-      const offsetX = (canvas.width - newWidth) / 2
-      const offsetY = (canvas.height - newHeight) / 2
-
+      drawnFrameRef.current = nearest
+      const drawWidth = canvas.width * fit
+      const drawHeight = canvas.height * fit
       context.clearRect(0, 0, canvas.width, canvas.height)
-      context.drawImage(img, 0, sourceY, img.width, sourceHeight, offsetX, offsetY, newWidth, newHeight)
+      context.drawImage(img, (canvas.width - drawWidth) / 2, canvas.height - drawHeight, drawWidth, drawHeight)
     }
   }, [])
 
@@ -354,19 +366,19 @@ export function Team() {
     gsap.registerPlugin(ScrollTrigger)
 
     mm.add('(max-width: 767px)', () => {
-      ScrollTrigger.create({
-        trigger: modelsRef.current,
-        endTrigger: '.memberDescriptionEnd',
-        start: `top +=${mobileGap}px`,
-        end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
-        pinSpacing: false,
-        pin: true,
-        scrub: 1,
-        onUpdate: (self) => {
-          const progress = self.progress
-          const frameIndex = Math.round(progress * lastFrame)
-
-          loadImageOnCanvas(frameIndex)
+      const frame = { index: 0 }
+      gsap.to(frame, {
+        index: lastFrame,
+        ease: 'none',
+        onUpdate: () => loadImageOnCanvas(Math.round(frame.index)),
+        scrollTrigger: {
+          trigger: modelsRef.current,
+          endTrigger: '.memberDescriptionEnd',
+          start: `top +=${mobileGap}px`,
+          end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
+          pinSpacing: false,
+          pin: true,
+          scrub: 0.35,
         },
       })
 
@@ -520,17 +532,20 @@ export function Team() {
       const img = imagesRef.current[index] || new Image()
       imagesRef.current[index] = img
       img.onload = () => {
-        if (!disposed && index === frameRef.current)
-          loadImageOnCanvas(index)
+        if (!disposed)
+          loadImageOnCanvas(frameRef.current)
       }
       if (!img.src)
         img.src = `/images/team/${index}.avif`
-      if (img.complete && index === frameRef.current)
-        loadImageOnCanvas(index)
     }
 
     frameRef.current = 0
     loadFrame(0)
+    loadImageOnCanvas(0)
+    if (!reducedMotion) {
+      for (let index = 8; index <= lastFrame; index += 8)
+        loadFrame(index)
+    }
 
     const observer = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting || reducedMotion)
@@ -538,7 +553,7 @@ export function Team() {
       for (let index = 1; index <= lastFrame; index++)
         loadFrame(index)
       observer.disconnect()
-    }, { rootMargin: '400px' })
+    }, { rootMargin: '800px' })
 
     if (sectionRef.current)
       observer.observe(sectionRef.current)
@@ -547,10 +562,22 @@ export function Team() {
     if (canvasRef.current)
       resize.observe(canvasRef.current)
 
+    const restore = () => {
+      if (document.visibilityState !== 'visible')
+        return
+      drawnFrameRef.current = -1
+      ScrollTrigger.refresh()
+      loadImageOnCanvas(frameRef.current)
+    }
+    document.addEventListener('visibilitychange', restore)
+    window.addEventListener('pageshow', restore)
+
     return () => {
       disposed = true
       observer.disconnect()
       resize.disconnect()
+      document.removeEventListener('visibilitychange', restore)
+      window.removeEventListener('pageshow', restore)
       imagesRef.current.forEach(img => img.onload = null)
     }
   }, [reducedMotion, loadImageOnCanvas])
@@ -577,10 +604,8 @@ export function Team() {
           ))}
         </div>
         <div className="self-stretch z-1 lg:col-span-2">
-          <div ref={modelsRef} className="models mx-auto md:w-full relative aspect-[264/357] max-w-[264px] md:max-w-[314px] lg:max-w-[70%] overflow-hidden will-change-transform">
-            <div className="absolute inset-0">
-              <canvas ref={canvasRef} className="size-full" />
-            </div>
+          <div ref={modelsRef} className="models mx-auto md:w-full relative aspect-[264/357] max-w-[264px] md:max-w-[314px] lg:max-w-[70%] will-change-transform">
+            <canvas ref={canvasRef} className="absolute left-1/2 top-0 h-[calc(100%/0.86)] aspect-square -translate-x-1/2 -translate-y-[14%]" />
           </div>
         </div>
         <div ref={descriptionsRef} className="team-track flex flex-col md:flex-row">
