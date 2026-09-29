@@ -72,7 +72,7 @@ try {
   await page.getByRole('link', { name: 'Work', exact: true }).click()
   await selected(page, 'Circus')
 
-  for (const name of ['Stars+Honey', 'Linux Mint', 'Shareio', 'Chainviz', 'Circus']) {
+  for (const name of ['Datalane', 'Stars+Honey', 'Linux Mint', 'Shareio', 'Chainviz', 'Circus']) {
     await page.getByRole('button', { name, exact: true }).click()
     await selected(page, name)
     await page.getByRole('link', { name: `View ${name} case study` }).click()
@@ -167,7 +167,7 @@ try {
     await swipe(-140, 0, true)
     await selected(page, 'Circus')
     const initialY = await page.evaluate(() => scrollY)
-    for (const name of ['Stars+Honey', 'Linux Mint', 'Shareio', 'Chainviz']) {
+    for (const name of ['Datalane', 'Stars+Honey', 'Linux Mint', 'Shareio', 'Chainviz']) {
       await swipe(-140, 45)
       await selected(page, name)
       assert.ok(Math.abs(await page.evaluate(() => scrollY) - initialY) <= 1, 'A slightly diagonal horizontal swipe must not jerk the page vertically')

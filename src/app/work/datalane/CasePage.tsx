@@ -1,8 +1,61 @@
 import Image from 'next/image'
 
-import { SectionMedia } from '@/app/work/sections'
+import { SectionMedia, SectionText } from '@/app/work/sections'
 import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
+
+const mediaSizes = '(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)'
+
+const sections = [
+  { type: 'media', src: '/images/datalane/1.jpeg', width: 3440, height: 2200, alt: 'Datalane website hero with a blue network and the headline Scraping the mess isn’t enough' },
+  { type: 'media', src: '/images/datalane/2.png', width: 1720, height: 967, alt: 'White data points and circular diagrams across a black brand graphic' },
+  { type: 'text', align: 'center', paragraphs: ['An experimental first direction helped sharpen the brief. Datalane wanted the confidence of a focused identity that enterprise buyers could trust. We narrowed the palette to black, white and blue, and let individual data points become the foundation of the graphic system.'] },
+  { type: 'media', src: '/images/datalane/3.png', width: 1720, height: 967, alt: 'Blue tinted aerial view of city streets and buildings' },
+  { type: 'media', src: '/images/datalane/4.png', width: 1720, height: 967, alt: 'Lists of local business data fields arranged on a white background' },
+  { type: 'media', src: '/images/datalane/5.png', width: 1720, height: 967, alt: 'Minimal loading indicator on a blue background' },
+  { type: 'text', align: 'right', paragraphs: ['Each dot represents both a point in Datalane’s data layer and a local business on a map. Together, the dots form a recognisable monogram. Across the wider identity, they become maps, charts, diagrams and illustrations: many small pieces making a larger picture.', 'We paired direct sans-serif headings with serif body text that feels more comfortable across longer reads. Geist Mono gives labels and technical moments their own voice.'] },
+  { type: 'media', src: '/images/datalane/6.png', width: 1720, height: 1026, alt: 'White Datalane wordmark and dotted symbol on black' },
+  { type: 'text', align: 'center', paragraphs: ['Data visualisation is the core of the system. Maps locate businesses. Plots reveal coverage, gaps and distribution. Diagrams show how scattered records become usable information. The same dots that form the logo help Datalane explain what its technology knows.'] },
+  { type: 'media', src: '/images/datalane/7.png', width: 1724, height: 967, alt: 'Blue data diagram showing missing and duplicate inputs' },
+  { type: 'media', src: '/images/datalane/8.png', width: 1720, height: 967, alt: 'ABC Oracle type specimen beside a Datalane data receipt' },
+  { type: 'media', src: '/images/datalane/9.png', width: 1720, height: 1026, alt: 'Oversized white Datalane wordmark on blue' },
+  { type: 'media', src: '/images/datalane/10.png', width: 1720, height: 967, alt: 'Datalane colour palette with blue, greyscale and coral swatches' },
+  { type: 'media', src: '/images/datalane/11.png', width: 1720, height: 967, alt: 'Datalane navigation labels over a black network diagram' },
+  { type: 'text', align: 'left', paragraphs: ['The system works at different speeds. On the website, a headline frames the problem while a map or chart shows what Datalane can uncover. In the app, the same visual language helps people work with that information. On social channels, it makes even a quick post recognisably Datalane.'] },
+  { type: 'media', src: '/images/datalane/12.png', width: 1720, height: 1934, alt: 'Grid of campaign graphics featuring a globe, customer photograph, dotted pattern and map' },
+  { type: 'media', src: '/images/datalane/13.png', width: 1720, height: 967, alt: 'Dotted Datalane symbol centred on black' },
+  { type: 'media', src: '/images/datalane/14.png', width: 1720, height: 668, alt: 'Pedestrian crossing campaign about freeing sales representatives from manual research' },
+  { type: 'media', src: '/images/datalane/15.png', width: 1720, height: 1026, alt: 'Datalane social post about reaching buyers who spend their days on site' },
+  { type: 'media', src: '/images/datalane/16.png', width: 1720, height: 1026, alt: 'Blue Datalane campaign poster displayed at a bus shelter' },
+  { type: 'text', align: 'right', paragraphs: ['A dot changes meaning depending on where it appears. In the monogram, points form a single recognisable shape. On a map, each one locates a business. In a chart, points show distribution, gaps, or relationships that are difficult to see in a spreadsheet. The same unit can carry the identity at different scales, from an app icon to an explanation of an entire market.'] },
+  { type: 'media', src: '/images/datalane/17.png', width: 1720, height: 967, alt: 'Blue Datalane cap on a pale background' },
+  { type: 'media', src: '/images/datalane/18.png', width: 1720, height: 967, alt: 'Back view of a person wearing a blue Datalane hoodie' },
+  { type: 'media', src: '/images/datalane/19.png', width: 1720, height: 969, alt: 'Blue beaded lanyard beside Datalane letterhead and printed cards' },
+  { type: 'media', src: '/images/datalane/20.png', width: 1721, height: 967, alt: 'Front and back of a black Datalane hoodie against blue' },
+  { type: 'text', align: 'center', paragraphs: ['The first Datalane selling guide ran to more than 80 pages. We designed its structure for screen and print, with isometric illustrations, GTM diagrams and data visualisations built in R. It gave the identity room to explain complex ideas at length.'] },
+  { type: 'media', src: '/images/datalane/21.png', width: 1720, height: 967, alt: 'Collage of Datalane social posts with product messages and data graphics' },
+  { type: 'media', src: '/images/datalane/22.png', width: 1720, height: 1026, alt: 'Four pages from the Datalane selling guide' },
+  { type: 'media', src: '/images/datalane/23.png', width: 1720, height: 1026, alt: 'Person working on a laptop displaying a Datalane product page' },
+  { type: 'media', src: '/images/datalane/24.png', width: 1720, height: 967, alt: 'Printed Datalane data cleanup kit in clear packaging' },
+  { type: 'text', align: 'right', paragraphs: ['In motion, points gather, separate and settle into a larger picture. That movement from many to one shapes the easing, pacing and rhythm of transitions. We carried the rhythm into sound: an entry cue, background melodies and small sonic details make a Datalane video recognisable even without the image.'] },
+  { type: 'media', src: '/images/datalane/25.png', width: 1720, height: 968, alt: 'Datalane product interface layered over blue aerial imagery' },
+  { type: 'media', src: '/images/datalane/26.png', width: 1720, height: 1026, alt: 'Laptop displaying the blue Datalane website hero' },
+  { type: 'media', src: '/images/datalane/27.png', width: 1720, height: 967, alt: 'Datalane icon set beside a bold message about reaching on site buyers' },
+  { type: 'media', src: '/images/datalane/28.jpeg', width: 3440, height: 2360, alt: 'Datalane product interface with account data and campaign controls' },
+  { type: 'media', src: '/images/datalane/29.png', width: 1720, height: 968, alt: 'Blue linked dot symbol on a pale background' },
+  { type: 'media', src: '/images/datalane/30.png', width: 1720, height: 1026, alt: 'Datalane poster and printed material over a blue circular pattern' },
+  { type: 'media', src: '/images/datalane/31.png', width: 1720, height: 967, alt: 'Long form Datalane article and data diagrams on a textured background' },
+  { type: 'media', src: '/images/datalane/32.png', width: 1720, height: 967, alt: 'Grid of Datalane data visualisations and diagrams' },
+  { type: 'media', src: '/images/datalane/33.png', width: 1720, height: 1026, alt: 'Blue Datalane call to action with a white globe' },
+  { type: 'media', src: '/images/datalane/34.png', width: 1720, height: 1026, alt: 'Browser view of a Datalane market map and article' },
+  { type: 'media', src: '/images/datalane/35.png', width: 1720, height: 192, alt: 'Horizontal strip of pale blue and grey dotted patterns' },
+  { type: 'media', src: '/images/datalane/36.png', width: 1720, height: 967, alt: 'Blue dotted illustration of a telephone, calendar and wallet' },
+  { type: 'media', src: '/images/datalane/37.png', width: 1720, height: 1026, alt: 'Datalane message about coordinating precise campaigns on a white background' },
+  { type: 'media', src: '/images/datalane/38.png', width: 1720, height: 967, alt: 'Blue Datalane digital poster in a station concourse' },
+  { type: 'media', src: '/images/datalane/39.png', width: 1721, height: 969, alt: 'Datalane mobile screen beside blue paper clips and a desk stapler' },
+  { type: 'media', src: '/images/datalane/40.png', width: 1720, height: 967, alt: 'Presenter beside a Datalane dotted network diagram' },
+  { type: 'text', align: 'center', paragraphs: ['Datalane asked us to continue as its design partner as soon as the nine-week project ended. The identity now extends across its product, guides, sales materials, videos, AI agent mascot and office and continues to grow with the company.'] },
+] as const
 
 export function CasePage() {
   return (
@@ -11,19 +64,19 @@ export function CasePage() {
         <div className="col-span-full flex gap-5 items-start justify-between md:justify-end md:gap-10 md:absolute md:top-0 md:right-0 lg:gap-[45px]">
           <Button as="a" href="/work/circus" label="Previous" />
           <Button as="a" href="/work/chainviz" label="Next" />
-          <Button as="a" href="/work" label="Close" />
+          <Button as="a" href="/work?case=datalane" label="Close" />
         </div>
 
         <div className="col-span-full mt-10 mb-12 md:mt-0 md:mb-24 lg:col-span-full lg:order-first">
           <h1 className="text-nowrap text-[12vw] md:text-[60px] lg:text-[4vw] tracking-normal leading-[90%] uppercase -rotate-2 md:-mt-2.5 lg:-mt-5">
-            <TextBlur isBold>DataLane</TextBlur>
+            <TextBlur isBold>Datalane</TextBlur>
           </h1>
         </div>
 
         <div className="flex flex-col items-start gap-[5px] blur-regular uppercase p4 leading-none">
           <div>Branding</div>
+          <div>Sound &amp; motion</div>
           <div>Web</div>
-          <div>Datavis</div>
         </div>
 
         <div className="flex flex-col items-start gap-[5px]">
@@ -34,13 +87,13 @@ export function CasePage() {
           <div className="flex flex-col gap-[3px]">
             <h2 className="blur-regular uppercase p4">Task</h2>
             <div className="p5">
-              <p>Create a distinctive brand and digital presence for DataLane, a GTM engineering platform helping enterprise teams reach local businesses.</p>
+              <p>Datalane had technology for finding and organising local-business data, but no established brand or website. It needed to earn enterprise buyers’ trust and stand apart from Clay’s more playful approach.</p>
             </div>
           </div>
           <div className="flex flex-col gap-[3px]">
             <h2 className="blur-regular uppercase p4">Solution</h2>
             <div className="p5">
-              <p>An ongoing design partnership covering brand identity, website implementation and custom data visualisation across product, content and physical touchpoints.</p>
+              <p>We built Datalane’s identity around a dot: a data point and a business on a map. In nine weeks, it became a brand and website.</p>
             </div>
           </div>
         </div>
@@ -52,138 +105,30 @@ export function CasePage() {
           </div>
           <div className="flex flex-col gap-[3px]">
             <h2 className="blur-regular uppercase p4">Industry</h2>
-            <div className="p5">GTM engineering</div>
+            <div className="p5">GTM &amp; Data</div>
           </div>
           <div className="flex flex-col gap-[3px]">
             <h2 className="blur-regular uppercase p4">Length</h2>
-            <div className="p5">Ongoing partnership</div>
+            <div className="p5">9 weeks, ongoing</div>
           </div>
           <div className="flex flex-col gap-[3px]">
             <h2 className="blur-regular uppercase p4">Year</h2>
-            <div className="p5">2026</div>
+            <div className="p5">2025</div>
           </div>
         </div>
       </header>
 
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/1.avif" alt="DataLane homepage with a cobalt-blue network graphic and the headline ‘Scraping the mess isn’t enough.’" width={3840} height={2456} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/2.avif" alt="DataLane wordmark and dotted D symbol centred on a light-grey background" width={3440} height={2052} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/3.avif" alt="Dotted DataLane D symbol centred on a black background" width={3440} height={2052} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/4.avif" alt="DataLane loading screen with a segmented progress bar on a blue background" width={3440} height={2052} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/5.avif" alt="Data quality diagram with circles and labels for missing inputs, duplicates and clean inputs" width={3448} height={2052} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/6.avif" alt="DataLane navigation categories arranged over a black network diagram" width={3440} height={2052} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/7.avif" alt="Blue brand statement layout with an oversized DataLane wordmark" width={3440} height={2052} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/8.avif" alt="Typeface specimen beside a receipt-styled DataLane data graphic" width={3440} height={2350} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/9.avif" alt="DataLane campaign layout connecting a customer portrait to data points around a highlighted headline" width={3440} height={2052} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/10.avif" alt="Social campaign layout with pedestrians at a crossing and messaging about freeing sales reps from manual research" width={3440} height={1336} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/11.avif" alt="DataLane brand palette with blue, greyscale and coral colour swatches" width={3440} height={1186} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/12.avif" alt="Blue DataLane poster with an outlined human profile and messaging about reaching on-site buyers" width={3440} height={2052} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/13.avif" alt="White geometric lattice sphere on a textured blue background" width={3440} height={2052} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/14.avif" alt="Horizontal strip of blue and grey DataLane brand patterns" width={3440} height={446} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/15.avif" alt="DataLane poster with a stylised globe and messaging about seeing the whole market" width={3440} height={2052} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/16.avif" alt="Blue DataLane hoodie shown on a model beside a close-up of the woven brand label" width={3440} height={1546} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/17.avif" alt="Front and back views of a blue DataLane hoodie" width={3440} height={2030} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/18.avif" alt="Audience viewing the DataLane website on a large stage display" width={3440} height={2052} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/19.avif" alt="Vertical strip of blue DataLane business cards on a black background" width={3440} height={1935} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/21.avif" alt="Portrait-led DataLane social post titled ‘7 Diagrams That Explain Why Restaurant GTM Is Broken’" width={3441} height={1937} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/22.avif" alt="DataLane call-to-action screen with brand messaging and a get-in-touch button" width={3440} height={2052} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/23.avif" alt="Restaurant storefront annotated with business data beside a mapped location view" width={3440} height={1937} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/24.avif" alt="DataLane browser and mobile website mockups on a blue-and-black layout" width={3440} height={1935} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/25.avif" alt="Long-form DataLane article about B2B restaurant sales paired with data diagrams" width={3440} height={2052} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/26.avif" alt="Grid of DataLane data visualisations including charts, funnels, layers and filters" width={3440} height={2782} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/27.avif" alt="Web layouts showing GTM analysis and a campaign filter interface over aerial imagery" width={3440} height={1937} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/28.avif" alt="DataLane product interface listing matching accounts beneath local-business data messaging" width={3440} height={2360} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/29.avif" alt="Retail employee photograph beside a list of local-business data fields" width={3440} height={1937} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/30.avif" alt="DataLane office interior with a blue column, transparent bench and illuminated brand message" width={3440} height={2782} />
-      </SectionMedia>
-
-      <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/datalane/31.avif" alt="DataLane wordmark formed from white particles on a blue background" width={3440} height={1748} />
-      </SectionMedia>
+      {sections.map(section => section.type === 'media'
+        ? (
+            <SectionMedia key={section.src}>
+              <Image sizes={mediaSizes} className="w-full" src={section.src} alt={section.alt} width={section.width} height={section.height} />
+            </SectionMedia>
+          )
+        : (
+            <SectionText key={section.paragraphs[0]} align={section.align}>
+              {section.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+            </SectionText>
+          ))}
 
       <footer className="flex justify-center gap-10">
         <Button as="a" href="/work/circus" label="Previous" />

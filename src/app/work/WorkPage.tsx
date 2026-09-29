@@ -26,6 +26,19 @@ const cases = [
     ),
   },
   {
+    title: 'Datalane',
+    info: ['GTM & Data', 'USA', '2025', '9 weeks, ongoing'],
+    tags: ['Branding', 'Sound & motion', 'Web'],
+    image: '/images/datalane/preview.png',
+    link: '/work/datalane',
+    description: () => (
+      <>
+        <p>Datalane had technology for finding and organising local-business data, but no established brand or website. It needed to earn enterprise buyers’ trust and stand apart from Clay’s more playful approach.</p>
+        <p>We built Datalane’s identity around a dot: a data point and a business on a map. In nine weeks, it became a brand and website.</p>
+      </>
+    ),
+  },
+  {
     title: 'Stars+Honey',
     info: ['Food & Beverage', 'United States', '2026', '20 weeks'],
     tags: ['Product 3D', 'Brand motion', 'Packaging'],

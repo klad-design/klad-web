@@ -104,7 +104,7 @@ try {
     await page.goto(`${baseURL}/work`)
     await page.evaluate(() => document.fonts.ready)
     await page.waitForTimeout(600)
-    assert.equal(await page.getByRole('button', { name: 'DataLane' }).count(), 0)
+    assert.equal(await page.getByRole('button', { name: 'Datalane' }).count(), 1)
     const titleFits = await page.locator('h1').evaluate((el) => {
       const range = document.createRange()
       range.selectNodeContents(el.lastElementChild.lastElementChild)
