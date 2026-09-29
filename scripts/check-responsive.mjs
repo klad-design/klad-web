@@ -72,7 +72,7 @@ try {
   landscape.on('request', (request) => {
     if (/\/images\/team\/\d+\.avif/.test(request.url()))
       portraitRequests.add(request.url())
-    if (/\/images\/team-mobile\/v1\/\d+\.avif/.test(request.url()))
+    if (/\/images\/team-mobile\/v2\/preview\/\d+\.avif/.test(request.url()))
       atlasRequests.add(request.url())
   })
   if (type.name() === 'firefox') {
@@ -128,13 +128,42 @@ try {
   await landscape.close()
 
   if (type.name() === 'firefox') {
+    const progressive = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true })
+    await progressive.route('**/images/team-mobile/v2/full/*.avif', async (route) => {
+      await new Promise(resolve => setTimeout(resolve, 2500))
+      await route.continue()
+    })
+    await progressive.addInitScript(() => {
+      window.__portraitQuality = ''
+      window.__portraitCells = {}
+      const drawImage = CanvasRenderingContext2D.prototype.drawImage
+      CanvasRenderingContext2D.prototype.drawImage = function (...args) {
+        if (this.canvas.closest?.('#team') && args[0] instanceof ImageBitmap) {
+          const quality = args[0].width === 1152 ? 'preview' : 'full'
+          window.__portraitQuality = quality
+          window.__portraitCells[quality] = `${args[1] / args[3]},${args[2] / args[4]}`
+        }
+        return drawImage.apply(this, args)
+      }
+    })
+    const progressiveTeam = await visit(progressive, '/')
+    await progressiveTeam.locator('.models').evaluate(el => scrollTo(0, el.getBoundingClientRect().top + scrollY + 250))
+    await progressiveTeam.waitForFunction(() => window.__portraitQuality === 'preview')
+    await progressiveTeam.waitForTimeout(800)
+    await progressiveTeam.screenshot({ path: `${artifacts}/team-preview.png` })
+    await progressiveTeam.waitForFunction(() => window.__portraitQuality === 'full', null, { timeout: 8000 })
+    await progressiveTeam.screenshot({ path: `${artifacts}/team-full.png` })
+    const cells = await progressiveTeam.evaluate(() => window.__portraitCells)
+    assert.equal(cells.preview, cells.full, 'Full-quality portrait must replace the exact preview frame')
+    await progressive.close()
+
     const delayed = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true })
     const fallbackRequests = new Set()
     delayed.on('request', (request) => {
       if (/\/images\/team\/\d+\.avif/.test(request.url()))
         fallbackRequests.add(request.url())
     })
-    await delayed.route('**/images/team-mobile/v1/*.avif', async (route) => {
+    await delayed.route('**/images/team-mobile/v2/**/*.avif', async (route) => {
       await new Promise(resolve => setTimeout(resolve, 2500))
       await route.continue()
     })
