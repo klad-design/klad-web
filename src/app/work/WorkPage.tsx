@@ -13,6 +13,19 @@ import { useReducedMotion } from '@/components/useReducedMotion'
 
 const cases = [
   {
+    title: 'Datalane',
+    info: ['GTM & Data', 'USA', '2025', '9 weeks, ongoing'],
+    tags: ['Branding', 'Sound & motion', 'Web'],
+    image: '/images/datalane/preview.avif',
+    link: '/work/datalane',
+    description: () => (
+      <>
+        <p>Datalane had technology for finding and organising local-business data, but no established brand or website. It needed to earn enterprise buyers’ trust and stand apart from Clay’s more playful approach.</p>
+        <p>We built Datalane’s identity around a dot: a data point and a business on a map. In nine weeks, it became a brand and website.</p>
+      </>
+    ),
+  },
+  {
     title: 'Circus',
     info: ['Robotics', 'Germany', '2024', '6 weeks'],
     tags: ['Web design', '3D & Motion', 'Webflow'],
@@ -22,19 +35,6 @@ const cases = [
       <>
         <p>After rebranding, Circus Group needed a full revamp of their website to match the new visual language of the company.</p>
         <p>We've completely redesigned the client’s existing website, adding a strong product focus with 3D visualisation of the robot and motion design.</p>
-      </>
-    ),
-  },
-  {
-    title: 'Datalane',
-    info: ['GTM & Data', 'USA', '2025', '9 weeks, ongoing'],
-    tags: ['Branding', 'Sound & motion', 'Web'],
-    image: '/images/datalane/preview.png',
-    link: '/work/datalane',
-    description: () => (
-      <>
-        <p>Datalane had technology for finding and organising local-business data, but no established brand or website. It needed to earn enterprise buyers’ trust and stand apart from Clay’s more playful approach.</p>
-        <p>We built Datalane’s identity around a dot: a data point and a business on a map. In nine weeks, it became a brand and website.</p>
       </>
     ),
   },

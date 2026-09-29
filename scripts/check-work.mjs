@@ -38,15 +38,15 @@ try {
   const page = await desktop.newPage()
   page.on('pageerror', error => errors.push(error.message))
   await page.goto('/work')
-  await selected(page, 'Circus')
+  await selected(page, 'Datalane')
   await noise(page, true)
   for (const delay of [30, 60]) {
     await page.evaluate(async (delay) => {
       document.querySelector('button[aria-label="Stars+Honey"]').click()
       await new Promise(resolve => setTimeout(resolve, delay))
-      document.querySelector('button[aria-label="Circus"]').click()
+      document.querySelector('button[aria-label="Datalane"]').click()
     }, delay)
-    await selected(page, 'Circus')
+    await selected(page, 'Datalane')
   }
 
   await page.getByRole('button', { name: 'Chainviz', exact: true }).click()
@@ -70,9 +70,9 @@ try {
   await page.getByRole('link', { name: 'Pricing', exact: true }).click()
   await page.waitForURL('**/pricing')
   await page.getByRole('link', { name: 'Work', exact: true }).click()
-  await selected(page, 'Circus')
+  await selected(page, 'Datalane')
 
-  for (const name of ['Datalane', 'Stars+Honey', 'Linux Mint', 'Shareio', 'Chainviz', 'Circus']) {
+  for (const name of ['Datalane', 'Circus', 'Stars+Honey', 'Linux Mint', 'Shareio', 'Chainviz']) {
     await page.getByRole('button', { name, exact: true }).click()
     await selected(page, name)
     await page.getByRole('link', { name: `View ${name} case study` }).click()
@@ -120,7 +120,7 @@ try {
     const page = await context.newPage()
     page.on('pageerror', error => errors.push(error.message))
     await page.goto('/work')
-    await selected(page, 'Circus')
+    await selected(page, 'Datalane')
     const client = type === chromium ? await context.newCDPSession(page) : null
     async function swipe(x, y = 0, cancel = false) {
       const cover = page.locator('.case-anim-target a')
@@ -155,19 +155,19 @@ try {
       assert.equal(new URL(page.url()).pathname, '/work', 'Swiping must not open the case')
     }
     await swipe(140)
-    await selected(page, 'Circus')
+    await selected(page, 'Datalane')
     await swipe(-25)
-    await selected(page, 'Circus')
+    await selected(page, 'Datalane')
     await swipe(-65)
-    await selected(page, 'Circus')
+    await selected(page, 'Datalane')
     await page.locator('.case-anim-target a').click()
-    await page.waitForURL('**/work/circus')
+    await page.waitForURL('**/work/datalane')
     await page.getByRole('link', { name: 'Close', exact: true }).click()
-    await selected(page, 'Circus')
+    await selected(page, 'Datalane')
     await swipe(-140, 0, true)
-    await selected(page, 'Circus')
+    await selected(page, 'Datalane')
     const initialY = await page.evaluate(() => scrollY)
-    for (const name of ['Datalane', 'Stars+Honey', 'Linux Mint', 'Shareio', 'Chainviz']) {
+    for (const name of ['Circus', 'Stars+Honey', 'Linux Mint', 'Shareio', 'Chainviz']) {
       await swipe(-140, 45)
       await selected(page, name)
       assert.ok(Math.abs(await page.evaluate(() => scrollY) - initialY) <= 1, 'A slightly diagonal horizontal swipe must not jerk the page vertically')

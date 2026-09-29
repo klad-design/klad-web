@@ -20,7 +20,7 @@ Reuse the `staging` branch for all review builds. Deploy it with these settings:
 - Start command, when required by the host: `pnpm start`
 - Environment variable: `STAGING=1`
 
-The staging build sends `X-Robots-Tag: noindex, nofollow` and includes matching page metadata. Use a separate preview deployment/domain; `main` remains the production branch. DataLane stays accessible by its direct URL and is intentionally absent from portfolio navigation and the sitemap.
+The staging build sends `X-Robots-Tag: noindex, nofollow` and includes matching page metadata. Use a separate preview deployment/domain; `main` remains the production branch. Datalane appears first in the portfolio and is listed in the sitemap.
 
 To review the staging build locally:
 
@@ -47,7 +47,7 @@ Visual acceptance preserves the 10px desktop text, grain, blur treatment, intent
 
 `test:responsive` covers hybrid touch/mouse input, finite scrolling on touch-only devices, tablet headings, landscape portraits, short desktop windows, and video decoding fallback. It accepts the same `STAGING_URL` and `STAGING_BROWSER` settings.
 
-`test:work` covers the Circus default, returning to the selected project, rapid switching, short-window content, touch swipes and the case-page noise treatment. Swipe left or right on the Work cover to change projects; the first and last projects stop at the ends of the list. Project selection is kept in the URL so Close, browser Back and reload retain it. Case-study images and videos sit above the noise overlay; the background, text and surrounding spacing keep the original grain. Work and other pages retain their full noise overlay.
+`test:work` covers the Datalane default, returning to the selected project, rapid switching, short-window content, touch swipes and the case-page noise treatment. Swipe left or right on the Work cover to change projects; the first and last projects stop at the ends of the list. Project selection is kept in the URL so Close, browser Back and reload retain it. Case-study images and videos sit above the noise overlay; the background, text and surrounding spacing keep the original grain. Work and other pages retain their full noise overlay.
 
 Cover swipes lock to their initial direction and require a deliberate horizontal movement before changing projects. Partial swipes do not open a case. The right navigation remains fixed in short desktop windows, with its own scrolling when its contents cannot fit.
 

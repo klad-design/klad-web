@@ -105,6 +105,7 @@ try {
     await page.evaluate(() => document.fonts.ready)
     await page.waitForTimeout(600)
     assert.equal(await page.getByRole('button', { name: 'Datalane' }).count(), 1)
+    assert.match(await page.locator('h1').textContent(), /Datalane/, 'Datalane must be the default work case')
     const titleFits = await page.locator('h1').evaluate((el) => {
       const range = document.createRange()
       range.selectNodeContents(el.lastElementChild.lastElementChild)
@@ -172,7 +173,7 @@ try {
   await page.waitForFunction(() => !!document.querySelector('video')?.getAttribute('src'))
   assert.equal(await page.locator('video').first().evaluate(el => el.paused && el.controls), true, 'Reduced motion keeps manual video playback available')
   const sitemap = await page.request.get(`${baseURL}/sitemap.xml`)
-  assert.ok(!(await sitemap.text()).includes('/work/datalane'), 'DataLane must remain hidden')
+  assert.ok((await sitemap.text()).includes('/work/datalane'), 'Datalane must appear in the sitemap')
   assert.deepEqual(errors, [], 'Browser runtime errors')
   await context.close()
   console.log(`Staging smoke check passed in ${browserType.name()} at 1440, 768, 390 and 320px, including scroll cycles, refresh, keyboard and reduced motion.`)

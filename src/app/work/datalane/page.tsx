@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     images: [
       {
-        url: '/images/datalane/1.jpeg',
+        url: '/images/datalane/1.avif',
         width: 3440,
         height: 2200,
         alt: 'Datalane website hero with a blue network and the headline “Scraping the mess isn’t enough.”',
