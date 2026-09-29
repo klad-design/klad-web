@@ -46,6 +46,20 @@ try {
       await page.waitForTimeout(1200)
       await page.screenshot({ path: `${artifacts}/team-desktop.png` })
 
+      await page.locator('.memberLink').nth(1).click()
+      await page.waitForFunction(() => document.querySelector('.memberLink.button--active')?.textContent?.includes('Lena S'))
+      await page.waitForTimeout(2300)
+      const teamTextState = () => page.locator('#team').evaluate(section => ({
+        active: [...section.querySelectorAll('.memberLink')].findIndex(link => link.classList.contains('button--active')),
+        opacity: [...section.querySelectorAll('.memberDescription')].map(el => Number(getComputedStyle(el).opacity)),
+      }))
+      const beforeTab = await teamTextState()
+      assert.equal(beforeTab.active, 1)
+      assert.ok(beforeTab.opacity[0] < 0.1 && beforeTab.opacity.slice(1).every(value => value > 0.99), 'Only the earlier biography should be faded')
+      await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
+      await page.waitForTimeout(100)
+      assert.deepEqual(await teamTextState(), beforeTab, 'Returning to the tab must preserve the selected member and text states')
+
       assert.equal(await page.locator('.team-track').evaluate(el => getComputedStyle(el).clipPath), 'none')
       assert.equal(await page.locator('.home-loop').evaluate(el => getComputedStyle(el).overflow), 'visible')
       await page.reload()

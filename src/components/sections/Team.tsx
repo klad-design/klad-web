@@ -416,32 +416,21 @@ export function Team() {
 
       const itemWidth = () => teamDescription.firstElementChild?.getBoundingClientRect().width || 0
       const endPosition = () => itemWidth() * (team.length - 1)
+      const descriptions = Array.from(teamDescription.children).slice(0, -1) as HTMLElement[]
 
       const animation = gsap.to(teamDescription, {
         x: () => -endPosition(),
         ease: 'none',
-      })
-
-      team.forEach((_, index) => {
-        if (index < team.length - 1) {
-          const trigger = `.memberDescription:nth-child(${index + 1})`
-          const tl = gsap.timeline({ defaults: { ease: 'none' } })
-
-          tl.to(trigger, {
-            '--value': 75,
-            'opacity': 0.05,
-            'ease': 'none',
-          }, 0)
-
-          ScrollTrigger.create({
-            trigger: teamContent,
-            animation: tl,
-            start: () => `${teamContent.clientHeight + itemWidth() * index + 10}px bottom`,
-            end: () => `+=${itemWidth()} bottom`,
-            invalidateOnRefresh: true,
-            scrub: 1,
+        onUpdate() {
+          const progress = this.progress()
+          setActiveMemberIndex(Math.min(Math.floor(progress * team.length), team.length - 1))
+          loadImageOnCanvas(Math.round(progress * lastFrame))
+          descriptions.forEach((description, index) => {
+            const fade = Math.min(1, Math.max(0, progress * (team.length - 1) - index))
+            description.style.opacity = String(1 - fade * 0.95)
+            description.style.setProperty('--value', String(fade * 75))
           })
-        }
+        },
       })
 
       ScrollTrigger.create({
@@ -454,14 +443,12 @@ export function Team() {
         pin: true,
         scrub: 1,
         animation,
-        onUpdate: (self) => {
-          const progress = self.progress
-          const currentMemberIndex = Math.min(Math.floor(progress * team.length), team.length - 1)
-          const frameIndex = Math.round(progress * lastFrame)
+        onRefresh: self => animation.progress(self.progress),
+      })
 
-          setActiveMemberIndex(currentMemberIndex)
-          loadImageOnCanvas(frameIndex)
-        },
+      return () => descriptions.forEach((description) => {
+        description.style.removeProperty('opacity')
+        description.style.removeProperty('--value')
       })
     })
 
