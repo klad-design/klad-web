@@ -525,8 +525,13 @@ export function Team() {
         if (!disposed)
           loadImageOnCanvas(frameRef.current)
       }
+      img.onerror = () => {
+        img.onerror = null
+        if (!img.src.endsWith(`/images/team/${index}.avif`))
+          img.src = `/images/team/${index}.avif`
+      }
       if (!img.src)
-        img.src = `/images/team/${index}.avif`
+        img.src = `https://klad.b-cdn.net/klad-web/team/${index}.avif`
       if (img.complete && index === frameRef.current)
         loadImageOnCanvas(index)
     }
@@ -569,7 +574,10 @@ export function Team() {
       resize.disconnect()
       document.removeEventListener('visibilitychange', restore)
       window.removeEventListener('pageshow', restore)
-      imagesRef.current.forEach(img => img.onload = null)
+      imagesRef.current.forEach((img) => {
+        img.onload = null
+        img.onerror = null
+      })
     }
   }, [reducedMotion, loadImageOnCanvas])
 

@@ -69,26 +69,30 @@ try {
   const landscape = await browser.newContext({ viewport: { width: 667, height: 375 }, hasTouch: true })
   const portraitRequests = new Set()
   landscape.on('request', (request) => {
-    if (/\/images\/team\/\d+\.avif/.test(request.url()))
+    if (/\/klad-web\/team\/\d+\.avif/.test(request.url()))
       portraitRequests.add(request.url())
   })
-  if (type.name() === 'firefox') {
-    await landscape.addInitScript(() => {
+  await landscape.addInitScript(() => {
+    window.__portraitDraws = 0
+    if (navigator.userAgent.includes('Firefox')) {
       window.__portraitFrames = []
       window.__portraitWidths = []
-      const drawImage = CanvasRenderingContext2D.prototype.drawImage
-      CanvasRenderingContext2D.prototype.drawImage = function (...args) {
-        if (this.canvas.closest?.('#team')) {
-          const frame = Number(args[0].src?.match(/\/images\/team\/(\d+)\.avif/)?.[1])
+    }
+    const drawImage = CanvasRenderingContext2D.prototype.drawImage
+    CanvasRenderingContext2D.prototype.drawImage = function (...args) {
+      if (this.canvas.closest?.('#team')) {
+        window.__portraitDraws++
+        if (navigator.userAgent.includes('Firefox')) {
+          const frame = Number(args[0].src?.match(/\/team\/(\d+)\.avif/)?.[1])
           if (Number.isInteger(frame))
             window.__portraitFrames.push(frame)
           if (innerWidth < 768)
             window.__portraitWidths.push(args[3] / this.canvas.width)
         }
-        return drawImage.apply(this, args)
       }
-    })
-  }
+      return drawImage.apply(this, args)
+    }
+  })
   const team = await visit(landscape, '/')
   assert.ok(portraitRequests.size <= 1, 'Mobile must fetch only the first portrait before Team approaches')
   await team.evaluate(() => scrollTo(0, document.querySelector('.memberDescription').getBoundingClientRect().top + scrollY - 195))
@@ -116,19 +120,26 @@ try {
     const widths = await team.evaluate(() => window.__portraitWidths)
     assert.ok(widths.length > 2 && Math.max(...widths) - Math.min(...widths) < 0.001, 'Mobile portraits must keep one fixed scale while scrolling')
   }
-  const redrawn = await team.locator('#team canvas').evaluate((canvas) => {
-    const context = canvas.getContext('2d')
-    context.clearRect(0, 0, canvas.width, canvas.height)
+  const redrawn = await team.locator('#team canvas').evaluate(() => {
+    const before = window.__portraitDraws
     document.dispatchEvent(new Event('visibilitychange'))
-    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data
-    for (let i = 3; i < pixels.length; i += 4) {
-      if (pixels[i] > 4)
-        return true
-    }
-    return false
+    return window.__portraitDraws > before
   })
   assert.ok(redrawn, 'Portrait must redraw when the tab becomes visible')
   await landscape.close()
+
+  if (type.name() === 'firefox') {
+    const fallback = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true })
+    let localFrameRequested = false
+    fallback.on('request', (request) => {
+      if (request.url().endsWith('/images/team/0.avif'))
+        localFrameRequested = true
+    })
+    await fallback.route('https://klad.b-cdn.net/klad-web/team/0.avif', route => route.abort())
+    await visit(fallback, '/')
+    assert.ok(localFrameRequested, 'A failed Bunny portrait must fall back to the local frame')
+    await fallback.close()
+  }
 
   const short = await browser.newContext({ viewport: { width: 1024, height: 400 } })
   const work = await visit(short, '/work')
