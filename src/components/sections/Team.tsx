@@ -13,7 +13,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
 import { useReducedMotion } from '@/components/useReducedMotion'
-import portraitBounds from '@/data/teamPortraitBounds.json'
 
 interface TeamMember {
   name: string
@@ -293,10 +292,6 @@ const team: TeamMember[] = [
 
 const mobileGap = 30
 const lastFrame = 121
-const atlasTiles = { preview: 384, full: 768 }
-type AtlasQuality = keyof typeof atlasTiles
-const framesPerAtlas = 6
-const lastAtlas = Math.floor(lastFrame / framesPerAtlas)
 
 export function Team() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -306,9 +301,6 @@ export function Team() {
   const descriptionsRef = useRef<HTMLDivElement>(null)
 
   const imagesRef = useRef<HTMLImageElement[]>([])
-  const atlasesRef = useRef<Record<AtlasQuality, Map<number, ImageBitmap>>>({ preview: new Map(), full: new Map() })
-  const prepareRef = useRef<(index: number) => void>(() => {})
-  const fitRef = useRef<{ width: number, height: number, viewport: number, value: number } | null>(null)
   const frameRef = useRef(0)
   const drawnFrameRef = useRef(-1)
 
@@ -319,13 +311,13 @@ export function Team() {
 
   const loadImageOnCanvas = useCallback((index: number) => {
     frameRef.current = index
-    prepareRef.current(index)
     const canvas = canvasRef.current
     const context = canvas?.getContext('2d')
     const images = imagesRef.current
 
     if (index >= 0 && index <= lastFrame && canvas && context) {
-      const pixelRatio = Math.min(window.devicePixelRatio, 2)
+      const mobile = window.innerWidth < 768
+      const pixelRatio = mobile ? window.devicePixelRatio : Math.min(window.devicePixelRatio, 2)
       const width = Math.round(canvas.clientWidth * pixelRatio)
       const height = Math.round(canvas.clientHeight * pixelRatio)
       if (canvas.width !== width || canvas.height !== height) {
@@ -334,12 +326,8 @@ export function Team() {
         drawnFrameRef.current = -1
       }
 
-      const mobile = window.innerWidth < 768
-      const group = Math.floor(index / framesPerAtlas)
-      const quality: AtlasQuality = atlasesRef.current.full.has(group) ? 'full' : 'preview'
-      const atlas = atlasesRef.current[quality].get(group)
       let nearest = mobile ? index : -1
-      if (mobile && !atlas && (!images[index]?.complete || !images[index].naturalWidth))
+      if (mobile && (!images[index]?.complete || !images[index].naturalWidth))
         return
       if (!mobile) {
         for (let i = 0; i < images.length; i++) {
@@ -351,35 +339,12 @@ export function Team() {
         return
 
       const img = images[nearest]
-      let fit = 1
-      if (mobile && modelsRef.current) {
-        const slotHeight = modelsRef.current.clientHeight
-        const cached = fitRef.current
-        if (!cached || cached.width !== canvas.clientWidth || cached.height !== slotHeight || cached.viewport !== window.innerWidth) {
-          const halfViewport = window.innerWidth / 2 - 4
-          const value = Math.min(...portraitBounds.map(([left, top, right]) => Math.min(
-            1,
-            halfViewport / (canvas.clientWidth * (0.5 - left / 1080)),
-            halfViewport / (canvas.clientWidth * (right / 1080 - 0.5)),
-            (mobileGap + slotHeight - 4) / (canvas.clientHeight * (1 - top / 1080)),
-          )))
-          fitRef.current = { width: canvas.clientWidth, height: slotHeight, viewport: window.innerWidth, value }
-        }
-        fit = fitRef.current!.value
-      }
-
       drawnFrameRef.current = nearest
-      const drawWidth = canvas.width * fit
-      const drawHeight = canvas.height * fit
+      const scale = Math.min(canvas.width / img.width, canvas.height / img.height)
+      const drawWidth = img.width * scale
+      const drawHeight = img.height * scale
       context.clearRect(0, 0, canvas.width, canvas.height)
-      if (mobile && atlas) {
-        const cell = index % framesPerAtlas
-        const tile = atlasTiles[quality]
-        context.drawImage(atlas, (cell % 3) * tile, Math.floor(cell / 3) * tile, tile, tile, (canvas.width - drawWidth) / 2, canvas.height - drawHeight, drawWidth, drawHeight)
-      }
-      else {
-        context.drawImage(img, (canvas.width - drawWidth) / 2, canvas.height - drawHeight, drawWidth, drawHeight)
-      }
+      context.drawImage(img, (canvas.width - drawWidth) / 2, mobile ? (canvas.height - drawHeight) / 2 : canvas.height - drawHeight, drawWidth, drawHeight)
     }
   }, [])
 
@@ -393,19 +358,17 @@ export function Team() {
     gsap.registerPlugin(ScrollTrigger)
 
     mm.add('(max-width: 767px)', () => {
-      const frame = { index: 0 }
-      gsap.to(frame, {
-        index: lastFrame,
-        ease: 'none',
-        onUpdate: () => loadImageOnCanvas(Math.round(frame.index)),
-        scrollTrigger: {
-          trigger: modelsRef.current,
-          endTrigger: '.memberDescriptionEnd',
-          start: `top +=${mobileGap}px`,
-          end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
-          pinSpacing: false,
-          pin: true,
-          scrub: 0.35,
+      ScrollTrigger.create({
+        trigger: modelsRef.current,
+        endTrigger: '.memberDescriptionEnd',
+        start: `top +=${mobileGap}px`,
+        end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
+        pinSpacing: false,
+        pin: true,
+        scrub: 1,
+        onUpdate: (self) => {
+          const frameIndex = Math.round(self.progress * lastFrame)
+          loadImageOnCanvas(frameIndex)
         },
       })
 
@@ -555,152 +518,21 @@ export function Team() {
 
   useEffect(() => {
     let disposed = false
-    let nearSection = false
-    let desktopLoaded = false
-    let nextPreview = 2
-    let activeDownloads = 0
-    let prefetchStarted = false
-    let fallbackTimer: ReturnType<typeof setTimeout> | undefined
-    const createCache = () => ({ blobs: new Map<number, Blob>(), requests: new Map<number, Promise<void>>(), decoding: new Set<number>(), failed: new Set<number>() })
-    const assets = { preview: createCache(), full: createCache() }
     const loadFrame = (index: number) => {
-      if (!imagesRef.current[index]) {
-        const img = new Image()
-        imagesRef.current[index] = img
-        img.onload = () => {
-          if (!disposed)
-            loadImageOnCanvas(frameRef.current)
-        }
+      const img = imagesRef.current[index] || new Image()
+      imagesRef.current[index] = img
+      img.onload = () => {
+        if (!disposed)
+          loadImageOnCanvas(frameRef.current)
+      }
+      if (!img.src)
         img.src = `/images/team/${index}.avif`
-      }
+      if (img.complete && index === frameRef.current)
+        loadImageOnCanvas(index)
     }
-
-    const downloadAtlas = (quality: AtlasQuality, group: number): Promise<void> => {
-      const { blobs, requests, failed } = assets[quality]
-      if (blobs.has(group) || failed.has(group))
-        return Promise.resolve()
-      const pending = requests.get(group)
-      if (pending)
-        return pending
-      const request = fetch(`/images/team-mobile/v2/${quality}/${group}.avif`)
-        .then((response) => {
-          if (!response.ok)
-            throw new Error(`Portrait atlas ${quality}/${group}: ${response.status}`)
-          return response.blob()
-        })
-        .then((blob) => {
-          if (!disposed) {
-            blobs.set(group, blob)
-            prepareRef.current(frameRef.current)
-          }
-        })
-        .catch(() => {
-          if (!disposed) {
-            failed.add(group)
-            if (quality === 'preview' && Math.floor(frameRef.current / framesPerAtlas) === group)
-              loadFrame(frameRef.current)
-          }
-        })
-      requests.set(group, request)
-      return request
-    }
-
-    const prefetchPreviews = () => {
-      while (activeDownloads < 3 && nextPreview <= lastAtlas) {
-        const group = nextPreview++
-        activeDownloads++
-        downloadAtlas('preview', group).finally(() => {
-          activeDownloads--
-          if (!disposed)
-            prefetchPreviews()
-        })
-      }
-    }
-
-    const prepareNear = (index: number) => {
-      const atlases = atlasesRef.current
-      if (window.innerWidth >= 768) {
-        clearTimeout(fallbackTimer)
-        for (const quality of ['preview', 'full'] as const) {
-          atlases[quality].forEach(bitmap => bitmap.close())
-          atlases[quality].clear()
-        }
-        if (nearSection && !desktopLoaded) {
-          desktopLoaded = true
-          for (let i = 1; i <= lastFrame; i++)
-            loadFrame(i)
-        }
-        return
-      }
-      if (reducedMotion)
-        return
-      if (typeof createImageBitmap !== 'function') {
-        loadFrame(index)
-        return
-      }
-      if (!nearSection && index > 0)
-        nearSection = true
-      if (nearSection && !prefetchStarted) {
-        prefetchStarted = true
-        prefetchPreviews()
-      }
-
-      const group = Math.floor(index / framesPerAtlas)
-      clearTimeout(fallbackTimer)
-      if (index > 0 && !atlases.preview.has(group) && !atlases.full.has(group)) {
-        fallbackTimer = setTimeout(() => {
-          if (!disposed && frameRef.current === index && !atlasesRef.current.preview.has(group) && !atlasesRef.current.full.has(group))
-            loadFrame(index)
-        }, 180)
-      }
-      for (const quality of ['preview', 'full'] as const) {
-        for (const [i, bitmap] of atlases[quality]) {
-          if (Math.abs(i - group) > 1) {
-            bitmap.close()
-            atlases[quality].delete(i)
-          }
-        }
-      }
-      for (const quality of ['preview', 'full'] as const) {
-        const { blobs, decoding, failed } = assets[quality]
-        for (const i of quality === 'preview' ? [group, group + 1, group - 1] : [group, group + 1]) {
-          if (i < 0 || i > lastAtlas)
-            continue
-          if (failed.has(i))
-            continue
-          if (quality === 'preview' || nearSection)
-            void downloadAtlas(quality, i)
-          const blob = blobs.get(i)
-          if (!blob || atlases[quality].has(i) || decoding.has(i))
-            continue
-          decoding.add(i)
-          createImageBitmap(blob).then((bitmap) => {
-            decoding.delete(i)
-            if (disposed || Math.abs(i - Math.floor(frameRef.current / framesPerAtlas)) > 1) {
-              bitmap.close()
-            }
-            else {
-              atlases[quality].set(i, bitmap)
-              if (i === Math.floor(frameRef.current / framesPerAtlas))
-                drawnFrameRef.current = -1
-              loadImageOnCanvas(frameRef.current)
-            }
-          }).catch(() => {
-            decoding.delete(i)
-            if (disposed)
-              return
-            failed.add(i)
-            if (quality === 'preview' && i === Math.floor(frameRef.current / framesPerAtlas))
-              loadFrame(frameRef.current)
-          })
-        }
-      }
-    }
-    prepareRef.current = prepareNear
 
     frameRef.current = 0
     loadFrame(0)
-    loadImageOnCanvas(0)
     if (!reducedMotion && window.innerWidth >= 768) {
       for (let index = 8; index <= lastFrame; index += 8)
         loadFrame(index)
@@ -709,10 +541,10 @@ export function Team() {
     const observer = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting || reducedMotion)
         return
-      nearSection = true
-      prepareNear(frameRef.current)
+      for (let index = 1; index <= lastFrame; index++)
+        loadFrame(index)
       observer.disconnect()
-    }, { rootMargin: '800px' })
+    }, { rootMargin: window.innerWidth < 768 ? '400px' : '800px' })
 
     if (sectionRef.current)
       observer.observe(sectionRef.current)
@@ -733,17 +565,11 @@ export function Team() {
 
     return () => {
       disposed = true
-      clearTimeout(fallbackTimer)
-      prepareRef.current = () => {}
       observer.disconnect()
       resize.disconnect()
       document.removeEventListener('visibilitychange', restore)
       window.removeEventListener('pageshow', restore)
       imagesRef.current.forEach(img => img.onload = null)
-      for (const quality of ['preview', 'full'] as const) {
-        atlasesRef.current[quality].forEach(bitmap => bitmap.close())
-        atlasesRef.current[quality].clear()
-      }
     }
   }, [reducedMotion, loadImageOnCanvas])
 
@@ -769,8 +595,8 @@ export function Team() {
           ))}
         </div>
         <div className="self-stretch z-1 lg:col-span-2">
-          <div ref={modelsRef} className="models mx-auto md:w-full relative aspect-[264/357] max-w-[264px] md:max-w-[314px] lg:max-w-[70%] will-change-transform">
-            <canvas ref={canvasRef} className="absolute left-1/2 top-0 h-[calc(100%/0.86)] aspect-square -translate-x-1/2 -translate-y-[14%]" />
+          <div ref={modelsRef} className="models mx-auto md:w-full relative aspect-[264/357] max-w-[264px] md:max-w-[314px] lg:max-w-[70%] overflow-hidden md:overflow-visible will-change-transform">
+            <canvas ref={canvasRef} className="absolute inset-0 size-full md:inset-auto md:left-1/2 md:top-0 md:size-auto md:h-[calc(100%/0.86)] md:aspect-square md:-translate-x-1/2 md:-translate-y-[14%]" />
           </div>
         </div>
         <div ref={descriptionsRef} className="team-track flex flex-col md:flex-row">

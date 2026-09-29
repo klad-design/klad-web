@@ -68,24 +68,22 @@ try {
 
   const landscape = await browser.newContext({ viewport: { width: 667, height: 375 }, hasTouch: true })
   const portraitRequests = new Set()
-  const atlasRequests = new Set()
   landscape.on('request', (request) => {
     if (/\/images\/team\/\d+\.avif/.test(request.url()))
       portraitRequests.add(request.url())
-    if (/\/images\/team-mobile\/v2\/preview\/\d+\.avif/.test(request.url()))
-      atlasRequests.add(request.url())
   })
   if (type.name() === 'firefox') {
     await landscape.addInitScript(() => {
-      window.__portraitBitmapDraws = 0
+      window.__portraitFrames = []
       window.__portraitWidths = []
       const drawImage = CanvasRenderingContext2D.prototype.drawImage
       CanvasRenderingContext2D.prototype.drawImage = function (...args) {
         if (this.canvas.closest?.('#team')) {
-          if (args[0] instanceof ImageBitmap)
-            window.__portraitBitmapDraws++
+          const frame = Number(args[0].src?.match(/\/images\/team\/(\d+)\.avif/)?.[1])
+          if (Number.isInteger(frame))
+            window.__portraitFrames.push(frame)
           if (innerWidth < 768)
-            window.__portraitWidths.push((args.length === 9 ? args[7] : args[3]) / this.canvas.width)
+            window.__portraitWidths.push(args[3] / this.canvas.width)
         }
         return drawImage.apply(this, args)
       }
@@ -93,9 +91,9 @@ try {
   }
   const team = await visit(landscape, '/')
   assert.ok(portraitRequests.size <= 1, 'Mobile must fetch only the first portrait before Team approaches')
-  assert.ok(atlasRequests.size <= 2, 'Mobile must defer the remaining portrait atlases until Team approaches')
   await team.evaluate(() => scrollTo(0, document.querySelector('.memberDescription').getBoundingClientRect().top + scrollY - 195))
   await team.waitForTimeout(1500)
+  assert.equal(portraitRequests.size, 122, 'Mobile must prepare the complete frame sequence near Team, as on main')
   const portrait = await team.locator('.models').boundingBox()
   assert.ok(portrait.height <= 151 && portrait.y + portrait.height < 275, 'Landscape portrait must leave at least 100px to read below it')
   assert.ok(Number(await team.locator('.memberDescription').first().evaluate(el => getComputedStyle(el).opacity)) > 0.98, 'Biography must remain readable beneath the portrait')
@@ -104,14 +102,19 @@ try {
   await team.waitForTimeout(1000)
   assert.ok(Math.abs((await team.locator('.models').boundingBox()).height - 357) < 2, 'Rotating back must restore the portrait size')
   if (type.name() === 'firefox') {
+    const reverseTarget = await team.locator('.models').evaluate(el => el.getBoundingClientRect().top + scrollY + 150)
     await team.evaluate(() => window.__portraitWidths = [])
-    await team.evaluate(() => scrollTo(0, document.querySelector('.models').getBoundingClientRect().top + scrollY - 30 + 150))
+    await team.evaluate(y => scrollTo(0, y), reverseTarget)
     await team.waitForTimeout(500)
-    assert.ok(await team.evaluate(() => window.__portraitBitmapDraws > 0), 'Firefox must draw prepared portrait bitmaps')
     await team.evaluate(() => scrollTo(0, document.querySelectorAll('.memberDescription')[2].getBoundingClientRect().top + scrollY - 300))
     await team.waitForTimeout(800)
+    const forward = await team.evaluate(() => Math.max(...window.__portraitFrames))
+    await team.evaluate(y => scrollTo(0, y), reverseTarget)
+    await team.waitForTimeout(800)
+    const reversed = await team.evaluate(() => window.__portraitFrames.at(-1))
+    assert.ok(forward > 0 && reversed < forward, 'Firefox must draw earlier original frames when scrolling back')
     const widths = await team.evaluate(() => window.__portraitWidths)
-    assert.ok(widths.length > 5 && Math.max(...widths) - Math.min(...widths) < 0.001, 'Mobile portraits must keep one fixed scale while scrolling')
+    assert.ok(widths.length > 2 && Math.max(...widths) - Math.min(...widths) < 0.001, 'Mobile portraits must keep one fixed scale while scrolling')
   }
   const redrawn = await team.locator('#team canvas').evaluate((canvas) => {
     const context = canvas.getContext('2d')
@@ -126,66 +129,6 @@ try {
   })
   assert.ok(redrawn, 'Portrait must redraw when the tab becomes visible')
   await landscape.close()
-
-  if (type.name() === 'firefox') {
-    const progressive = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true })
-    await progressive.route('**/images/team-mobile/v2/full/*.avif', async (route) => {
-      await new Promise(resolve => setTimeout(resolve, 2500))
-      await route.continue()
-    })
-    await progressive.addInitScript(() => {
-      window.__portraitQuality = ''
-      window.__portraitCells = {}
-      const drawImage = CanvasRenderingContext2D.prototype.drawImage
-      CanvasRenderingContext2D.prototype.drawImage = function (...args) {
-        if (this.canvas.closest?.('#team') && args[0] instanceof ImageBitmap) {
-          const quality = args[0].width === 1152 ? 'preview' : 'full'
-          window.__portraitQuality = quality
-          window.__portraitCells[quality] = `${args[1] / args[3]},${args[2] / args[4]}`
-        }
-        return drawImage.apply(this, args)
-      }
-    })
-    const progressiveTeam = await visit(progressive, '/')
-    await progressiveTeam.locator('.models').evaluate(el => scrollTo(0, el.getBoundingClientRect().top + scrollY + 250))
-    await progressiveTeam.waitForFunction(() => window.__portraitQuality === 'preview')
-    await progressiveTeam.waitForTimeout(800)
-    await progressiveTeam.screenshot({ path: `${artifacts}/team-preview.png` })
-    await progressiveTeam.waitForFunction(() => window.__portraitQuality === 'full', null, { timeout: 8000 })
-    await progressiveTeam.screenshot({ path: `${artifacts}/team-full.png` })
-    const cells = await progressiveTeam.evaluate(() => window.__portraitCells)
-    assert.equal(cells.preview, cells.full, 'Full-quality portrait must replace the exact preview frame')
-    await progressive.close()
-
-    const delayed = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true })
-    const fallbackRequests = new Set()
-    delayed.on('request', (request) => {
-      if (/\/images\/team\/\d+\.avif/.test(request.url()))
-        fallbackRequests.add(request.url())
-    })
-    await delayed.route('**/images/team-mobile/v2/**/*.avif', async (route) => {
-      await new Promise(resolve => setTimeout(resolve, 2500))
-      await route.continue()
-    })
-    await delayed.addInitScript(() => {
-      window.__portraitSource = ''
-      const drawImage = CanvasRenderingContext2D.prototype.drawImage
-      CanvasRenderingContext2D.prototype.drawImage = function (...args) {
-        if (this.canvas.closest?.('#team'))
-          window.__portraitSource = args.length === 9 ? 'atlas' : 'original'
-        return drawImage.apply(this, args)
-      }
-    })
-    const slowTeam = await visit(delayed, '/')
-    const target = await slowTeam.locator('.models').evaluate(el => el.getBoundingClientRect().top + scrollY + 500)
-    await slowTeam.evaluate(y => scrollTo(0, y), target)
-    await slowTeam.waitForTimeout(1100)
-    assert.ok(Math.abs(await slowTeam.evaluate(() => scrollY) - target) < 2, 'Slow portrait requests must not block scrolling')
-    assert.ok(fallbackRequests.size > 1, 'A delayed atlas must request the current portrait as fallback')
-    assert.equal(await slowTeam.evaluate(() => window.__portraitSource), 'original', 'A fallback portrait must appear while the atlas is delayed')
-    await slowTeam.waitForFunction(() => window.__portraitSource === 'atlas', null, { timeout: 6000 })
-    await delayed.close()
-  }
 
   const short = await browser.newContext({ viewport: { width: 1024, height: 400 } })
   const work = await visit(short, '/work')
