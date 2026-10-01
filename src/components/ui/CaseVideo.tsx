@@ -80,7 +80,7 @@ export function CaseVideo({ src, poster, className }: { src: string, poster: str
   return (
     <>
       <video ref={videoRef} className={className} controls={reducedMotion} loop muted playsInline preload="none" aria-label="Motion design showcase" />
-      {failed && <a className="p4 underline" href={standard}>Open video</a>}
+      {failed && <a className="p4 underline" href={standard} target="_blank" rel="noopener noreferrer">Open video</a>}
     </>
   )
 }

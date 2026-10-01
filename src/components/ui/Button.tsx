@@ -34,11 +34,15 @@ export function Button({
   } = props
 
   const Component = as === 'button' ? as : Link
+  const externalProps = as === 'a' && 'href' in rest && typeof rest.href === 'string' && /^https?:\/\//i.test(rest.href)
+    ? { target: rest.target ?? '_blank', rel: rest.rel ?? 'noopener noreferrer' }
+    : {}
 
   return (
     <Component
       ref={ref as any}
       {...(rest as any)}
+      {...externalProps}
       className={clsx(
         'button',
         `button--${size}`,

@@ -77,6 +77,8 @@ try {
     await selected(page, name)
     await page.getByRole('link', { name: `View ${name} case study` }).click()
     await noise(page, false)
+    const externalLinks = await page.locator('main a[href^="http"]').evaluateAll(links => links.map(link => ({ target: link.target, rel: link.rel })))
+    assert.ok(externalLinks.length > 0 && externalLinks.every(({ target, rel }) => target === '_blank' && /\bnoopener\b/.test(rel) && /\bnoreferrer\b/.test(rel)), `${name} external links must open safely in a new tab`)
     if (name === 'Datalane') {
       assert.equal(await page.locator('main img[src*="-left.avif"]').count(), 7, 'Only the seven numbered Datalane subframe pairs should be split')
       const left = await page.getByAltText('ABC Oracle and Geist Mono type specimens').boundingBox()
