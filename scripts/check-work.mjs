@@ -77,6 +77,11 @@ try {
     await selected(page, name)
     await page.getByRole('link', { name: `View ${name} case study` }).click()
     await noise(page, false)
+    if (name === 'Datalane') {
+      const left = await page.getByAltText('ABC Oracle and Geist Mono type specimens').boundingBox()
+      const right = await page.getByAltText('Datalane data receipt on blue').boundingBox()
+      assert.ok(left && right && Math.abs(left.y - right.y) < 1 && right.x >= left.x + left.width, 'Datalane shot 8 must show two separate images side by side on desktop')
+    }
     await page.getByRole('link', { name: 'Close', exact: true }).click()
     await selected(page, name)
   }
@@ -162,6 +167,9 @@ try {
     await selected(page, 'Datalane')
     await page.locator('.case-anim-target a').click()
     await page.waitForURL('**/work/datalane')
+    const left = await page.getByAltText('ABC Oracle and Geist Mono type specimens').boundingBox()
+    const right = await page.getByAltText('Datalane data receipt on blue').boundingBox()
+    assert.ok(left && right && right.y >= left.y + left.height, 'Datalane shot 8 must stack its two images on mobile')
     await page.getByRole('link', { name: 'Close', exact: true }).click()
     await selected(page, 'Datalane')
     await swipe(-140, 0, true)
