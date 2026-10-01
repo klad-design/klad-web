@@ -78,9 +78,10 @@ try {
     await page.getByRole('link', { name: `View ${name} case study` }).click()
     await noise(page, false)
     if (name === 'Datalane') {
+      assert.equal(await page.locator('main img[src*="-left.avif"]').count(), 7, 'Only the seven numbered Datalane subframe pairs should be split')
       const left = await page.getByAltText('ABC Oracle and Geist Mono type specimens').boundingBox()
       const right = await page.getByAltText('Datalane data receipt on blue').boundingBox()
-      assert.ok(left && right && Math.abs(left.y - right.y) < 1 && right.x >= left.x + left.width, 'Datalane shot 8 must show two separate images side by side on desktop')
+      assert.ok(left && right && Math.abs(left.y - right.y) < 1 && Math.abs(right.x - left.x - left.width) < 1, 'Datalane shot 8 must show two images without a gap on desktop')
     }
     await page.getByRole('link', { name: 'Close', exact: true }).click()
     await selected(page, name)
@@ -169,7 +170,7 @@ try {
     await page.waitForURL('**/work/datalane')
     const left = await page.getByAltText('ABC Oracle and Geist Mono type specimens').boundingBox()
     const right = await page.getByAltText('Datalane data receipt on blue').boundingBox()
-    assert.ok(left && right && right.y >= left.y + left.height, 'Datalane shot 8 must stack its two images on mobile')
+    assert.ok(left && right && Math.abs(right.y - left.y - left.height) < 1, 'Datalane shot 8 must stack its two images without a gap on mobile')
     await page.getByRole('link', { name: 'Close', exact: true }).click()
     await selected(page, 'Datalane')
     await swipe(-140, 0, true)
