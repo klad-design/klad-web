@@ -13,14 +13,16 @@ pnpm dev
 
 ## Staging
 
-Reuse the `staging` branch for all review builds. Deploy it with these settings:
+Deploy all preview builds from the existing `staging` branch to [the stable Vercel staging preview](https://klad-web-git-staging-zmaznevegors-projects.vercel.app/).
+
+Push changes to `origin/staging` to trigger the connected Vercel deployment. Verify that the deployment succeeds and use this stable branch URL for review. Deploy with these settings:
 
 - Install command: `pnpm install --frozen-lockfile`
 - Build command: `pnpm build:staging`
 - Start command, when required by the host: `pnpm start`
 - Environment variable: `STAGING=1`
 
-The staging build sends `X-Robots-Tag: noindex, nofollow` and includes matching page metadata. Use a separate preview deployment/domain; `main` remains the production branch. Datalane appears first in the portfolio and is listed in the sitemap.
+The staging build sends `X-Robots-Tag: noindex, nofollow` and includes matching page metadata. `main` remains the production branch. Datalane appears first in the portfolio and is listed in the sitemap.
 
 To review the staging build locally:
 
