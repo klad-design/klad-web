@@ -51,6 +51,8 @@ Visual acceptance preserves the 10px desktop text, grain, blur treatment, intent
 
 Cover swipes lock to their initial direction and require a deliberate horizontal movement before changing projects. Partial swipes do not open a case. The right navigation remains fixed in short desktop windows, with its own scrolling when its contents cannot fit.
 
+On desktops without touch support, Up/Down arrows select the previous/next project. Wheel input over the Work content changes one project per deliberate gesture, with a movement threshold and an 800ms minimum interval. In short windows, wheel input first scrolls the content; start a new gesture at the top or bottom to change projects. Direct `?case=` links render the selected project on the server, including when JavaScript is disabled.
+
 ## Video assets
 
 Videos load from the project folders on `https://klad.b-cdn.net/`, as mapped in `src/data/videos.json`. Desktop playback uses full-resolution files; phones and tablets use smaller H.264 Level 4.1 files. A decode or loading failure retries the smaller file automatically. Circus uses the same approved smaller files on all devices.

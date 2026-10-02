@@ -34,12 +34,50 @@ async function noise(page, overMedia) {
 }
 
 try {
+  const serverRendered = await browser.newContext({ baseURL, javaScriptEnabled: false })
+  const initial = await serverRendered.newPage()
+  for (const [query, name] of [['chainviz', 'Chainviz'], ['unknown', 'Datalane'], ['chainviz&case=circus', 'Chainviz']]) {
+    await initial.goto(`/work?case=${query}`)
+    assert.equal(await initial.getByRole('main').count(), 1, 'Work must expose one main landmark')
+    assert.equal(await initial.getByRole('heading', { level: 1, name, exact: true }).count(), 1, 'The requested project must be present before JavaScript runs')
+    assert.equal(await initial.getByRole('link', { name: `View ${name} case study` }).count(), 1)
+  }
+  await serverRendered.close()
+
   const desktop = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 } })
   const page = await desktop.newPage()
   page.on('pageerror', error => errors.push(error.message))
   await page.goto('/work')
   await selected(page, 'Datalane')
   await noise(page, true)
+  for (const [key, name] of [['ArrowUp', 'Datalane'], ['ArrowDown', 'Circus'], ['ArrowUp', 'Datalane'], ['Shift+ArrowDown', 'Datalane']]) {
+    await page.keyboard.press(key)
+    await selected(page, name)
+    if (key === 'ArrowDown' && name === 'Circus')
+      assert.ok(await page.getByRole('button', { name, exact: true }).evaluate(el => el === document.activeElement), 'Arrow navigation must focus the selected project')
+  }
+  await page.locator('main').dispatchEvent('keydown', { key: 'ArrowDown', repeat: true })
+  await selected(page, 'Datalane')
+  const cover = await page.getByRole('link', { name: 'View Datalane case study' }).boundingBox()
+  await page.mouse.move(cover.x + cover.width / 2, cover.y + cover.height / 2)
+  await page.mouse.wheel(0, 40)
+  await page.waitForTimeout(250)
+  await selected(page, 'Datalane')
+  await page.mouse.wheel(0, 140)
+  await page.waitForFunction(() => document.querySelector('button[aria-pressed="true"]')?.getAttribute('aria-label') === 'Circus')
+  await page.mouse.wheel(0, -300)
+  await page.evaluate(async () => {
+    for (let i = 0; i < 12; i++) {
+      document.querySelector('main').dispatchEvent(new WheelEvent('wheel', { deltaY: 80, bubbles: true, cancelable: true }))
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+  })
+  await selected(page, 'Circus')
+  assert.equal(await page.evaluate(() => scrollY), 0, 'Wheel selection must not move the page when content fits')
+  await page.waitForTimeout(250)
+  await page.mouse.wheel(0, -140)
+  await selected(page, 'Datalane')
+
   for (const delay of [30, 60]) {
     await page.evaluate(async (delay) => {
       document.querySelector('button[aria-label="Stars+Honey"]').click()
@@ -50,6 +88,8 @@ try {
   }
 
   await page.getByRole('button', { name: 'Chainviz', exact: true }).click()
+  await selected(page, 'Chainviz')
+  await page.keyboard.press('ArrowDown')
   await selected(page, 'Chainviz')
   await page.getByRole('link', { name: 'View Chainviz case study' }).click()
   await page.waitForURL('**/work/chainviz')
@@ -67,6 +107,8 @@ try {
   await selected(page, 'Chainviz')
   await page.reload()
   await selected(page, 'Chainviz')
+  await page.getByRole('link', { name: 'Work', exact: true }).click()
+  await selected(page, 'Datalane')
   await page.getByRole('link', { name: 'Pricing', exact: true }).click()
   await page.waitForURL('**/pricing')
   await page.getByRole('link', { name: 'Work', exact: true }).click()
@@ -94,6 +136,14 @@ try {
     await page.getByRole('button', { name: 'Stars+Honey', exact: true }).click()
     await selected(page, 'Stars+Honey')
     await page.waitForTimeout(300)
+    if (viewport.height === 400) {
+      const cover = await page.getByRole('link', { name: 'View Stars+Honey case study' }).boundingBox()
+      await page.mouse.move(cover.x + cover.width / 2, Math.min(cover.y + 100, viewport.height - 20))
+      await page.mouse.wheel(0, 140)
+      await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-scrolling'))
+      assert.ok(await page.evaluate(() => scrollY) > 0, 'Wheel must scroll overflowing project content before switching cases')
+      await selected(page, 'Stars+Honey')
+    }
     const headerBefore = await page.locator('.site-header').boundingBox()
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight))
     await page.waitForTimeout(400)
@@ -122,6 +172,17 @@ try {
   assert.ok(await page.locator('.site-header').evaluate(el => el.scrollTop) > 0, 'An extra-short sidebar must allow its own content to scroll')
   assert.equal(await page.evaluate(() => scrollY), 0, 'Scrolling inside the sidebar must not move the page')
   await desktop.close()
+
+  const touchDesktop = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 }, hasTouch: true })
+  const touchPage = await touchDesktop.newPage()
+  touchPage.on('pageerror', error => errors.push(error.message))
+  await touchPage.goto('/work')
+  await selected(touchPage, 'Datalane')
+  await touchPage.keyboard.press('ArrowDown')
+  await touchPage.locator('main').dispatchEvent('wheel', { deltaY: 300 })
+  await touchPage.waitForTimeout(700)
+  await selected(touchPage, 'Datalane')
+  await touchDesktop.close()
 
   for (const reducedMotion of ['no-preference', 'reduce']) {
     const context = await browser.newContext({ baseURL, viewport: { width: 390, height: 650 }, hasTouch: true, reducedMotion })
@@ -203,7 +264,7 @@ try {
     await context.close()
   }
   assert.deepEqual(errors, [])
-  console.log(`Work checks passed in ${type.name()}: default project, rapid switching, Close/Back/reload, short-window content, touch swipes and case noise.`)
+  console.log(`Work checks passed in ${type.name()}: server-rendered selection, main landmark, desktop keyboard/wheel, rapid switching, Close/Back/reload, short-window content, touch swipes and case noise.`)
 }
 finally {
   await browser.close()

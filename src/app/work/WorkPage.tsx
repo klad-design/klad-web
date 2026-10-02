@@ -92,21 +92,26 @@ const cases = [
   },
 ]
 
-export default function WorkPage() {
+function getCaseIndex(project: string | null | undefined) {
+  return Math.max(0, cases.findIndex(({ link }) => link === `/work/${project}`))
+}
+
+export default function WorkPage({ initialCase }: { initialCase?: string }) {
   const containerRef = useRef<HTMLElement>(null)
   const cursorAreaRef = useRef<HTMLDivElement>(null)
   const cursorRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const swipeStart = useRef<{ x: number, y: number, axis: 'x' | 'y' | null } | null>(null)
   const suppressClick = useRef(false)
-  const [activeIndex, setActiveIndex] = useState(0)
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  const wheel = useRef({ delta: 0, lastEvent: 0, lastSwitch: -800, locked: false })
+  const [activeIndex, setActiveIndex] = useState(() => getCaseIndex(initialCase))
+  const [selectedIndex, setSelectedIndex] = useState(() => getCaseIndex(initialCase))
   const reducedMotion = useReducedMotion()
 
   useGSAP(() => {
     function restoreSelection() {
       const project = new URLSearchParams(window.location.search).get('case')
-      const index = Math.max(0, cases.findIndex(({ link }) => link === `/work/${project}`))
+      const index = getCaseIndex(project)
       setActiveIndex(index)
       setSelectedIndex(index)
     }
@@ -114,7 +119,7 @@ export default function WorkPage() {
     restoreSelection()
     window.addEventListener('popstate', restoreSelection)
     return () => window.removeEventListener('popstate', restoreSelection)
-  }, [])
+  }, { dependencies: [initialCase], revertOnUpdate: true })
 
   // ✅ Minimal fix: warm the browser cache for all case images once.
   useEffect(() => {
@@ -221,6 +226,7 @@ export default function WorkPage() {
   }, { dependencies: [selectedIndex, reducedMotion] })
 
   const handleCaseChange = contextSafe((index: number, fromSwipe = false) => {
+    index = Math.max(0, Math.min(cases.length - 1, index))
     if (index === selectedIndex)
       return
 
@@ -245,8 +251,65 @@ export default function WorkPage() {
     })
   })
 
+  useEffect(() => {
+    const main = containerRef.current
+    const desktop = window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)')
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (!desktop.matches || navigator.maxTouchPoints || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+        || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')
+        || (event.target instanceof HTMLElement && event.target.closest('header, input, textarea, select, [contenteditable], [role="dialog"]'))) {
+        return
+      }
+      event.preventDefault()
+      if (!event.repeat) {
+        const index = selectedIndex + (event.key === 'ArrowDown' ? 1 : -1)
+        handleCaseChange(index)
+        menuRef.current?.querySelectorAll('button')[index]?.focus({ preventScroll: true })
+      }
+    }
+
+    function onWheel(event: WheelEvent) {
+      if (!desktop.matches || navigator.maxTouchPoints || event.ctrlKey || event.metaKey || event.shiftKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX))
+        return
+      const now = performance.now()
+      const gesture = wheel.current
+      // ponytail: wheel has no gesture-end event; use a 200ms idle gap and tune from device feedback.
+      if (now - gesture.lastEvent > 200) {
+        gesture.delta = 0
+        gesture.locked = false
+      }
+      gesture.lastEvent = now
+      const bottom = document.documentElement.scrollHeight - window.innerHeight
+      if ((event.deltaY > 0 && window.scrollY < bottom - 2) || (event.deltaY < 0 && window.scrollY > 2)) {
+        gesture.locked = true
+        return
+      }
+      event.preventDefault()
+      event.stopPropagation()
+      if (gesture.locked || now - gesture.lastSwitch < 800)
+        return
+      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1)
+      if (Math.sign(delta) !== Math.sign(gesture.delta))
+        gesture.delta = 0
+      gesture.delta += delta
+      if (Math.abs(gesture.delta) < 120)
+        return
+      gesture.locked = true
+      gesture.lastSwitch = now
+      handleCaseChange(selectedIndex + Math.sign(gesture.delta))
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    main?.addEventListener('wheel', onWheel, { passive: false, capture: true })
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      main?.removeEventListener('wheel', onWheel, { capture: true })
+    }
+  }, [handleCaseChange, selectedIndex])
+
   return (
-    <section ref={containerRef} className="pt-[97px] pb-2.5 md:pt-[150px] lg:pt-0 lg:min-h-svh">
+    <main ref={containerRef} className="pt-[97px] pb-2.5 md:pt-[150px] lg:pt-0 lg:min-h-svh">
       <div className="grid-container lg:min-h-[calc(100svh-10px)] lg:grid-rows-[auto_1fr_1fr]">
         {/* Menu */}
         <div className="col-span-full md:col-span-1 md:row-start-2 md:row-end-4 lg:row-end-3">
@@ -302,7 +365,7 @@ export default function WorkPage() {
               const x = event.changedTouches[0].clientX - start.x
               const threshold = Math.min(110, Math.max(75, event.currentTarget.clientWidth * 0.25))
               if (Math.abs(x) >= threshold)
-                handleCaseChange(Math.max(0, Math.min(cases.length - 1, selectedIndex + (x < 0 ? 1 : -1))), true)
+                handleCaseChange(selectedIndex + (x < 0 ? 1 : -1), true)
             }}
             onClick={(event) => {
               if (suppressClick.current && event.detail !== 0)
@@ -346,6 +409,6 @@ export default function WorkPage() {
           <Button as="a" href={cases[activeIndex].link} label="View case" />
         </div>
       </div>
-    </section>
+    </main>
   )
 }
