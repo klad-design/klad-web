@@ -104,6 +104,7 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
   const swipeStart = useRef<{ x: number, y: number, axis: 'x' | 'y' | null } | null>(null)
   const suppressClick = useRef(false)
   const wheel = useRef({ delta: 0, lastEvent: 0, lastSwitch: -800, locked: false })
+  const transitionSource = useRef<'select' | 'swipe' | 'wheel'>('select')
   const [activeIndex, setActiveIndex] = useState(() => getCaseIndex(initialCase))
   const [selectedIndex, setSelectedIndex] = useState(() => getCaseIndex(initialCase))
   const reducedMotion = useReducedMotion()
@@ -210,7 +211,8 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
   }, { scope: containerRef, dependencies: [reducedMotion], revertOnUpdate: true })
 
   const { contextSafe } = useGSAP(() => {
-    gsap.fromTo('.case-anim-target', { opacity: 0 }, { opacity: 1, duration: reducedMotion ? 0 : 0.5 })
+    const fromWheel = transitionSource.current === 'wheel'
+    gsap.fromTo('.case-anim-target', { opacity: 0 }, { opacity: 1, duration: reducedMotion ? 0 : fromWheel ? 0.26 : 0.5, ease: fromWheel ? 'power2.out' : 'power1.out' })
   }, { scope: containerRef, dependencies: [activeIndex, reducedMotion], revertOnUpdate: true })
 
   useGSAP(() => {
@@ -225,11 +227,12 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
     }
   }, { dependencies: [selectedIndex, reducedMotion] })
 
-  const handleCaseChange = contextSafe((index: number, fromSwipe = false) => {
+  const handleCaseChange = contextSafe((index: number, source: 'select' | 'swipe' | 'wheel' = 'select') => {
     index = Math.max(0, Math.min(cases.length - 1, index))
     if (index === selectedIndex)
       return
 
+    transitionSource.current = source
     setSelectedIndex(index)
     const url = new URL(window.location.href)
     url.searchParams.set('case', cases[index].link.split('/').pop()!)
@@ -244,7 +247,8 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
 
     gsap.to('.case-anim-target', {
       opacity: 0,
-      duration: reducedMotion ? 0 : fromSwipe ? 0.2 : 0.1,
+      duration: reducedMotion ? 0 : source === 'wheel' ? 0.16 : source === 'swipe' ? 0.2 : 0.1,
+      ease: source === 'wheel' ? 'power2.in' : 'power1.out',
       onComplete: () => {
         setActiveIndex(index)
       },
@@ -297,7 +301,7 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
         return
       gesture.locked = true
       gesture.lastSwitch = now
-      handleCaseChange(selectedIndex + Math.sign(gesture.delta))
+      handleCaseChange(selectedIndex + Math.sign(gesture.delta), 'wheel')
     }
 
     window.addEventListener('keydown', onKeyDown)
@@ -365,7 +369,7 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
               const x = event.changedTouches[0].clientX - start.x
               const threshold = Math.min(110, Math.max(75, event.currentTarget.clientWidth * 0.25))
               if (Math.abs(x) >= threshold)
-                handleCaseChange(selectedIndex + (x < 0 ? 1 : -1), true)
+                handleCaseChange(selectedIndex + (x < 0 ? 1 : -1), 'swipe')
             }}
             onClick={(event) => {
               if (suppressClick.current && event.detail !== 0)

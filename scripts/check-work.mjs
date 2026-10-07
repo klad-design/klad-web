@@ -63,6 +63,21 @@ try {
   await page.mouse.wheel(0, 40)
   await page.waitForTimeout(250)
   await selected(page, 'Datalane')
+  const fade = page.evaluate(async () => {
+    let outgoing = false
+    let incoming = false
+    const deadline = performance.now() + 1500
+    while (performance.now() < deadline) {
+      const title = document.querySelector('h1').textContent
+      const opacity = Number(getComputedStyle(document.querySelector('.case-anim-target')).opacity)
+      outgoing ||= title.includes('Datalane') && opacity > 0 && opacity < 0.95
+      incoming ||= title.includes('Circus') && opacity > 0 && opacity < 0.95
+      if (incoming && title.includes('Circus') && opacity > 0.99)
+        break
+      await new Promise(resolve => requestAnimationFrame(resolve))
+    }
+    return { outgoing, incoming }
+  })
   await page.mouse.wheel(0, 140)
   await page.waitForFunction(() => document.querySelector('button[aria-pressed="true"]')?.getAttribute('aria-label') === 'Circus')
   await page.mouse.wheel(0, -300)
@@ -72,6 +87,7 @@ try {
       await new Promise(resolve => setTimeout(resolve, 100))
     }
   })
+  assert.deepEqual(await fade, { outgoing: true, incoming: true }, 'Wheel selection must fade the outgoing and incoming project')
   await selected(page, 'Circus')
   assert.equal(await page.evaluate(() => scrollY), 0, 'Wheel selection must not move the page when content fits')
   await page.waitForTimeout(250)
@@ -122,11 +138,19 @@ try {
     const externalLinks = await page.locator('main a[href^="http"]').evaluateAll(links => links.map(link => ({ target: link.target, rel: link.rel })))
     assert.ok(externalLinks.length > 0 && externalLinks.every(({ target, rel }) => target === '_blank' && /\bnoopener\b/.test(rel) && /\bnoreferrer\b/.test(rel)), `${name} external links must open safely in a new tab`)
     if (name === 'Datalane') {
+      for (const file of ['37-v2.avif', '39-right-v2.avif']) {
+        const image = page.locator(`main img[src*="${file}"]`)
+        assert.equal(await image.count(), 1, `The replacement ${file} must be used once`)
+        await image.scrollIntoViewIfNeeded()
+        await image.evaluate(el => el.decode())
+      }
       assert.equal(await page.locator('main img[src*="-left.avif"]').count(), 7, 'Only the seven numbered Datalane subframe pairs should be split')
       const left = await page.getByAltText('ABC Oracle and Geist Mono type specimens').boundingBox()
       const right = await page.getByAltText('Datalane data receipt on blue').boundingBox()
       assert.ok(left && right && Math.abs(left.y - right.y) < 1 && Math.abs(right.x - left.x - left.width) < 1, 'Datalane shot 8 must show two images without a gap on desktop')
     }
+    if (name === 'Circus')
+      assert.equal(await page.getByRole('link', { name: 'Website', exact: true }).getAttribute('href'), 'https://www.circus-group.com/')
     await page.getByRole('link', { name: 'Close', exact: true }).click()
     await selected(page, name)
   }

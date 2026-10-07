@@ -35,7 +35,7 @@ export function CasePage() {
 
         {/* Links */}
         <div className="flex flex-col items-start gap-[5px]">
-          <Button as="a" href="https://circus-dev.webflow.io/" label="Website" />
+          <Button as="a" href="https://www.circus-group.com/" label="Website" />
         </div>
 
         {/* Description */}
