@@ -212,7 +212,7 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
 
   const { contextSafe } = useGSAP(() => {
     const fromWheel = transitionSource.current === 'wheel'
-    gsap.fromTo('.case-anim-target', { opacity: 0 }, { opacity: 1, duration: reducedMotion ? 0 : fromWheel ? 0.26 : 0.5, ease: fromWheel ? 'power2.out' : 'power1.out' })
+    gsap.fromTo('.case-anim-target', { opacity: 0 }, { opacity: 1, duration: reducedMotion ? 0 : fromWheel ? 0.22 : 0.5, ease: fromWheel ? 'power2.out' : 'power1.out' })
   }, { scope: containerRef, dependencies: [activeIndex, reducedMotion], revertOnUpdate: true })
 
   useGSAP(() => {
@@ -247,7 +247,7 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
 
     gsap.to('.case-anim-target', {
       opacity: 0,
-      duration: reducedMotion ? 0 : source === 'wheel' ? 0.16 : source === 'swipe' ? 0.2 : 0.1,
+      duration: reducedMotion ? 0 : source === 'wheel' ? 0.14 : source === 'swipe' ? 0.2 : 0.1,
       ease: source === 'wheel' ? 'power2.in' : 'power1.out',
       onComplete: () => {
         setActiveIndex(index)
