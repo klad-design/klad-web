@@ -11,6 +11,7 @@
     "test:staging": "node scripts/check-staging.mjs",
     "test:responsive": "node scripts/check-responsive.mjs",
     "test:work": "node scripts/check-work.mjs",
+    "test:imprints": "node scripts/check-imprints.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
