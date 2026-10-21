@@ -27,7 +27,7 @@ async function pixels(page, y) {
 
 async function marker(page, y) {
   await page.locator('[data-page-content]').evaluate((root, y) => {
-    const media = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    const media = document.createElement('canvas')
     media.style.cssText = `position:fixed;right:1px;top:${y}px;width:8px;height:8px`
     root.append(media)
   }, y)
@@ -36,6 +36,8 @@ async function marker(page, y) {
 try {
   for (const width of [1440, 390]) {
     const context = await browser.newContext({ baseURL, viewport: { width, height: 900 }, hasTouch: width < 768 })
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="24" viewBox="0 0 8 24"><path fill="black" d="M0 0h8v8H0z"/><path fill="white" d="M0 8h8v8H0z"/></svg>'
+    await context.route('**/imprint-test.svg*', route => route.fulfill({ contentType: 'image/svg+xml', body: svg }))
     const page = await context.newPage()
     page.on('pageerror', error => errors.push(error.message))
     await page.goto('/pricing')
@@ -43,6 +45,20 @@ try {
     await page.waitForTimeout(300)
     assert.equal(await page.locator('.page-imprints canvas').evaluate(el => el.width), 0, 'A fresh session has no imprints')
     await marker(page, 400)
+    await page.locator('[data-page-content]').evaluate(async (root, svg) => {
+      const image = new Image()
+      image.src = '/imprint-test.svg?version=1'
+      image.style.cssText = 'position:fixed;right:1px;top:0;width:8px;height:24px'
+      root.append(image)
+      await image.decode()
+      const inline = new DOMParser().parseFromString(svg, 'image/svg+xml').documentElement
+      inline.setAttribute('style', 'position:fixed;right:1px;top:28px;width:8px;height:24px')
+      root.append(inline)
+      const broken = new Image()
+      broken.src = 'data:image/svg+xml,invalid'
+      broken.style.cssText = 'position:fixed;right:1px;top:490px;width:8px;height:8px'
+      root.append(broken)
+    }, svg)
     await navigate(page, 'Process', '/process')
     assert.equal(await page.locator('.page-imprints').getAttribute('aria-hidden'), 'true')
     assert.equal(await page.locator('.page-imprints').evaluate(el => el.inert), true)
@@ -51,6 +67,13 @@ try {
     assert.deepEqual(first.slice(0, 3), [0, 0, 0], 'Media must leave neutral silhouettes')
     assert.ok(first[3] > 80 && first[3] < 140, 'Media should be a pale, flat rectangle')
     assert.deepEqual(await pixels(page, 405), first, 'Media pixels must have no image detail')
+    for (const top of [0, 28]) {
+      const ink = await pixels(page, top + 4)
+      assert.deepEqual(ink.slice(0, 3), [0, 0, 0], 'SVG ink must be monochrome')
+      assert.ok(ink[3] > 180, 'SVG strokes must be preserved like text')
+      assert.equal((await pixels(page, top + 12))[3], 0, 'White SVG areas must become negative space')
+      assert.equal((await pixels(page, top + 20))[3], 0, 'Transparent SVG areas must stay empty')
+    }
     await page.screenshot({ path: `${artifacts}/pricing-on-process-${width}.png` })
 
     await marker(page, 500)
@@ -122,7 +145,7 @@ try {
   await page.waitForTimeout(250)
   assert.ok(await page.locator('.page-imprints').evaluate(el => Math.abs(el.getBoundingClientRect().top) < 2), 'Hash navigation must anchor the imprint to the arriving viewport')
   assert.deepEqual(errors, [])
-  console.log(`${type.name()}: imprint history, silhouettes, scrolling, reload, back/forward, dark mode, resize and storage fallback passed`)
+  console.log(`${type.name()}: SVG ink and gaps, media silhouettes, imprint history, scrolling, reload, back/forward, dark mode, resize and storage fallback passed`)
   await context.close()
 }
 finally {

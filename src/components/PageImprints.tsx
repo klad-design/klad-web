@@ -5,13 +5,14 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 
 import { captureImprint } from '@/components/captureImprint'
 
-const storageKey = 'klad-page-imprints-v1'
+const storageKey = 'klad-page-imprints-v2'
 
 export function PageImprints() {
   const pathname = usePathname()
   const layerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const pendingRef = useRef<HTMLCanvasElement | null>(null)
+  const pendingRef = useRef<ReturnType<typeof captureImprint> | null>(null)
+  const mergeRef = useRef(Promise.resolve())
   const pathRef = useRef(pathname)
 
   useEffect(() => {
@@ -39,7 +40,7 @@ export function PageImprints() {
     function capture() {
       const root = document.querySelector<HTMLElement>('[data-page-content]')
       if (root)
-        pendingRef.current = captureImprint(root)
+        pendingRef.current = captureImprint(root).catch(() => null)
     }
 
     function onClick(event: MouseEvent) {
@@ -69,28 +70,34 @@ export function PageImprints() {
     const canvas = canvasRef.current!
     const pending = pendingRef.current
     if (pathRef.current !== pathname && pending) {
-      // Flatten the entire path into one bitmap so long sessions never grow the DOM.
-      const history = document.createElement('canvas')
-      history.width = canvas.width
-      history.height = canvas.height
-      if (canvas.width && canvas.height)
-        history.getContext('2d')?.drawImage(canvas, 0, 0)
-      canvas.width = pending.width
-      canvas.height = pending.height
-      const context = canvas.getContext('2d')
-      if (context) {
-        context.globalAlpha = 0.82
-        if (history.width && history.height)
-          context.drawImage(history, 0, 0, canvas.width, canvas.height)
-        context.globalAlpha = 0.85
-        context.drawImage(pending, 0, 0)
-        try {
-          sessionStorage.setItem(storageKey, canvas.toDataURL())
+      // Keep navigation order when SVG decoding finishes after a later capture.
+      mergeRef.current = mergeRef.current.then(async () => {
+        const snapshot = await pending
+        if (!snapshot || !canvas.isConnected)
+          return
+        // Flatten the entire path into one bitmap so long sessions never grow the DOM.
+        const history = document.createElement('canvas')
+        history.width = canvas.width
+        history.height = canvas.height
+        if (canvas.width && canvas.height)
+          history.getContext('2d')?.drawImage(canvas, 0, 0)
+        canvas.width = snapshot.width
+        canvas.height = snapshot.height
+        const context = canvas.getContext('2d')
+        if (context) {
+          context.globalAlpha = 0.82
+          if (history.width && history.height)
+            context.drawImage(history, 0, 0, canvas.width, canvas.height)
+          context.globalAlpha = 0.85
+          context.drawImage(snapshot, 0, 0)
+          try {
+            sessionStorage.setItem(storageKey, canvas.toDataURL())
+          }
+          catch {
+            // A full or unavailable store must never interrupt navigation.
+          }
         }
-        catch {
-          // A full or unavailable store must never interrupt navigation.
-        }
-      }
+      })
     }
     pathRef.current = pathname
     pendingRef.current = null
