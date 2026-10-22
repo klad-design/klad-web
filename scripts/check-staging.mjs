@@ -37,7 +37,28 @@ try {
     if (width >= 768)
       assert.equal(await page.locator('.p5').first().evaluate(el => getComputedStyle(el).fontSize), '10px')
 
+    const heading = page.locator('h1 .textBlur').first()
+    const headingValue = () => heading.evaluate(el => Number(getComputedStyle(el).getPropertyValue('--value')))
+    assert.equal(await headingValue(), 0, `Heading must start without scroll trails at ${width}px`)
+    await page.evaluate(() => window.scrollTo(0, 80))
+    await page.waitForFunction(() => Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value')) < -1)
+    await page.evaluate(() => window.scrollTo(0, 0))
+    await page.waitForTimeout(1200)
+    assert.equal(await headingValue(), 0, 'Returning to the top must reset heading trails')
+
     if (width === 1440) {
+      await page.mouse.wheel(0, -200)
+      await page.waitForFunction(() => scrollY > document.documentElement.scrollHeight - innerHeight - 300)
+      await page.waitForTimeout(1200)
+      assert.ok(await page.locator('.home-loop h1 .textBlur').evaluate(el => Number(el.style.getPropertyValue('--value'))) < -1, 'Scrolling up from the initial hero must animate the loop heading')
+      await page.mouse.wheel(0, 300)
+      await page.waitForFunction(() => scrollY < 200)
+      await page.waitForTimeout(1200)
+      assert.ok(await headingValue() < -1, 'Reversing down across the loop must preserve heading trails')
+      await page.reload()
+      await page.waitForTimeout(800)
+      assert.equal(await headingValue(), 0, 'Reloading after a reverse loop must reset heading trails')
+
       const member = page.locator('.memberLink').last()
       await member.scrollIntoViewIfNeeded()
       await member.focus()
@@ -65,6 +86,7 @@ try {
       await page.reload()
       await page.waitForTimeout(800)
       assert.equal(await page.evaluate(() => scrollY), 0, 'Refreshing the homepage must start at the hero')
+      assert.equal(await headingValue(), 0, 'Refreshing must reset heading trails')
       for (const theme of ['dark', 'light']) {
         await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight - innerHeight - 300))
         await page.waitForFunction(expected => document.documentElement.dataset.theme === expected, theme)
@@ -73,12 +95,14 @@ try {
         await page.screenshot({ path: `${artifacts}/loop-${theme}.png` })
         await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight - innerHeight - 100))
         await page.waitForTimeout(300)
+        assert.ok(await page.locator('.home-loop h1 .textBlur').evaluate(el => Number(el.style.getPropertyValue('--value'))) < -1, 'The repeated hero must animate before the loop wraps')
         const recording = page.evaluate(() => new Promise((resolve) => {
           const frames = []
           const end = performance.now() + 1600
           function sample() {
             const map = document.querySelector('section .grid-container .textBlur')
-            frames.push({ y: scrollY, value: Number(map.style.getPropertyValue('--value')) })
+            const heading = document.querySelectorAll('h1 .textBlur')[scrollY > (document.documentElement.scrollHeight - innerHeight) / 2 ? 1 : 0]
+            frames.push({ y: scrollY, value: Number(map.style.getPropertyValue('--value')), heading: Number(heading.style.getPropertyValue('--value')) })
             if (performance.now() < end)
               requestAnimationFrame(sample)
             else
@@ -91,6 +115,7 @@ try {
         const wrap = frames.findIndex((frame, index) => index > 0 && frames[index - 1].y - frame.y > 1000)
         assert.ok(wrap > 0, 'Wheel scrolling must wrap back to the hero')
         assert.equal(frames[wrap].value, 0, 'Map layers must already align on the first frame after wrapping')
+        assert.ok(Math.abs(frames[wrap].heading - frames[wrap - 1].heading) < 5, 'Heading trails must stay continuous across the loop')
         assert.equal(await page.locator('html').getAttribute('data-theme'), theme)
       }
 

@@ -26,12 +26,22 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
   const homeLoop = useHomeLoop()
   const themePathRef = useRef<string | null>(null)
   const previousScrollRef = useRef(0)
+  const hasLoopedRef = useRef(false)
 
   useLenis((lenis) => {
+    const wrapped = lenis.options.infinite && Math.abs(lenis.scroll - previousScrollRef.current) > lenis.limit / 2
+    const headings = wrapped ? ScrollTrigger.getAll().filter(trigger => trigger.trigger?.matches('h1 .textBlur')) : []
+    const incomingHeading = headings[lenis.scroll < previousScrollRef.current ? 0 : 1]
+    const outgoingProgress = headings.find(trigger => trigger !== incomingHeading)?.animation?.totalProgress()
+    if (wrapped && !hasLoopedRef.current) {
+      hasLoopedRef.current = true
+      headings[0]?.refresh()
+    }
     ScrollTrigger.update()
-    if (lenis.options.infinite && Math.abs(lenis.scroll - previousScrollRef.current) > lenis.limit / 2) {
-      // Match the repeated hero immediately when the infinite scroll wraps.
+    if (wrapped) {
+      // Align map layers and carry the visible heading's trail across the wrap.
       ScrollTrigger.getAll().forEach(trigger => trigger.getTween()?.progress(1))
+      incomingHeading?.getTween()?.resetTo('totalProgress', incomingHeading.progress, outgoingProgress)
     }
     previousScrollRef.current = lenis.scroll
   })
@@ -55,6 +65,8 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
 
   useGSAP(() => {
     gsap.registerPlugin(ScrollTrigger)
+    hasLoopedRef.current = false
+    previousScrollRef.current = 0
 
     if (pathname !== '/' || window.location.hash)
       return
@@ -78,6 +90,7 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
       if (isHorizontal)
         return
 
+      const initialHero = el.closest('h1') && !el.closest('.home-loop')
       const tl = gsap.timeline({ defaults: { ease: 'none' } })
 
       tl.to(el, {
@@ -88,7 +101,7 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
       ScrollTrigger.create({
         trigger: el,
         animation: tl,
-        start: 'center center',
+        start: () => initialHero && !hasLoopedRef.current ? 0 : 'center center',
         end: 'bottom top',
         scrub: 1,
       })
