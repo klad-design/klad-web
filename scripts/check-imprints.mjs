@@ -25,8 +25,8 @@ async function pixels(page, y) {
   }, y)
 }
 
-async function marker(page, y) {
-  await page.locator('[data-page-content]').evaluate((root, y) => {
+async function marker(page, y, selector = '[data-page-content]') {
+  await page.locator(selector).evaluate((root, y) => {
     const media = document.createElement('canvas')
     media.style.cssText = `position:fixed;right:1px;top:${y}px;width:8px;height:8px`
     root.append(media)
@@ -121,6 +121,48 @@ try {
     await context.close()
   }
 
+  const loopContext = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 } })
+  const loopPage = await loopContext.newPage()
+  loopPage.on('pageerror', error => errors.push(error.message))
+  await loopPage.goto('/pricing')
+  await loopPage.evaluate(() => document.fonts.ready)
+  await marker(loopPage, 400)
+  await navigate(loopPage, 'About', '/')
+  const history = await loopPage.locator('.page-imprints canvas').evaluate(el => el.toDataURL())
+  await loopPage.evaluate(() => scrollTo(0, document.documentElement.scrollHeight - innerHeight - 100))
+  await loopPage.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
+  await loopPage.waitForTimeout(300)
+  const atRepeatedHero = () => loopPage.evaluate(() => Math.abs(document.querySelector('.page-imprints').getBoundingClientRect().top - document.querySelector('.home-loop').getBoundingClientRect().top) < 2)
+  assert.ok(await atRepeatedHero(), 'Imprints must follow the repeated hero when scrolling into the reversed theme')
+  assert.equal(await loopPage.locator('.page-imprints canvas').evaluate(el => el.toDataURL()), history, 'A scroll theme switch must preserve every existing imprint')
+  await loopPage.screenshot({ path: `${artifacts}/theme-loop.png` })
+
+  const recording = loopPage.evaluate(() => new Promise((resolve) => {
+    const frames = []
+    const end = performance.now() + 1200
+    function sample() {
+      frames.push({ y: scrollY, top: document.querySelector('.page-imprints').getBoundingClientRect().top })
+      if (performance.now() < end)
+        requestAnimationFrame(sample)
+      else
+        resolve(frames)
+    }
+    sample()
+  }))
+  await loopPage.mouse.wheel(0, 200)
+  const frames = await recording
+  const wrap = frames.findIndex((frame, index) => index > 0 && frames[index - 1].y - frame.y > 1000)
+  assert.ok(wrap > 0, 'The homepage must wrap back to the original hero')
+  assert.ok(Math.abs(frames[wrap].top + frames[wrap].y) < 2, 'Imprints must already align on the first frame after wrapping')
+  await loopPage.mouse.wheel(0, -200)
+  await loopPage.waitForFunction(() => scrollY > document.documentElement.scrollHeight - innerHeight - 300)
+  assert.ok(await atRepeatedHero(), 'Reverse scrolling must keep imprints aligned with the repeated hero')
+  assert.equal(await loopPage.locator('.page-imprints canvas').evaluate(el => el.toDataURL()), history, 'Reversing through the loop must preserve the history')
+  await marker(loopPage, 600, '.home-loop')
+  await navigate(loopPage, 'Process', '/process')
+  assert.ok((await pixels(loopPage, 604))[3] > 80, 'Navigating from the repeated hero must capture its visible content')
+  await loopContext.close()
+
   const context = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
   await context.addInitScript(() => {
     Storage.prototype.setItem = () => {
@@ -145,7 +187,7 @@ try {
   await page.waitForTimeout(250)
   assert.ok(await page.locator('.page-imprints').evaluate(el => Math.abs(el.getBoundingClientRect().top) < 2), 'Hash navigation must anchor the imprint to the arriving viewport')
   assert.deepEqual(errors, [])
-  console.log(`${type.name()}: SVG ink and gaps, media silhouettes, imprint history, scrolling, reload, back/forward, dark mode, resize and storage fallback passed`)
+  console.log(`${type.name()}: SVG ink and gaps, media silhouettes, imprint history, theme loops, scrolling, reload, back/forward, dark mode, resize and storage fallback passed`)
   await context.close()
 }
 finally {

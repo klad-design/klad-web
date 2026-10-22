@@ -1,5 +1,6 @@
 'use client'
 
+import { useLenis } from 'lenis/react'
 import { usePathname } from 'next/navigation'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 
@@ -14,6 +15,17 @@ export function PageImprints() {
   const pendingRef = useRef<ReturnType<typeof captureImprint> | null>(null)
   const mergeRef = useRef(Promise.resolve())
   const pathRef = useRef(pathname)
+
+  useLenis((lenis) => {
+    if (pathname !== '/' || !lenis.options.infinite || window.location.hash)
+      return
+    const loop = document.querySelector<HTMLElement>('.home-loop')
+    if (loop && layerRef.current) {
+      // Carry the same imprint through both copies of the looping hero.
+      const top = lenis.scroll > lenis.limit / 2 ? loop.getBoundingClientRect().top + window.scrollY : 0
+      layerRef.current.style.top = `${top}px`
+    }
+  })
 
   useEffect(() => {
     const canvas = canvasRef.current!

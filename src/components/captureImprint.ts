@@ -16,8 +16,8 @@ export async function captureImprint(root: HTMLElement) {
 
   function visible(element: Element) {
     const hidden = element.closest('[aria-hidden="true"], [inert], script, style')
-    // The mobile menu temporarily hides the whole page from assistive technology.
-    return (!hidden || hidden.contains(root))
+    // The menu and repeated hero hide visible content from assistive technology.
+    return (!hidden || hidden.contains(root) || hidden.matches('.home-loop'))
       && element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })
   }
 
