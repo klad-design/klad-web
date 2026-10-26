@@ -17,10 +17,11 @@ async function navigate(page, name, path) {
   await page.getByRole('link', { name, exact: true }).click()
   await page.waitForURL(`**${path}`)
   await page.waitForTimeout(200)
+  await page.waitForFunction(() => [...document.querySelectorAll('.page-imprints canvas')].every(canvas => canvas.getAnimations().length === 0))
 }
 
-async function pixels(page, y) {
-  return page.locator('.page-imprints canvas').evaluate((canvas, y) => {
+async function pixels(page, y, layer = 0) {
+  return page.locator('.page-imprints canvas').nth(layer).evaluate((canvas, y) => {
     return [...canvas.getContext('2d').getImageData(canvas.width - 5, y, 1, 1).data]
   }, y)
 }
@@ -43,7 +44,8 @@ try {
     await page.goto('/pricing')
     await page.evaluate(() => document.fonts.ready)
     await page.waitForTimeout(300)
-    assert.equal(await page.locator('.page-imprints canvas').evaluate(el => el.width), 0, 'A fresh session has no imprints')
+    assert.equal(await page.locator('.page-imprints canvas').count(), 2, 'Only two previous-page layers may exist')
+    assert.deepEqual(await page.locator('.page-imprints canvas').evaluateAll(elements => elements.map(el => el.width)), [0, 0], 'A fresh session has no imprints')
     await marker(page, 400)
     await page.locator('[data-page-content]').evaluate(async (root, svg) => {
       const image = new Image()
@@ -59,7 +61,29 @@ try {
       broken.style.cssText = 'position:fixed;right:1px;top:490px;width:8px;height:8px'
       root.append(broken)
     }, svg)
+    const dissolve = page.evaluate(() => new Promise((resolve) => {
+      const samples = []
+      const end = performance.now() + 3000
+      function sample() {
+        const canvas = document.querySelector('.page-imprints canvas')
+        if (canvas.width) {
+          const style = getComputedStyle(canvas)
+          samples.push({ opacity: Number(style.opacity), blur: Number.parseFloat(style.filter.slice(5)), running: canvas.getAnimations().length > 0 })
+        }
+        if (performance.now() < end && !(samples.some(frame => frame.running) && !samples.at(-1)?.running))
+          requestAnimationFrame(sample)
+        else
+          resolve(samples)
+      }
+      sample()
+    }))
     await navigate(page, 'Process', '/process')
+    const samples = await dissolve
+    assert.ok(samples.some(frame => frame.opacity > 0.5 && frame.opacity < 1 && frame.blur > 0 && frame.blur < 4), 'The departing page must dissolve through intermediate opacity and blur')
+    assert.deepEqual(await page.locator('.page-imprints canvas').evaluateAll(elements => elements.map(el => ({ opacity: getComputedStyle(el).opacity, filter: getComputedStyle(el).filter }))), [
+      { opacity: '0.5', filter: 'blur(4px)' },
+      { opacity: '0.3', filter: 'blur(4px)' },
+    ], 'Each imprint must have its own settled opacity and blur')
     assert.equal(await page.locator('.page-imprints').getAttribute('aria-hidden'), 'true')
     assert.equal(await page.locator('.page-imprints').evaluate(el => el.inert), true)
     assert.equal(await page.locator('.page-imprints a, .page-imprints img, .page-imprints video').count(), 0)
@@ -78,35 +102,48 @@ try {
 
     await marker(page, 500)
     await navigate(page, 'Expectations', '/expectations')
-    assert.ok((await pixels(page, 404))[3] > 0, 'Earlier pages must survive a second navigation')
+    assert.equal((await pixels(page, 404))[3], 0, 'The newest layer must not contain ink from older pages')
+    assert.ok((await pixels(page, 404, 1))[3] > 80, 'The previous imprint must move to the older layer')
     assert.ok((await pixels(page, 504))[3] > 80, 'The newest viewport must join the history')
     await page.reload()
     await page.waitForFunction(() => document.querySelector('.page-imprints canvas').width > 0)
-    assert.ok((await pixels(page, 404))[3] > 0, 'Session history must survive a reload')
+    await page.waitForFunction(() => document.querySelectorAll('.page-imprints canvas')[1].width > 0)
+    assert.ok((await pixels(page, 404, 1))[3] > 80, 'Both session layers must survive a reload')
+    await marker(page, 600)
     await page.goBack()
     await page.waitForURL('**/process')
+    await page.waitForFunction(() => document.querySelector('.page-imprints canvas').getContext('2d').getImageData(innerWidth - 5, 604, 1, 1).data[3] > 80)
+    assert.ok((await pixels(page, 504, 1))[3] > 80, 'Back must retain the immediately preceding imprint')
+    assert.equal((await pixels(page, 404))[3] + (await pixels(page, 404, 1))[3], 0, 'A third navigation must completely evict the oldest imprint')
     await page.goForward()
     await page.waitForURL('**/expectations')
-    assert.ok((await pixels(page, 404))[3] > 0, 'Back and forward must preserve the accumulated history')
+    await page.waitForFunction(() => document.querySelectorAll('.page-imprints canvas')[1].getContext('2d').getImageData(innerWidth - 5, 604, 1, 1).data[3] > 80)
+    assert.equal(await page.locator('.page-imprints canvas').count(), 2, 'Back and forward must preserve the layer limit')
 
     await navigate(page, 'Work', '/work')
     await page.getByRole('link', { name: 'View Datalane case study', exact: true }).click()
     await page.waitForURL('**/work/datalane')
     await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
     await page.waitForTimeout(250)
-    assert.equal(await page.locator('.page-imprints canvas').evaluate(el => getComputedStyle(el).filter), 'invert(1)')
+    assert.equal(await page.locator('.page-imprints').isVisible(), false, 'Case pages must hide all previous-page imprints')
+    await page.reload()
+    await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
+    assert.equal(await page.locator('.page-imprints').isVisible(), false, 'Reloading a case must not reveal stored imprints')
     await page.screenshot({ path: `${artifacts}/dark-case-${width}.png` })
 
     const layer = page.locator('.page-imprints')
-    const before = await layer.evaluate(el => el.getBoundingClientRect().top)
     await page.locator('main img').nth(1).scrollIntoViewIfNeeded()
     await page.waitForTimeout(200)
     const departingScroll = await page.evaluate(() => scrollY)
     assert.ok(departingScroll > 0)
-    assert.ok(Math.abs(await layer.evaluate(el => el.getBoundingClientRect().top) - before + departingScroll) < 2, 'Imprints must scroll with the document')
+    assert.equal(await layer.isVisible(), false, 'Imprints must stay hidden while scrolling a case')
+    await marker(page, 700)
     await page.getByRole('link', { name: 'Close', exact: true }).evaluate(el => el.click())
     await page.waitForURL('**/work?case=datalane')
-    assert.ok(await page.locator('.page-imprints canvas').evaluate((canvas) => {
+    await page.waitForFunction(() => document.querySelector('.page-imprints canvas').getContext('2d').getImageData(innerWidth - 5, 704, 1, 1).data[3] > 80)
+    assert.equal(await layer.isVisible(), true, 'Closing a case must restore the imprint layer')
+    assert.equal(await layer.evaluate(el => getComputedStyle(el).opacity), '0.3', 'Work must keep its imprints faint')
+    assert.ok(await page.locator('.page-imprints canvas').first().evaluate((canvas) => {
       const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data
       let ink = 0
       for (let index = 3; index < data.length; index += 4) {
@@ -128,13 +165,14 @@ try {
   await loopPage.evaluate(() => document.fonts.ready)
   await marker(loopPage, 400)
   await navigate(loopPage, 'About', '/')
-  const history = await loopPage.locator('.page-imprints canvas').evaluate(el => el.toDataURL())
+  const history = await loopPage.locator('.page-imprints canvas').first().evaluate(el => el.toDataURL())
   await loopPage.evaluate(() => scrollTo(0, document.documentElement.scrollHeight - innerHeight - 100))
   await loopPage.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
   await loopPage.waitForTimeout(300)
   const atRepeatedHero = () => loopPage.evaluate(() => Math.abs(document.querySelector('.page-imprints').getBoundingClientRect().top - document.querySelector('.home-loop').getBoundingClientRect().top) < 2)
   assert.ok(await atRepeatedHero(), 'Imprints must follow the repeated hero when scrolling into the reversed theme')
-  assert.equal(await loopPage.locator('.page-imprints canvas').evaluate(el => el.toDataURL()), history, 'A scroll theme switch must preserve every existing imprint')
+  assert.equal(await loopPage.locator('.page-imprints canvas').first().evaluate(el => el.toDataURL()), history, 'A scroll theme switch must preserve the imprint')
+  assert.equal(await loopPage.locator('.page-imprints').evaluate(el => getComputedStyle(el).filter), 'invert(1)', 'Dark homepage loops must invert the imprint ink')
   await loopPage.screenshot({ path: `${artifacts}/theme-loop.png` })
 
   const recording = loopPage.evaluate(() => new Promise((resolve) => {
@@ -157,7 +195,7 @@ try {
   await loopPage.mouse.wheel(0, -200)
   await loopPage.waitForFunction(() => scrollY > document.documentElement.scrollHeight - innerHeight - 300)
   assert.ok(await atRepeatedHero(), 'Reverse scrolling must keep imprints aligned with the repeated hero')
-  assert.equal(await loopPage.locator('.page-imprints canvas').evaluate(el => el.toDataURL()), history, 'Reversing through the loop must preserve the history')
+  assert.equal(await loopPage.locator('.page-imprints canvas').first().evaluate(el => el.toDataURL()), history, 'Reversing through the loop must preserve the history')
   await marker(loopPage, 600, '.home-loop')
   await navigate(loopPage, 'Process', '/process')
   assert.ok((await pixels(loopPage, 604))[3] > 80, 'Navigating from the repeated hero must capture its visible content')
@@ -177,17 +215,18 @@ try {
   await page.goto('/pricing')
   await page.waitForTimeout(300)
   await navigate(page, 'Process', '/process')
-  assert.ok(await page.locator('.page-imprints canvas').evaluate(el => el.width > 0), 'Reduced motion and disabled storage must still allow static imprints')
-  const beforeSamePage = await page.locator('.page-imprints canvas').evaluate(el => el.toDataURL())
+  assert.ok(await page.locator('.page-imprints canvas').first().evaluate(el => el.width > 0), 'Reduced motion and disabled storage must still allow static imprints')
+  assert.equal(await page.locator('.page-imprints canvas').evaluateAll(elements => elements.flatMap(el => el.getAnimations()).length), 0, 'Reduced motion must skip the dissolve entirely')
+  const beforeSamePage = await page.locator('.page-imprints canvas').first().evaluate(el => el.toDataURL())
   await navigate(page, 'Process', '/process')
-  assert.equal(await page.locator('.page-imprints canvas').evaluate(el => el.toDataURL()), beforeSamePage, 'A same-page link must not add another imprint')
+  assert.equal(await page.locator('.page-imprints canvas').first().evaluate(el => el.toDataURL()), beforeSamePage, 'A same-page link must not add another imprint')
   await navigate(page, 'Expectations', '/expectations')
   await page.getByRole('link', { name: 'team', exact: true }).click()
   await page.waitForURL('**/#team')
   await page.waitForTimeout(250)
   assert.ok(await page.locator('.page-imprints').evaluate(el => Math.abs(el.getBoundingClientRect().top) < 2), 'Hash navigation must anchor the imprint to the arriving viewport')
   assert.deepEqual(errors, [])
-  console.log(`${type.name()}: SVG ink and gaps, media silhouettes, imprint history, theme loops, scrolling, reload, back/forward, dark mode, resize and storage fallback passed`)
+  console.log(`${type.name()}: two-layer limit, independent ink, dissolve, clean case pages, SVG capture, theme loops, reload, back/forward, resize, reduced motion and storage fallback passed`)
   await context.close()
 }
 finally {

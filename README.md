@@ -39,6 +39,7 @@ pnpm build:staging
 pnpm test:staging
 pnpm test:responsive
 pnpm test:work
+pnpm test:imprints
 ```
 
 The browser smoke check expects the local staging server at `http://127.0.0.1:3100`. Set `STAGING_URL` to check another preview. Install its Chromium browser once with `pnpm exec playwright install chromium`.
@@ -54,6 +55,8 @@ Visual acceptance preserves the 10px desktop text, grain, blur treatment, intent
 Cover swipes lock to their initial direction and require a deliberate horizontal movement before changing projects. Partial swipes do not open a case. The right navigation remains fixed in short desktop windows, with its own scrolling when its contents cannot fit.
 
 On desktops without touch support, Up/Down arrows select the previous/next project. Wheel input over the Work content changes one project per deliberate gesture, with a movement threshold and an 800ms minimum interval. Wheel transitions use a 140ms fade out and a 220ms fade in with easing; reduced-motion mode switches immediately. In short windows, wheel input first scrolls the content; start a new gesture at the top or bottom to change projects. Direct `?case=` links render the selected project on the server, including when JavaScript is disabled.
+
+Page imprints retain only the two previous viewports: the newest at 50% opacity and the older at 30%, both blurred by 4px. New imprints dissolve from clear ink over 800ms; reduced-motion mode shows the settled layers immediately. Work keeps the imprints faint, and individual case pages hide them. The two layers survive reloads within the same tab. `test:imprints` checks the layer limit, dissolve, case-page exclusion, SVG capture, homepage loops, history navigation, and storage fallback in Chromium or WebKit.
 
 ## Video assets
 

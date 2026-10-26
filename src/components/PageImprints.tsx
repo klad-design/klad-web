@@ -5,16 +5,18 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useLayoutEffect, useRef } from 'react'
 
 import { captureImprint } from '@/components/captureImprint'
+import { useReducedMotion } from '@/components/useReducedMotion'
 
-const storageKey = 'klad-page-imprints-v2'
+const storageKey = 'klad-page-imprints-v3'
 
 export function PageImprints() {
   const pathname = usePathname()
   const layerRef = useRef<HTMLDivElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const canvasesRef = useRef<HTMLCanvasElement[]>([])
   const pendingRef = useRef<ReturnType<typeof captureImprint> | null>(null)
   const mergeRef = useRef(Promise.resolve())
   const pathRef = useRef(pathname)
+  const reducedMotion = useReducedMotion()
 
   useLenis((lenis) => {
     if (pathname !== '/' || !lenis.options.infinite || window.location.hash)
@@ -28,25 +30,32 @@ export function PageImprints() {
   })
 
   useEffect(() => {
-    const canvas = canvasRef.current!
     let cancelled = false
-    let saved: string | null = null
     try {
-      saved = sessionStorage.getItem(storageKey)
+      const saved: unknown = JSON.parse(sessionStorage.getItem(storageKey) || '[]')
+      if (Array.isArray(saved)) {
+        mergeRef.current = Promise.all(saved.slice(0, 2).map(async (src, index) => {
+          if (typeof src !== 'string' || !src.startsWith('data:image/png;base64,'))
+            return
+          const image = new Image()
+          image.src = src
+          try {
+            await image.decode()
+            if (cancelled)
+              return
+            const canvas = canvasesRef.current[index]
+            canvas.width = image.width
+            canvas.height = image.height
+            canvas.getContext('2d')?.drawImage(image, 0, 0)
+          }
+          catch {
+            // A damaged stored image must not interrupt navigation.
+          }
+        })).then(() => {})
+      }
     }
     catch {
       // Storage can be disabled; the effect still works for client navigations.
-    }
-    if (saved) {
-      const image = new Image()
-      image.onload = () => {
-        if (cancelled || canvas.width !== 0)
-          return
-        canvas.width = image.width
-        canvas.height = image.height
-        canvas.getContext('2d')?.drawImage(image, 0, 0)
-      }
-      image.src = saved
     }
 
     function capture() {
@@ -78,8 +87,13 @@ export function PageImprints() {
     }
   }, [])
 
+  useEffect(() => {
+    if (reducedMotion)
+      canvasesRef.current.forEach(canvas => canvas.getAnimations().forEach(animation => animation.cancel()))
+  }, [reducedMotion])
+
   useLayoutEffect(() => {
-    const canvas = canvasRef.current!
+    const [canvas, older] = canvasesRef.current
     const pending = pendingRef.current
     if (pathRef.current !== pathname && pending) {
       // Keep navigation order when SVG decoding finishes after a later capture.
@@ -87,26 +101,30 @@ export function PageImprints() {
         const snapshot = await pending
         if (!snapshot || !canvas.isConnected)
           return
-        // Flatten the entire path into one bitmap so long sessions never grow the DOM.
-        const history = document.createElement('canvas')
-        history.width = canvas.width
-        history.height = canvas.height
+        canvasesRef.current.forEach(canvas => canvas.getAnimations().forEach(animation => animation.cancel()))
+        // Keep only two previous pages, without baking their opacity into the ink.
+        older.width = canvas.width
+        older.height = canvas.height
         if (canvas.width && canvas.height)
-          history.getContext('2d')?.drawImage(canvas, 0, 0)
+          older.getContext('2d')?.drawImage(canvas, 0, 0)
         canvas.width = snapshot.width
         canvas.height = snapshot.height
         const context = canvas.getContext('2d')
         if (context) {
-          context.globalAlpha = 0.82
-          if (history.width && history.height)
-            context.drawImage(history, 0, 0, canvas.width, canvas.height)
-          context.globalAlpha = 0.85
           context.drawImage(snapshot, 0, 0)
           try {
-            sessionStorage.setItem(storageKey, canvas.toDataURL())
+            sessionStorage.setItem(storageKey, JSON.stringify(canvasesRef.current.filter(canvas => canvas.width).map(canvas => canvas.toDataURL())))
           }
           catch {
             // A full or unavailable store must never interrupt navigation.
+          }
+          if (pathRef.current === pathname && !pathname.startsWith('/work/') && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            canvas.animate([
+              { opacity: 1, filter: 'blur(0px)' },
+              { opacity: 0.5, filter: 'blur(4px)' },
+            ], { duration: 800, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' })
+            if (older.width)
+              older.animate([{ opacity: 0.5 }, { opacity: 0.3 }], { duration: 800, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' })
           }
         }
       })
@@ -121,8 +139,18 @@ export function PageImprints() {
   }, [pathname])
 
   return (
-    <div ref={layerRef} className="page-imprints" aria-hidden="true" inert>
-      <canvas ref={canvasRef} width={0} height={0} />
+    <div ref={layerRef} className="page-imprints" data-work={pathname === '/work' || undefined} hidden={pathname.startsWith('/work/')} aria-hidden="true" inert>
+      {[0, 1].map(index => (
+        <canvas
+          key={index}
+          ref={(canvas) => {
+            if (canvas)
+              canvasesRef.current[index] = canvas
+          }}
+          width={0}
+          height={0}
+        />
+      ))}
     </div>
   )
 }
