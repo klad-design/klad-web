@@ -7,7 +7,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { captureImprint } from '@/components/captureImprint'
 import { useReducedMotion } from '@/components/useReducedMotion'
 
-const storageKey = 'klad-page-imprints-v3'
+const storageKey = 'klad-page-imprints-v4'
 
 export function PageImprints() {
   const pathname = usePathname()
@@ -32,6 +32,8 @@ export function PageImprints() {
   useEffect(() => {
     let cancelled = false
     try {
+      // Old snapshots may contain case studies, so discard that session cache.
+      sessionStorage.removeItem('klad-page-imprints-v3')
       const saved: unknown = JSON.parse(sessionStorage.getItem(storageKey) || '[]')
       if (Array.isArray(saved)) {
         mergeRef.current = Promise.all(saved.slice(0, 2).map(async (src, index) => {
@@ -59,6 +61,9 @@ export function PageImprints() {
     }
 
     function capture() {
+      pendingRef.current = null
+      if (pathRef.current.startsWith('/work/'))
+        return
       const root = document.querySelector<HTMLElement>('[data-page-content]')
       if (root)
         pendingRef.current = captureImprint(root).catch(() => null)

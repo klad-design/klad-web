@@ -40,6 +40,10 @@ async function pixels(page, y, layer = 0) {
   }, y)
 }
 
+async function imprintLayers(page) {
+  return page.locator('.page-imprints canvas').evaluateAll(canvases => canvases.map(canvas => canvas.toDataURL()))
+}
+
 async function marker(page, y, selector = '[data-page-content]') {
   await page.locator(selector).evaluate((root, y) => {
     const media = document.createElement('canvas')
@@ -62,11 +66,13 @@ try {
       await context.route(`**/imprint-test.${format}`, route => route.fulfill({ contentType: `image/${format}`, body }))
     const page = await context.newPage()
     page.on('pageerror', error => errors.push(error.message))
+    await page.addInitScript(src => sessionStorage.setItem('klad-page-imprints-v3', JSON.stringify([src])), `data:image/png;base64,${rasterFixtures[0].body.toString('base64')}`)
     await page.goto('/pricing')
     await page.evaluate(() => document.fonts.ready)
     await page.waitForTimeout(300)
     assert.equal(await page.locator('.page-imprints canvas').count(), 2, 'Only two previous-page layers may exist')
     assert.deepEqual(await page.locator('.page-imprints canvas').evaluateAll(elements => elements.map(el => el.width)), [0, 0], 'A fresh session has no imprints')
+    assert.equal(await page.evaluate(() => sessionStorage.getItem('klad-page-imprints-v3')), null, 'Discard the old cache that can contain case-study snapshots')
     await marker(page, 400)
     await page.locator('[data-page-content]').evaluate(async (root, svg) => {
       const image = new Image()
@@ -179,41 +185,56 @@ try {
     assert.equal(await page.locator('.page-imprints canvas').count(), 2, 'Back and forward must preserve the layer limit')
 
     await navigate(page, 'Work', '/work')
+    await marker(page, 700)
     await page.getByRole('link', { name: 'View Datalane case study', exact: true }).click()
     await page.waitForURL('**/work/datalane')
     await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
+    await page.waitForFunction(() => document.querySelector('.page-imprints canvas').getContext('2d').getImageData(innerWidth - 5, 704, 1, 1).data[3] > 80)
+    const beforeCase = await imprintLayers(page)
     await page.waitForTimeout(250)
     assert.equal(await page.locator('.page-imprints').isVisible(), false, 'Case pages must hide all previous-page imprints')
+    await marker(page, 760)
+    await page.locator('main > header').getByRole('link', { name: 'Next', exact: true }).click()
+    await page.waitForURL('**/work/chainviz')
+    await page.waitForTimeout(200)
+    assert.deepEqual(await imprintLayers(page), beforeCase, 'Switching cases must not create an imprint or age existing layers')
+    await page.locator('main > header').getByRole('link', { name: 'Previous', exact: true }).click()
+    await page.waitForURL('**/work/datalane')
+    await page.waitForTimeout(200)
+    assert.deepEqual(await imprintLayers(page), beforeCase, 'Returning to the previous case must preserve existing layers')
     await page.reload()
     await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
+    await page.waitForFunction(() => document.querySelector('.page-imprints canvas').getContext('2d').getImageData(innerWidth - 5, 704, 1, 1).data[3] > 80)
+    await page.waitForFunction(() => document.querySelectorAll('.page-imprints canvas')[1].width > 0)
+    assert.deepEqual(await imprintLayers(page), beforeCase, 'Reloading a case must restore only the previously eligible page layers')
     assert.equal(await page.locator('.page-imprints').isVisible(), false, 'Reloading a case must not reveal stored imprints')
     await page.screenshot({ path: `${artifacts}/dark-case-${width}.png` })
 
     const layer = page.locator('.page-imprints')
-    await page.waitForFunction(() => [...document.querySelectorAll('.case-study > header > div:not(:first-child), .case-study > [data-case-reveal]')].every(el => el.style.opacity === ''))
-    const caseImage = page.locator('main img').nth(1)
-    await caseImage.scrollIntoViewIfNeeded()
-    await caseImage.evaluate(el => el.decode())
+    await page.locator('main img').nth(1).scrollIntoViewIfNeeded()
     await page.waitForTimeout(200)
     const departingScroll = await page.evaluate(() => scrollY)
     assert.ok(departingScroll > 0)
     assert.equal(await layer.isVisible(), false, 'Imprints must stay hidden while scrolling a case')
-    await marker(page, 700)
+    await marker(page, 760)
     await page.getByRole('link', { name: 'Close', exact: true }).filter({ visible: true }).first().evaluate(el => el.click())
     await page.waitForURL('**/work?case=datalane')
-    await page.waitForFunction(() => document.querySelector('.page-imprints canvas').getContext('2d').getImageData(innerWidth - 5, 704, 1, 1).data[3] > 80)
+    await page.waitForTimeout(200)
     assert.equal(await layer.isVisible(), true, 'Closing a case must restore the imprint layer')
     assert.equal(await layer.evaluate(el => getComputedStyle(el).opacity), '0.3', 'Work must keep its imprints faint')
-    assert.ok(await page.locator('.page-imprints canvas').first().evaluate((canvas) => {
-      const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data
-      let ink = 0
-      for (let index = 3; index < data.length; index += 4) {
-        if (data[index] > 80)
-          ink++
-      }
-      return ink > canvas.width * canvas.height * 0.1
-    }), 'A scrolled media viewport must leave a broad silhouette')
-    await page.screenshot({ path: `${artifacts}/scrolled-case-on-work-${width}.png` })
+    assert.deepEqual(await imprintLayers(page), beforeCase, 'Closing a scrolled case must not capture its content')
+    assert.equal((await pixels(page, 764))[3] + (await pixels(page, 764, 1))[3], 0, 'Case-only ink must never enter either layer')
+    await page.screenshot({ path: `${artifacts}/work-after-case-${width}.png` })
+    await marker(page, 800)
+    await page.goBack()
+    await page.waitForURL('**/work/datalane')
+    await page.waitForFunction(() => document.querySelector('.page-imprints canvas').getContext('2d').getImageData(innerWidth - 5, 804, 1, 1).data[3] > 80)
+    const beforeForward = await imprintLayers(page)
+    await marker(page, 760)
+    await page.goForward()
+    await page.waitForURL('**/work?case=datalane')
+    await page.waitForTimeout(200)
+    assert.deepEqual(await imprintLayers(page), beforeForward, 'Browser Forward from a case must skip capture while Back from Work still captures')
     const cover = page.getByRole('link', { name: 'View Datalane case study', exact: true }).locator('img')
     await cover.scrollIntoViewIfNeeded()
     const coverRect = await cover.boundingBox()
@@ -349,7 +370,7 @@ try {
   await page.waitForTimeout(250)
   assert.ok(await page.locator('.page-imprints').evaluate(el => Math.abs(el.getBoundingClientRect().top) < 2), 'Hash navigation must anchor the imprint to the arriving viewport')
   assert.deepEqual(errors, [])
-  console.log(`${type.name()}: solid gray case covers, original image colors, PNG/AVIF/canvas alpha, rendered grayscale/color, mobile menu capture, cover/contain, two-layer limit, dissolve, clean case pages, SVG capture, unclipped reverse theme loops, reload, back/forward, resize, reduced motion and storage fallback passed`)
+  console.log(`${type.name()}: case-study capture exclusion, preserved eligible history, old-cache cleanup, solid gray Work covers, PNG/AVIF/canvas alpha, grayscale, mobile menu capture, cover/contain, two-layer limit, dissolve, SVG capture, reverse theme loops, reload, back/forward, resize, reduced motion and storage fallback passed`)
   await context.close()
 }
 finally {
