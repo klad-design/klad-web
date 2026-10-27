@@ -66,29 +66,25 @@ try {
   }
   await tablet.close()
 
-  const landscape = await browser.newContext({ viewport: { width: 667, height: 375 }, hasTouch: true })
+  const landscape = await browser.newContext({ viewport: { width: 667, height: 375 }, hasTouch: true, deviceScaleFactor: 3 })
   const portraitRequests = new Set()
   landscape.on('request', (request) => {
-    if (/\/klad-web\/team\/\d+\.avif/.test(request.url()))
+    if (/\/images\/team\/\d+\.avif/.test(request.url()))
       portraitRequests.add(request.url())
   })
   await landscape.addInitScript(() => {
     window.__portraitDraws = 0
-    if (navigator.userAgent.includes('Firefox')) {
-      window.__portraitFrames = []
-      window.__portraitWidths = []
-    }
+    window.__portraitFrames = []
+    window.__portraitWidths = []
     const drawImage = CanvasRenderingContext2D.prototype.drawImage
     CanvasRenderingContext2D.prototype.drawImage = function (...args) {
       if (this.canvas.closest?.('#team')) {
         window.__portraitDraws++
-        if (navigator.userAgent.includes('Firefox')) {
-          const frame = Number(args[0].src?.match(/\/team\/(\d+)\.avif/)?.[1])
-          if (Number.isInteger(frame))
-            window.__portraitFrames.push(frame)
-          if (innerWidth < 768)
-            window.__portraitWidths.push(args[3] / this.canvas.width)
-        }
+        const frame = Number(args[0].src?.match(/\/team\/(\d+)\.avif/)?.[1])
+        if (Number.isInteger(frame))
+          window.__portraitFrames.push(frame)
+        if (innerWidth < 768)
+          window.__portraitWidths.push(args[3] / this.canvas.width)
       }
       return drawImage.apply(this, args)
     }
@@ -105,21 +101,33 @@ try {
   await team.setViewportSize({ width: 390, height: 844 })
   await team.waitForTimeout(1000)
   assert.ok(Math.abs((await team.locator('.models').boundingBox()).height - 357) < 2, 'Rotating back must restore the portrait size')
-  if (type.name() === 'firefox') {
-    const reverseTarget = await team.locator('.models').evaluate(el => el.getBoundingClientRect().top + scrollY + 150)
-    await team.evaluate(() => window.__portraitWidths = [])
-    await team.evaluate(y => scrollTo(0, y), reverseTarget)
-    await team.waitForTimeout(500)
-    await team.evaluate(() => scrollTo(0, document.querySelectorAll('.memberDescription')[2].getBoundingClientRect().top + scrollY - 300))
-    await team.waitForTimeout(800)
-    const forward = await team.evaluate(() => Math.max(...window.__portraitFrames))
-    await team.evaluate(y => scrollTo(0, y), reverseTarget)
-    await team.waitForTimeout(800)
-    const reversed = await team.evaluate(() => window.__portraitFrames.at(-1))
-    assert.ok(forward > 0 && reversed < forward, 'Firefox must draw earlier original frames when scrolling back')
-    const widths = await team.evaluate(() => window.__portraitWidths)
-    assert.ok(widths.length > 2 && Math.max(...widths) - Math.min(...widths) < 0.001, 'Mobile portraits must keep one fixed scale while scrolling')
-  }
+  await team.evaluate(() => scrollTo(0, 0))
+  await team.waitForTimeout(500)
+  const range = await team.locator('.models').evaluate(el => ({
+    start: el.getBoundingClientRect().top + scrollY - 30,
+    end: document.querySelector('.memberDescriptionEnd').getBoundingClientRect().bottom + scrollY - el.clientHeight - 30,
+  }))
+  await team.evaluate(() => {
+    window.__portraitFrames = []
+    window.__portraitWidths = []
+  })
+  await team.evaluate(y => scrollTo(0, y), (range.start + range.end) / 2)
+  await team.waitForTimeout(800)
+  const forward = await team.evaluate(() => window.__portraitFrames)
+  assert.ok(new Set(forward).size > 4, 'A sudden scroll must play intermediate frames instead of jumping straight to the target')
+  assert.ok(forward.every((frame, index) => index === 0 || frame >= forward[index - 1]), 'Forward playback must stay in order')
+  assert.ok(Math.abs(forward.at(-1) - 60.5) <= 1, 'Playback must settle at the frame matching the scroll position')
+  await team.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
+  assert.equal(await team.evaluate(() => window.__portraitFrames.at(-1)), forward.at(-1), 'Returning to the tab must preserve the current portrait')
+  await team.evaluate(() => window.__portraitFrames = [])
+  await team.evaluate(y => scrollTo(0, y), range.start)
+  await team.waitForTimeout(800)
+  const reversed = await team.evaluate(() => window.__portraitFrames)
+  assert.ok(new Set(reversed).size > 4 && reversed.every((frame, index) => index === 0 || frame <= reversed[index - 1]), 'Reverse playback must also play intermediate frames in order')
+  assert.equal(reversed.at(-1), 0, 'Reverse scrolling must settle on the first frame')
+  const widths = await team.evaluate(() => window.__portraitWidths)
+  assert.ok(Math.max(...widths) - Math.min(...widths) < 0.001, 'Mobile portraits must keep one fixed scale while scrolling')
+  assert.ok(await team.locator('#team canvas').evaluate(el => el.width <= Math.round(el.clientWidth * 2)), 'Canvas resolution must be capped at 2x on high-density phones')
   const redrawn = await team.locator('#team canvas').evaluate(() => {
     const before = window.__portraitDraws
     document.dispatchEvent(new Event('visibilitychange'))

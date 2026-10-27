@@ -14,6 +14,8 @@ import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
 import { useReducedMotion } from '@/components/useReducedMotion'
 
+gsap.registerPlugin(ScrollTrigger)
+
 interface TeamMember {
   name: string
   role: string
@@ -291,6 +293,7 @@ const team: TeamMember[] = [
 ]
 
 const mobileGap = 30
+const mobileScrub = 0.35
 const lastFrame = 121
 
 export function Team() {
@@ -317,7 +320,7 @@ export function Team() {
 
     if (index >= 0 && index <= lastFrame && canvas && context) {
       const mobile = window.innerWidth < 768
-      const pixelRatio = mobile ? window.devicePixelRatio : Math.min(window.devicePixelRatio, 2)
+      const pixelRatio = Math.min(window.devicePixelRatio, 2)
       const width = Math.round(canvas.clientWidth * pixelRatio)
       const height = Math.round(canvas.clientHeight * pixelRatio)
       if (canvas.width !== width || canvas.height !== height) {
@@ -355,20 +358,20 @@ export function Team() {
 
     const mm = gsap.matchMedia()
 
-    gsap.registerPlugin(ScrollTrigger)
-
     mm.add('(max-width: 767px)', () => {
-      ScrollTrigger.create({
-        trigger: modelsRef.current,
-        endTrigger: '.memberDescriptionEnd',
-        start: `top +=${mobileGap}px`,
-        end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
-        pinSpacing: false,
-        pin: true,
-        scrub: 1,
-        onUpdate: (self) => {
-          const frameIndex = Math.round(self.progress * lastFrame)
-          loadImageOnCanvas(frameIndex)
+      const playhead = { frame: 0 }
+      gsap.to(playhead, {
+        frame: lastFrame,
+        ease: 'none',
+        onUpdate: () => loadImageOnCanvas(Math.round(playhead.frame)),
+        scrollTrigger: {
+          trigger: modelsRef.current,
+          endTrigger: '.memberDescriptionEnd',
+          start: `top +=${mobileGap}px`,
+          end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
+          pinSpacing: false,
+          pin: true,
+          scrub: mobileScrub,
         },
       })
 
@@ -388,7 +391,7 @@ export function Team() {
             animation: tl,
             start: () => `top ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
             end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
-            scrub: 1,
+            scrub: mobileScrub,
           })
         }
       })
@@ -403,8 +406,6 @@ export function Team() {
       return
 
     const mm = gsap.matchMedia()
-
-    gsap.registerPlugin(ScrollTrigger)
 
     mm.add('(min-width: 768px)', () => {
       const teamSection = sectionRef.current
