@@ -1,4 +1,4 @@
-// Preserve text and vector ink; photos, videos and canvases leave only silhouettes.
+// Preserve text ink and image/canvas pixels, including transparent areas.
 export async function captureImprint(root: HTMLElement) {
   const canvas = document.createElement('canvas')
   canvas.width = window.innerWidth
@@ -15,7 +15,8 @@ export async function captureImprint(root: HTMLElement) {
   }
 
   function visible(element: Element) {
-    const hidden = element.closest('[aria-hidden="true"], [inert], script, style')
+    // Modal accessibility hiding must not erase the visible page from its snapshot.
+    const hidden = element.closest('[aria-hidden="true"]:not([data-aria-hidden="true"]), [inert], script, style')
     // The menu and repeated hero hide visible content from assistive technology.
     return (!hidden || hidden.contains(root) || hidden.matches('.home-loop'))
       && element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })
@@ -39,18 +40,46 @@ export async function captureImprint(root: HTMLElement) {
 
   context.fillStyle = '#000'
   context.globalAlpha = 0.5
-  const vectors: Promise<void>[] = []
+  const images: Promise<void>[] = []
   root.querySelectorAll('img, video, canvas, svg').forEach((media) => {
     const rect = media.getBoundingClientRect()
     if (!visible(media) || !inViewport(rect))
       return
 
-    let vector: HTMLImageElement | undefined
-    if (media instanceof HTMLImageElement && /\.svg(?:[?#]|$)|^data:image\/svg\+xml/i.test(media.currentSrc || media.src)) {
+    if (media.hasAttribute('data-case-cover')) {
+      context.save()
+      clipToParents(media)
+      context.fillStyle = '#ABABAB'
+      context.globalAlpha = 1
+      context.fillRect(rect.left, rect.top, rect.width, rect.height)
+      context.restore()
+      return
+    }
+
+    let artwork: HTMLImageElement | HTMLCanvasElement | undefined
+    if (media instanceof HTMLImageElement) {
       const source = new URL(media.currentSrc || media.src, location.href)
       // Only sample local artwork so the session canvas stays readable and exportable.
-      if (source.origin === location.origin || source.protocol === 'data:')
-        vector = media
+      if (source.origin === location.origin || source.protocol === 'data:') {
+        artwork = media
+      }
+    }
+    else if (media instanceof HTMLCanvasElement) {
+      if (!media.width || !media.height)
+        return
+      const frozen = document.createElement('canvas')
+      frozen.width = media.width
+      frozen.height = media.height
+      const frozenContext = frozen.getContext('2d')!
+      try {
+        frozenContext.drawImage(media, 0, 0)
+        frozenContext.getImageData(0, 0, 1, 1)
+        artwork = frozen
+      }
+      catch {
+        // Never let an unreadable cross-origin canvas taint stored imprints.
+        return
+      }
     }
     else if (media instanceof SVGSVGElement) {
       const clone = media.cloneNode(true) as SVGSVGElement
@@ -65,28 +94,35 @@ export async function captureImprint(root: HTMLElement) {
       clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
       clone.setAttribute('width', String(rect.width))
       clone.setAttribute('height', String(rect.height))
-      vector = new Image()
-      vector.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(new XMLSerializer().serializeToString(clone))}`
+      artwork = new Image()
+      artwork.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(new XMLSerializer().serializeToString(clone))}`
     }
 
-    if (vector) {
+    if (artwork) {
       const ink = document.createElement('canvas')
       ink.width = canvas.width
       ink.height = canvas.height
       const inkContext = ink.getContext('2d')!
       // Freeze clipping before navigation can remove or scroll the outgoing page.
       clipToParents(media, inkContext)
-      const image = vector
-      vectors.push(image.decode().then(() => {
-        inkContext.drawImage(image, rect.left, rect.top, rect.width, rect.height)
-        const pixels = inkContext.getImageData(0, 0, ink.width, ink.height)
-        for (let index = 0; index < pixels.data.length; index += 4) {
-          pixels.data[index + 3] *= 1 - (pixels.data[index] + pixels.data[index + 1] + pixels.data[index + 2]) / 765
-          pixels.data[index] = 0
-          pixels.data[index + 1] = 0
-          pixels.data[index + 2] = 0
+      inkContext.beginPath()
+      inkContext.rect(rect.left, rect.top, rect.width, rect.height)
+      inkContext.clip()
+      const fit = styleFor(media).objectFit
+      const image = artwork
+      const decoded = image instanceof HTMLImageElement ? image.decode() : Promise.resolve()
+      images.push(decoded.then(() => {
+        let width = rect.width
+        let height = rect.height
+        if (fit === 'cover' || fit === 'contain') {
+          const naturalWidth = image instanceof HTMLImageElement ? image.naturalWidth : image.width
+          const naturalHeight = image instanceof HTMLImageElement ? image.naturalHeight : image.height
+          const scale = Math[fit === 'cover' ? 'max' : 'min'](width / naturalWidth, height / naturalHeight)
+          width = naturalWidth * scale
+          height = naturalHeight * scale
         }
-        inkContext.putImageData(pixels, 0, 0)
+        // shortcut: crops use the site's centered object-position; extend for positioned images.
+        inkContext.drawImage(image, rect.left + (rect.width - width) / 2, rect.top + (rect.height - height) / 2, width, height)
         context.save()
         context.globalAlpha = 1
         context.globalCompositeOperation = 'destination-over'
@@ -146,6 +182,6 @@ export async function captureImprint(root: HTMLElement) {
     }
     context.restore()
   }
-  await Promise.all(vectors)
+  await Promise.all(images)
   return canvas
 }

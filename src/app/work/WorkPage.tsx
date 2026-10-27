@@ -378,6 +378,7 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
             }}
           >
             <Image
+              data-case-cover
               className="size-full object-cover"
               src={cases[activeIndex].image}
               alt={`${cases[activeIndex].title} poster`}

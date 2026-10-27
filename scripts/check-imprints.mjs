@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
+import { Buffer } from 'node:buffer'
 import { mkdir } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import process from 'node:process'
 
 import { chromium, webkit } from 'playwright'
@@ -10,6 +12,18 @@ const browser = await type.launch()
 const artifacts = `artifacts/imprints/${type.name()}`
 await mkdir(artifacts, { recursive: true })
 const errors = []
+const grayscale = true
+const sharp = createRequire(import.meta.resolve('next'))('sharp')
+const rgba = Buffer.alloc(8 * 24 * 4)
+for (let pixel = 0; pixel < 8 * 16; pixel++) {
+  const color = pixel < 8 * 8 ? [240, 40, 80] : [30, 90, 220]
+  rgba.set(color, pixel * 4)
+  rgba[pixel * 4 + 3] = pixel < 8 * 8 ? 255 : 128
+}
+const rasterFixtures = await Promise.all(['png', 'avif'].map(async format => ({
+  format,
+  body: await sharp(rgba, { raw: { width: 8, height: 24, channels: 4 } }).toFormat(format, { lossless: true }).toBuffer(),
+})))
 
 async function navigate(page, name, path) {
   if (await page.getByRole('button', { name: 'Menu', exact: true }).isVisible())
@@ -29,6 +43,11 @@ async function pixels(page, y, layer = 0) {
 async function marker(page, y, selector = '[data-page-content]') {
   await page.locator(selector).evaluate((root, y) => {
     const media = document.createElement('canvas')
+    media.width = 8
+    media.height = 8
+    const context = media.getContext('2d')
+    context.fillStyle = 'rgba(0, 0, 0, 0.5)'
+    context.fillRect(0, 0, 8, 8)
     media.style.cssText = `position:fixed;right:1px;top:${y}px;width:8px;height:8px`
     root.append(media)
   }, y)
@@ -39,6 +58,8 @@ try {
     const context = await browser.newContext({ baseURL, viewport: { width, height: 900 }, hasTouch: width < 768 })
     const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="24" viewBox="0 0 8 24"><path fill="black" d="M0 0h8v8H0z"/><path fill="white" d="M0 8h8v8H0z"/></svg>'
     await context.route('**/imprint-test.svg*', route => route.fulfill({ contentType: 'image/svg+xml', body: svg }))
+    for (const { format, body } of rasterFixtures)
+      await context.route(`**/imprint-test.${format}`, route => route.fulfill({ contentType: `image/${format}`, body }))
     const page = await context.newPage()
     page.on('pageerror', error => errors.push(error.message))
     await page.goto('/pricing')
@@ -61,6 +82,28 @@ try {
       broken.style.cssText = 'position:fixed;right:1px;top:490px;width:8px;height:8px'
       root.append(broken)
     }, svg)
+    await page.locator('[data-page-content]').evaluate(async (root, rgba) => {
+      const canvas = document.createElement('canvas')
+      canvas.width = 8
+      canvas.height = 24
+      canvas.style.cssText = 'position:fixed;right:1px;top:180px;width:8px;height:24px'
+      canvas.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(rgba), 8, 24), 0, 0)
+      root.append(canvas)
+      for (const [index, format] of ['png', 'avif'].entries()) {
+        const image = new Image()
+        image.src = `/imprint-test.${format}`
+        image.style.cssText = `position:fixed;right:1px;top:${60 + index * 30}px;width:8px;height:24px`
+        root.append(image)
+        await image.decode()
+      }
+      for (const [index, fit] of ['cover', 'contain'].entries()) {
+        const image = new Image()
+        image.src = '/imprint-test.png'
+        image.style.cssText = `position:fixed;right:1px;top:${120 + index * 30}px;width:24px;height:24px;object-fit:${fit}`
+        root.append(image)
+        await image.decode()
+      }
+    }, [...rgba])
     const dissolve = page.evaluate(() => new Promise((resolve) => {
       const samples = []
       const end = performance.now() + 3000
@@ -95,10 +138,25 @@ try {
       const ink = await pixels(page, top + 4)
       assert.deepEqual(ink.slice(0, 3), [0, 0, 0], 'SVG ink must be monochrome')
       assert.ok(ink[3] > 180, 'SVG strokes must be preserved like text')
-      assert.equal((await pixels(page, top + 12))[3], 0, 'White SVG areas must become negative space')
+      assert.deepEqual(await pixels(page, top + 12), [255, 255, 255, 255], 'White SVG pixels must also retain their original color and opacity')
       assert.equal((await pixels(page, top + 20))[3], 0, 'Transparent SVG areas must stay empty')
     }
-    await page.screenshot({ path: `${artifacts}/pricing-on-process-${width}.png` })
+    for (const top of [60, 90, 180]) {
+      const color = (await pixels(page, top + 4)).slice(0, 3)
+      assert.ok(color.every((value, index) => Math.abs(value - [240, 40, 80][index]) <= 2), 'Images and canvases must preserve original pixels without a gray fill')
+      assert.ok(Math.abs((await pixels(page, top + 4))[3] - 255) <= 1, 'Opaque image pixels must not receive an extra opacity reduction')
+      assert.ok(Math.abs((await pixels(page, top + 12))[3] - 128) <= 1, 'Partial image alpha must survive capture')
+      assert.equal((await pixels(page, top + 20))[3], 0, 'Transparent PNG and AVIF areas must leave no ink')
+    }
+    assert.ok(Math.abs((await pixels(page, 132))[3] - 128) <= 1, 'Cover must crop the source instead of stretching its alpha')
+    assert.equal((await pixels(page, 154))[3], 0, 'Contain must leave its empty side gutters transparent')
+    assert.equal(await page.locator('.page-imprints').evaluate(el => getComputedStyle(el).filter), grayscale ? 'grayscale(1)' : 'none')
+    const screenshot = await page.screenshot({ path: `${artifacts}/pricing-on-process-${width}.png` })
+    const { data, info } = await sharp(screenshot).removeAlpha().raw().toBuffer({ resolveWithObject: true })
+    const offset = (64 * info.width + info.width - 5) * 3
+    const displayed = [...data.subarray(offset, offset + 3)]
+    const chroma = Math.max(...displayed) - Math.min(...displayed)
+    assert.ok(grayscale ? chroma <= 2 : chroma > 20, 'Rendered image colors must match this experiment')
 
     await marker(page, 500)
     await navigate(page, 'Expectations', '/expectations')
@@ -153,10 +211,44 @@ try {
       return ink > canvas.width * canvas.height * 0.1
     }), 'A scrolled media viewport must leave a broad silhouette')
     await page.screenshot({ path: `${artifacts}/scrolled-case-on-work-${width}.png` })
+    const cover = page.getByRole('link', { name: 'View Datalane case study', exact: true }).locator('img')
+    await cover.scrollIntoViewIfNeeded()
+    const coverRect = await cover.boundingBox()
+    const points = [0.25, 0.5, 0.75].map(fraction => ({
+      x: Math.round(coverRect.x + coverRect.width * fraction),
+      y: Math.round(Math.max(0, coverRect.y) + (Math.min(900, coverRect.y + coverRect.height) - Math.max(0, coverRect.y)) * 0.5),
+    }))
+    await navigate(page, 'Process', '/process')
+    assert.deepEqual(await page.locator('.page-imprints canvas').first().evaluate((canvas, points) => {
+      return points.map(({ x, y }) => [...canvas.getContext('2d').getImageData(x, y, 1, 1).data])
+    }, points), points.map(() => [171, 171, 171, 255]), 'Case covers must become solid #ABABAB rectangles without photographic detail')
+    await page.screenshot({ path: `${artifacts}/cover-rectangle-on-process-${width}.png` })
+    await navigate(page, 'Expectations', '/expectations')
+    assert.deepEqual(await page.locator('.page-imprints canvas').nth(1).evaluate((canvas, points) => {
+      return points.map(({ x, y }) => [...canvas.getContext('2d').getImageData(x, y, 1, 1).data])
+    }, points), points.map(() => [171, 171, 171, 255]), 'The older imprint must retain the case-cover fill while layer opacity changes')
     await page.setViewportSize({ width: width === 1440 ? 768 : 320, height: 700 })
     assert.ok(await page.locator('.page-imprints').evaluate(el => el.getBoundingClientRect().right <= innerWidth), 'Resize must not create horizontal overflow')
     await context.close()
   }
+
+  const mobileContext = await browser.newContext({ baseURL, viewport: { width: 390, height: 900 }, hasTouch: true, reducedMotion: 'reduce' })
+  const mobilePage = await mobileContext.newPage()
+  mobilePage.on('pageerror', error => errors.push(error.message))
+  await mobilePage.goto('/')
+  await mobilePage.evaluate(() => document.fonts.ready)
+  await mobilePage.waitForTimeout(300)
+  await navigate(mobilePage, 'Process', '/process')
+  assert.ok(await mobilePage.locator('.page-imprints canvas').first().evaluate((canvas) => {
+    const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data
+    let ink = 0
+    for (let index = 3; index < data.length; index += 4) {
+      if (data[index])
+        ink++
+    }
+    return ink > 10000
+  }), 'The mobile menu must capture the actual homepage instead of an empty layer')
+  await mobileContext.close()
 
   const loopContext = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 } })
   const loopPage = await loopContext.newPage()
@@ -164,15 +256,43 @@ try {
   await loopPage.goto('/pricing')
   await loopPage.evaluate(() => document.fonts.ready)
   await marker(loopPage, 400)
+  await marker(loopPage, 0)
+  await navigate(loopPage, 'Expectations', '/expectations')
+  await marker(loopPage, 0)
   await navigate(loopPage, 'About', '/')
   const history = await loopPage.locator('.page-imprints canvas').first().evaluate(el => el.toDataURL())
+  await loopPage.mouse.wheel(0, -180)
+  await loopPage.waitForFunction(() => {
+    const top = document.querySelector('.page-imprints').getBoundingClientRect().top
+    return top > 170 && top < 190 && document.documentElement.dataset.theme === 'dark'
+  })
+  await loopPage.waitForTimeout(300)
+  const withoutNoise = await loopPage.addStyleTag({ content: 'body::after { display: none !important; }' })
+  for (const index of [0, 1]) {
+    await loopPage.locator('.page-imprints canvas').evaluateAll((canvases, index) => {
+      canvases.forEach((canvas, layer) => {
+        canvas.style.visibility = layer === index ? 'visible' : 'hidden'
+      })
+    }, index)
+    const top = await loopPage.locator('.page-imprints').evaluate(el => el.getBoundingClientRect().top)
+    const screenshot = await loopPage.screenshot({ path: `${artifacts}/reverse-loop-layer-${index}.png` })
+    const { data, info } = await sharp(screenshot).removeAlpha().raw().toBuffer({ resolveWithObject: true })
+    const offset = (Math.floor(top - 3) * info.width + info.width - 5) * 3
+    assert.ok(data[offset] > 3, `Layer ${index} blur must extend above its canvas without a hard cutoff after reverse looping`)
+  }
+  await loopPage.locator('.page-imprints canvas').evaluateAll(canvases => canvases.forEach(canvas => canvas.style.removeProperty('visibility')))
+  await withoutNoise.evaluate(el => el.remove())
+  assert.equal(await loopPage.evaluate(() => document.documentElement.scrollWidth), 1440, 'Unclipped blur must not create horizontal scrolling')
+  assert.equal(await loopPage.locator('.page-imprints canvas').first().evaluate(el => el.toDataURL()), history, 'Reverse looping must preserve the original snapshot')
+  // Finish wheel momentum before the native jump in the forward-loop check.
+  await loopPage.waitForTimeout(1000)
   await loopPage.evaluate(() => scrollTo(0, document.documentElement.scrollHeight - innerHeight - 100))
   await loopPage.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
   await loopPage.waitForTimeout(300)
   const atRepeatedHero = () => loopPage.evaluate(() => Math.abs(document.querySelector('.page-imprints').getBoundingClientRect().top - document.querySelector('.home-loop').getBoundingClientRect().top) < 2)
   assert.ok(await atRepeatedHero(), 'Imprints must follow the repeated hero when scrolling into the reversed theme')
   assert.equal(await loopPage.locator('.page-imprints canvas').first().evaluate(el => el.toDataURL()), history, 'A scroll theme switch must preserve the imprint')
-  assert.equal(await loopPage.locator('.page-imprints').evaluate(el => getComputedStyle(el).filter), 'invert(1)', 'Dark homepage loops must invert the imprint ink')
+  assert.equal(await loopPage.locator('.page-imprints').evaluate(el => getComputedStyle(el).filter), grayscale ? 'grayscale(1) invert(1)' : 'invert(1)', 'Dark homepage loops must retain the experiment filter')
   await loopPage.screenshot({ path: `${artifacts}/theme-loop.png` })
 
   const recording = loopPage.evaluate(() => new Promise((resolve) => {
@@ -226,7 +346,7 @@ try {
   await page.waitForTimeout(250)
   assert.ok(await page.locator('.page-imprints').evaluate(el => Math.abs(el.getBoundingClientRect().top) < 2), 'Hash navigation must anchor the imprint to the arriving viewport')
   assert.deepEqual(errors, [])
-  console.log(`${type.name()}: two-layer limit, independent ink, dissolve, clean case pages, SVG capture, theme loops, reload, back/forward, resize, reduced motion and storage fallback passed`)
+  console.log(`${type.name()}: solid gray case covers, original image colors, PNG/AVIF/canvas alpha, rendered grayscale/color, mobile menu capture, cover/contain, two-layer limit, dissolve, clean case pages, SVG capture, unclipped reverse theme loops, reload, back/forward, resize, reduced motion and storage fallback passed`)
   await context.close()
 }
 finally {

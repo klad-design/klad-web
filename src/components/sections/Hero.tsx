@@ -19,7 +19,7 @@ export function Hero() {
         <div className="textBlur relative flex justify-center -mx-2.5 lg:mx-0 mt-[30px] md:mt-10 lg:mt-3 col-span-4">
           <Image
             className="absolute blur-[3px] opacity-20 transform-gpu ease-linear max-w-[140svw] md:max-w-[133svw] lg:max-w-full dark:invert translate-y-[calc(var(--value)_*_1.5_*_1px)]"
-            src="/images/world.png"
+            src="/images/world.svg"
             alt="World map"
             width={1410}
             height={928}
@@ -28,7 +28,7 @@ export function Hero() {
           />
           <Image
             className="absolute blur-[3px] opacity-40 transform-gpu ease-linear max-w-[140svw] md:max-w-[133svw] lg:max-w-full dark:invert translate-y-[calc(var(--value)_*_1_*_1px)]"
-            src="/images/world.png"
+            src="/images/world.svg"
             alt="World map"
             width={1410}
             height={928}
@@ -37,7 +37,7 @@ export function Hero() {
           />
           <Image
             className="absolute blur-[3px] opacity-80 transform-gpu ease-linear max-w-[140svw] md:max-w-[133svw] lg:max-w-full dark:invert translate-y-[calc(var(--value)_*_0.5_*_1px)]"
-            src="/images/world.png"
+            src="/images/world.svg"
             alt="World map"
             width={1410}
             height={928}
@@ -46,7 +46,7 @@ export function Hero() {
           />
           <Image
             className="relative max-w-[140svw] md:max-w-[133svw] lg:max-w-full dark:invert"
-            src="/images/world.png"
+            src="/images/world.svg"
             alt="World map"
             width={1410}
             height={928}

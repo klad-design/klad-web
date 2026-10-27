@@ -512,13 +512,9 @@ export function Team() {
         if (!disposed)
           loadImageOnCanvas(frameRef.current)
       }
-      img.onerror = () => {
-        img.onerror = null
-        if (!img.src.endsWith(`/images/team/${index}.avif`))
-          img.src = `/images/team/${index}.avif`
-      }
+      // Local frames keep the portrait canvas readable for imprints.
       if (!img.src)
-        img.src = `https://klad.b-cdn.net/klad-web/team/${index}.avif`
+        img.src = `/images/team/${index}.avif`
       if (img.complete && index === frameRef.current)
         loadImageOnCanvas(index)
     }
