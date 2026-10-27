@@ -6,6 +6,8 @@ Local case-motion preview on port 3106: cases use normal route navigation and a 
 
 Page imprints render images in grayscale while retaining their alpha and detail, except Work case covers, which become solid `#ABABAB` rectangles. Individual case studies neither display nor create imprints; Close, case switching and browser history preserve the existing eligible layers. Work still creates imprints. The imprint layers supply 50%/30% opacity and 4px blur, with no extra opacity reduction. Team portrait frames load from the existing local AVIFs so their canvas can also be captured safely. Videos and unreadable external images retain their existing fallback.
 
+The shared Cursor Ghost preset adds seven white 26px arrow copies with 0.28 follow and up to 5px blur. The native cursor stays visible, and the trail disappears at rest, on window exit, and during keyboard navigation. Touch and reduced-motion users keep the native behavior. Run `node scripts/check-cursor.mjs` against the staging server (with `STAGING_BROWSER=webkit` for Safari coverage).
+
 The hero uses the original Figma vector (node `817:24844`) as `public/images/world.svg`, preserving its 1410 × 928 viewBox and the existing scroll trails. Reused country geometry and SVGO optimization reduced the export from 3,144,204 to 756,657 bytes (76% smaller; 232,351 bytes gzipped). The SVG contains no embedded raster images. Its download is larger than the baseline Next.js PNG delivery (170KB desktop / 38KB mobile), but remains sharp when enlarged.
 
 Mobile navigation preserves the page snapshot even while the menu hides it from assistive technology. Imprint blur extends beyond the snapshot edges so it stays soft when scrolling upward through the About page's infinite loop.

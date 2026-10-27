@@ -5,6 +5,7 @@ import process from 'node:process'
 
 import { ThemeProvider } from 'next-themes'
 
+import { CursorGhost } from '@/components/CursorGhost'
 import { Header } from '@/components/Header'
 import { PageImprints } from '@/components/PageImprints'
 import { SmoothScroll } from '@/components/SmoothScroll'
@@ -62,6 +63,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en" suppressHydrationWarning>
       <body className="bg-gray dark:bg-black dark:text-gray transition-colors duration-200 selection:bg-[#ADADAD]/60">
         <ThemeProvider enableSystem={false} defaultTheme="light">
+          <CursorGhost />
           <PageImprints />
           <Header />
 
