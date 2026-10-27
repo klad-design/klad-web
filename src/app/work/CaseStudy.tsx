@@ -35,7 +35,16 @@ export function CaseStudy({ slug, closeHref, children }: { slug: string, closeHr
     gsap.registerPlugin(ScrollTrigger)
     // Let the router restore scroll before once-only reveals measure the new case.
     const frame = requestAnimationFrame(() => context.add(() => {
-      contentRef.current?.querySelectorAll<HTMLElement>('[data-case-reveal]').forEach((section) => {
+      const content = contentRef.current!
+      const sections = [...content.querySelectorAll<HTMLElement>('[data-case-reveal]')]
+      const incoming = [
+        ...content.querySelectorAll<HTMLElement>(':scope > header > div:not(:first-child)'),
+        ...sections,
+      ].filter((element) => {
+        const rect = element.getBoundingClientRect()
+        return rect.top < window.innerHeight && rect.bottom > 0
+      })
+      sections.forEach((section) => {
         const targets = section.querySelectorAll('img, video').length
           ? section.querySelectorAll('img, video')
           : section.firstElementChild
@@ -51,6 +60,16 @@ export function CaseStudy({ slug, closeHref, children }: { slug: string, closeHr
             once: true,
           },
         })
+      })
+      gsap.fromTo(incoming, { opacity: 0, filter: 'blur(8px)', y: 24 }, {
+        opacity: 1,
+        filter: 'blur(0px)',
+        y: 0,
+        duration: 1.1,
+        stagger: 0.1,
+        ease: 'power3.out',
+        clearProps: 'opacity,filter,transform',
+        onComplete: () => ScrollTrigger.refresh(),
       })
     }))
     return () => cancelAnimationFrame(frame)

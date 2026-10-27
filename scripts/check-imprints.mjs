@@ -190,7 +190,10 @@ try {
     await page.screenshot({ path: `${artifacts}/dark-case-${width}.png` })
 
     const layer = page.locator('.page-imprints')
-    await page.locator('main img').nth(1).scrollIntoViewIfNeeded()
+    await page.waitForFunction(() => [...document.querySelectorAll('.case-study > header > div:not(:first-child), .case-study > [data-case-reveal]')].every(el => el.style.opacity === ''))
+    const caseImage = page.locator('main img').nth(1)
+    await caseImage.scrollIntoViewIfNeeded()
+    await caseImage.evaluate(el => el.decode())
     await page.waitForTimeout(200)
     const departingScroll = await page.evaluate(() => scrollY)
     assert.ok(departingScroll > 0)

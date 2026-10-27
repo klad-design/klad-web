@@ -180,6 +180,7 @@
   }
 
   .case-close {
+    display: flex;
     position: fixed;
     top: 2px;
     right: 2px;
