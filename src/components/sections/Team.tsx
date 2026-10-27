@@ -587,7 +587,7 @@ export function Team() {
         </div>
         <div className="self-stretch z-1 lg:col-span-2">
           <div ref={modelsRef} className="models mx-auto md:w-full relative aspect-[264/357] max-w-[264px] md:max-w-[314px] lg:max-w-[70%] overflow-hidden md:overflow-visible will-change-transform">
-            <canvas ref={canvasRef} className="absolute inset-0 size-full md:inset-auto md:left-1/2 md:top-0 md:size-auto md:h-[calc(100%/0.86)] md:aspect-square md:-translate-x-1/2 md:-translate-y-[14%]" />
+            <canvas ref={canvasRef} className="absolute left-1/2 top-0 h-[calc(100%/0.86)] aspect-square -translate-x-1/2 -translate-y-[14%]" />
           </div>
         </div>
         <div ref={descriptionsRef} className="team-track flex flex-col md:flex-row">
