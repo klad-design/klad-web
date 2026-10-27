@@ -182,7 +182,7 @@ try {
     assert.ok(await video.getAttribute('poster'))
     assert.ok((await page.request.get(await page.locator('link[rel="icon"]').first().getAttribute('href'))).ok())
 
-    await page.getByRole('link', { name: 'Close', exact: true }).click()
+    await page.getByRole('link', { name: 'Close', exact: true }).filter({ visible: true }).first().click()
     await page.waitForFunction(() => document.documentElement.dataset.theme === 'light')
     if (width >= 1024) {
       for (let visit = 0; visit < 3; visit++) {

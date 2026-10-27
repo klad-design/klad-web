@@ -12,6 +12,7 @@
     "test:responsive": "node scripts/check-responsive.mjs",
     "test:work": "node scripts/check-work.mjs",
     "test:imprints": "node scripts/check-imprints.mjs",
+    "test:cases": "node scripts/check-cases.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },

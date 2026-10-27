@@ -25,6 +25,7 @@ async function noise(page, overMedia) {
   assert.notEqual(overlay.display, 'none', 'Noise must remain on the page background and text')
   assert.equal(overlay.opacity, '0.15')
   if (!overMedia) {
+    await page.locator('main').evaluate(el => Promise.all(el.getAnimations().map(animation => animation.finished.catch(() => {}))))
     const media = await page.locator('main img, main video').evaluateAll(elements => elements.map((el) => {
       const style = getComputedStyle(el)
       return { position: style.position, zIndex: Number(style.zIndex), background: style.backgroundColor }
@@ -113,7 +114,7 @@ try {
   await page.locator('main img').first().evaluate(el => el.decode())
   await page.waitForTimeout(250)
   await page.screenshot({ path: `${artifacts}/case-clean-media.png` })
-  await page.getByRole('link', { name: 'Close', exact: true }).click()
+  await page.getByRole('link', { name: 'Close', exact: true }).filter({ visible: true }).first().click()
   await page.waitForURL('**/work?case=chainviz')
   await selected(page, 'Chainviz')
   await noise(page, true)
@@ -151,7 +152,7 @@ try {
     }
     if (name === 'Circus')
       assert.equal(await page.getByRole('link', { name: 'Website', exact: true }).getAttribute('href'), 'https://www.circus-group.com/')
-    await page.getByRole('link', { name: 'Close', exact: true }).click()
+    await page.getByRole('link', { name: 'Close', exact: true }).filter({ visible: true }).first().click()
     await selected(page, name)
   }
   await page.screenshot({ path: `${artifacts}/work-desktop.png` })
@@ -258,7 +259,7 @@ try {
     const left = await page.getByAltText('ABC Oracle and Geist Mono type specimens').boundingBox()
     const right = await page.getByAltText('Datalane data receipt on blue').boundingBox()
     assert.ok(left && right && Math.abs(right.y - left.y - left.height) < 1, 'Datalane shot 8 must stack its two images without a gap on mobile')
-    await page.getByRole('link', { name: 'Close', exact: true }).click()
+    await page.getByRole('link', { name: 'Close', exact: true }).filter({ visible: true }).first().click()
     await selected(page, 'Datalane')
     await swipe(-140, 0, true)
     await selected(page, 'Datalane')
@@ -282,7 +283,7 @@ try {
     await page.locator('.case-anim-target a').tap()
     await page.waitForURL('**/work/shareio')
     await noise(page, false)
-    await page.getByRole('link', { name: 'Close', exact: true }).tap()
+    await page.getByRole('link', { name: 'Close', exact: true }).filter({ visible: true }).first().tap()
     await selected(page, 'Shareio')
     await noise(page, true)
     await context.close()

@@ -1,12 +1,13 @@
 import Image from 'next/image'
 
+import { CaseStudy } from '@/app/work/CaseStudy'
 import { SectionMedia, SectionText } from '@/app/work/sections'
 import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
 
 export function CasePage() {
   return (
-    <main className="pb-10">
+    <CaseStudy slug="case" closeHref="/work">
 
       {/* Header */}
       <header className="relative grid-container my-2.5 lg:gap-y-20 pb-10">
@@ -15,7 +16,6 @@ export function CasePage() {
         <div className="col-span-full flex gap-5 items-start justify-between md:justify-end md:gap-10 md:absolute md:top-0 md:right-0 lg:gap-[45px]">
           <Button as="a" href="/work/another-case" label="Previous" />
           <Button as="a" href="/work/another-case" label="Next" />
-          <Button as="a" href="/work" label="Close" />
         </div>
 
         {/* Title */}
@@ -123,8 +123,9 @@ export function CasePage() {
       {/* Footer */}
       <footer className="flex justify-center gap-10">
         <Button as="a" href="/work/another-case" label="Previous" />
+        <Button as="a" href="/work" label="Close" />
         <Button as="a" href="/work/another-case" label="Next" />
       </footer>
-    </main>
+    </CaseStudy>
   )
 }

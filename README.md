@@ -2,6 +2,8 @@
 
 Next.js website for Klad Syndicate. Use pnpm; `pnpm-lock.yaml` is the dependency lockfile.
 
+Local case-motion preview on port 3106: Work covers expand to fullscreen through React View Transitions, then reveal the case content. Close stays fixed until the footer's Previous / Close / Next controls enter view. Images, videos and text progressively sharpen from 6px blur to clear between 95% and 65% of the viewport height, capped at the page's scroll limit. Reduced motion keeps everything immediately clear; browsers without view-transition support navigate normally. Run `pnpm test:cases` to verify these behaviors in Chromium or WebKit. Embedded Vimeo playback is stubbed in this check.
+
 Page imprints render images in grayscale while retaining their alpha and detail, except Work case covers, which become solid `#ABABAB` rectangles. The imprint layers supply 50%/30% opacity and 4px blur, with no extra opacity reduction. Team portrait frames load from the existing local AVIFs so their canvas can also be captured safely. Videos and unreadable external images retain their existing fallback.
 
 The hero uses the original Figma vector (node `817:24844`) as `public/images/world.svg`, preserving its 1410 × 928 viewBox and the existing scroll trails. Reused country geometry and SVGO optimization reduced the export from 3,144,204 to 756,657 bytes (76% smaller; 232,351 bytes gzipped). The SVG contains no embedded raster images. Its download is larger than the baseline Next.js PNG delivery (170KB desktop / 38KB mobile), but remains sharp when enlarged.
