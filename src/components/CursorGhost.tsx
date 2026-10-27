@@ -88,7 +88,7 @@ export function CursorGhost() {
   }, [])
 
   return (
-    <div ref={rootRef} className="pointer-events-none fixed left-0 top-0 z-50" data-cursor-ghost aria-hidden="true" hidden>
+    <div ref={rootRef} className="pointer-events-none fixed left-0 top-0 z-50 text-[#010101] dark:text-gray" data-cursor-ghost aria-hidden="true" hidden>
       {Array.from({ length: count }, (_, index) => (
         <svg
           key={index}
@@ -98,7 +98,7 @@ export function CursorGhost() {
           viewBox="0 0 32 32"
           style={{ filter: `blur(${5 * index / (count - 1)}px)` }}
         >
-          <path d="M6 3 L6 25 L11.5 19.5 L15 27 L18 25.6 L14.6 18.4 L22 18 Z" fill="#fff" />
+          <path d="M6 3 L6 25 L11.5 19.5 L15 27 L18 25.6 L14.6 18.4 L22 18 Z" fill="currentColor" />
         </svg>
       ))}
     </div>

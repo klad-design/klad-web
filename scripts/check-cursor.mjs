@@ -32,6 +32,7 @@ try {
   assert.equal(await root.evaluate(el => getComputedStyle(el).pointerEvents), 'none')
   assert.equal(await root.locator('svg').count(), 7)
   assert.equal(await root.locator('svg').last().evaluate(el => el.style.filter), 'blur(5px)')
+  assert.ok(await root.locator('path').evaluateAll(els => els.every(el => getComputedStyle(el).fill === 'rgb(1, 1, 1)')), 'Light theme uses #010101 for every ghost')
 
   await trail(page)
   const positions = await root.locator('svg').evaluateAll(els => els.map(el => new DOMMatrix(getComputedStyle(el).transform).m41))
@@ -70,8 +71,14 @@ try {
   await page.waitForFunction(() => Number(getComputedStyle([...document.querySelectorAll('div')].find(el => el.textContent === 'View case')).opacity) > 0.5)
   await cover.click()
   await page.waitForURL('**/work/datalane')
+  await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
+  assert.ok(await root.locator('path').evaluateAll(els => els.every(el => getComputedStyle(el).fill === 'rgb(230, 230, 230)')), 'Dark theme uses #E6E6E6 for every ghost')
   await trail(page)
   assert.equal(await root.count(), 1, 'One shared trail survives client navigation and dark case pages')
+  await page.goBack()
+  await page.waitForURL('**/work')
+  await page.waitForFunction(() => document.documentElement.dataset.theme === 'light')
+  assert.ok(await root.locator('path').evaluateAll(els => els.every(el => getComputedStyle(el).fill === 'rgb(1, 1, 1)')), 'Returning to light pages restores #010101')
   await context.close()
 
   for (const options of [
@@ -90,7 +97,7 @@ try {
   }
 
   assert.deepEqual(errors, [], 'No browser errors')
-  console.log(`Cursor ghost checks passed (${type.name()}): trail, fade, cleanup, navigation, native cursor, touch, reduced motion, no JavaScript`)
+  console.log(`Cursor ghost checks passed (${type.name()}): theme colors, trail, fade, cleanup, navigation, native cursor, touch, reduced motion, no JavaScript`)
 }
 finally {
   await browser.close()
