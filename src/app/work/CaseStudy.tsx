@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { useEffect, useRef, useState, ViewTransition } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
 import { useReducedMotion } from '@/components/useReducedMotion'
@@ -58,9 +58,6 @@ export function CaseStudy({ slug, closeHref, children }: { slug: string, closeHr
 
   return (
     <>
-      <ViewTransition name={`case-${slug}`} share="case-expand" default="none">
-        <div className="case-surface fixed inset-0 -z-1 bg-gray dark:bg-black" aria-hidden inert />
-      </ViewTransition>
       <div ref={closeRef} className="case-close" hidden={footerVisible}>
         <Button as="a" href={closeHref} label="Close" />
       </div>

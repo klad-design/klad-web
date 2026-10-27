@@ -25,7 +25,6 @@ async function noise(page, overMedia) {
   assert.notEqual(overlay.display, 'none', 'Noise must remain on the page background and text')
   assert.equal(overlay.opacity, '0.15')
   if (!overMedia) {
-    await page.locator('main').evaluate(el => Promise.all(el.getAnimations().map(animation => animation.finished.catch(() => {}))))
     const media = await page.locator('main img, main video').evaluateAll(elements => elements.map((el) => {
       const style = getComputedStyle(el)
       return { position: style.position, zIndex: Number(style.zIndex), background: style.backgroundColor }

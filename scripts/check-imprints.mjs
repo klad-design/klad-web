@@ -190,7 +190,6 @@ try {
     await page.screenshot({ path: `${artifacts}/dark-case-${width}.png` })
 
     const layer = page.locator('.page-imprints')
-    await page.locator('main').evaluate(el => Promise.all(el.getAnimations().map(animation => animation.finished.catch(() => {}))))
     await page.locator('main img').nth(1).scrollIntoViewIfNeeded()
     await page.waitForTimeout(200)
     const departingScroll = await page.evaluate(() => scrollY)

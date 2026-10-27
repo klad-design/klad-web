@@ -5,7 +5,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useRef, useState, ViewTransition } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
@@ -349,7 +349,6 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
           <Link
             className="absolute inset-0 touch-pan-y touch-pinch-zoom select-none [-webkit-touch-callout:none]"
             href={cases[activeIndex].link}
-            transitionTypes={['case-open']}
             aria-label={`View ${cases[activeIndex].title} case study`}
             onPointerDown={(event) => {
               if (event.pointerType === 'mouse')
@@ -378,17 +377,15 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
               suppressClick.current = false
             }}
           >
-            <ViewTransition name={`case-${cases[activeIndex].link.split('/').pop()}`} share="case-expand" default="none">
-              <Image
-                data-case-cover
-                className="size-full object-cover"
-                src={cases[activeIndex].image}
-                alt={`${cases[activeIndex].title} poster`}
-                fill
-                unoptimized
-                draggable={false}
-              />
-            </ViewTransition>
+            <Image
+              data-case-cover
+              className="size-full object-cover"
+              src={cases[activeIndex].image}
+              alt={`${cases[activeIndex].title} poster`}
+              fill
+              unoptimized
+              draggable={false}
+            />
           </Link>
 
           <div

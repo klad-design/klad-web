@@ -2,7 +2,7 @@
 
 Next.js website for Klad Syndicate. Use pnpm; `pnpm-lock.yaml` is the dependency lockfile.
 
-Local case-motion preview on port 3106: Work covers expand to fullscreen through React View Transitions, then reveal the case content. Close stays fixed until the footer's Previous / Close / Next controls enter view. Images, videos and text progressively sharpen from 6px blur to clear between 95% and 65% of the viewport height, capped at the page's scroll limit. Reduced motion keeps everything immediately clear; browsers without view-transition support navigate normally. Run `pnpm test:cases` to verify these behaviors in Chromium or WebKit. Embedded Vimeo playback is stubbed in this check.
+Local case-motion preview on port 3106: cases open immediately with normal route navigation. Close stays fixed until the footer's Previous / Close / Next controls enter view. Images, videos and text progressively sharpen from 6px blur to clear between 95% and 65% of the viewport height, capped at the page's scroll limit. Reduced motion keeps everything immediately clear. Run `pnpm test:cases` to verify these behaviors in Chromium or WebKit. Embedded Vimeo playback is stubbed in this check.
 
 Page imprints render images in grayscale while retaining their alpha and detail, except Work case covers, which become solid `#ABABAB` rectangles. The imprint layers supply 50%/30% opacity and 4px blur, with no extra opacity reduction. Team portrait frames load from the existing local AVIFs so their canvas can also be captured safely. Videos and unreadable external images retain their existing fallback.
 
