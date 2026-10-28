@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdir } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import process from 'node:process'
 
 import { chromium, firefox, webkit } from 'playwright'
@@ -274,6 +274,17 @@ try {
   assert.deepEqual(errors, [], 'Browser runtime errors')
   await context.close()
   console.log(`Staging smoke check passed in ${browserType.name()} at 1440, 768, 390 and 320px, including scroll cycles, refresh, keyboard and reduced motion.`)
+}
+catch (error) {
+  for (const context of browser.contexts()) {
+    for (const page of context.pages()) {
+      const state = await page.evaluate(() => ({ url: location.href, y: scrollY, limit: document.documentElement.scrollHeight - innerHeight, classes: document.documentElement.className, fonts: document.fonts.status, headings: [...document.querySelectorAll('h1 .textBlur')].map(element => ({ style: element.style.cssText, value: getComputedStyle(element).getPropertyValue('--value'), top: element.getBoundingClientRect().top, height: element.getBoundingClientRect().height })) })).catch(() => null)
+      console.error('Smoke failure state:', state)
+      await writeFile(`${artifacts}/failure-state.json`, JSON.stringify(state, null, 2))
+      await page.screenshot({ path: `${artifacts}/failure.png` }).catch(() => {})
+    }
+  }
+  throw error
 }
 finally {
   await browser.close()
