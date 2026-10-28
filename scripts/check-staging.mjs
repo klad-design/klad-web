@@ -52,7 +52,12 @@ try {
 
     if (width === 1440) {
       const reloadRestored = async (label) => {
-        await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-smooth'))
+        await page.waitForFunction((sample) => {
+          sample.stable = sample.y === scrollY && !document.documentElement.classList.contains('lenis-smooth') ? sample.stable + 1 : 0
+          sample.y = scrollY
+          return sample.stable >= 4
+        }, { y: null, stable: 0 })
+        await settledHeadingValue()
         const before = await page.evaluate(() => scrollY)
         await page.evaluate(() => {
           const state = () => ({ y: scrollY, limit: document.documentElement.scrollHeight - innerHeight, classes: document.documentElement.className, fonts: document.fonts.status, history: history.scrollRestoration })
