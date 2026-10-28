@@ -22,6 +22,7 @@ try {
       if (message.type() === 'error' && /hydration|cannot update/i.test(message.text()))
         errors.push(message.text())
     })
+    console.log(`${browserType.name()}: ${width}px home`)
     const response = await page.goto(`${baseURL}/`)
     assert.equal(response.status(), 200)
     assert.match(response.headers()['x-robots-tag'] || '', /noindex/, 'Use a staging build for this check')
@@ -44,7 +45,7 @@ try {
       const reloadRestored = async (label) => {
         const before = await page.evaluate(() => scrollY)
         await page.reload()
-        await page.evaluate(() => document.fonts.ready)
+        await page.waitForFunction(() => document.fonts.status === 'loaded')
         await page.waitForTimeout(1500)
         assert.ok(Math.abs(await page.evaluate(() => scrollY) - before) <= 2, `${label}: reload must retain the native scroll position`)
         const restoredBlur = await headingValue()
@@ -110,16 +111,20 @@ try {
           const frames = []
           const end = performance.now() + 10000
           let wrappedAt = 0
+          const timeout = setTimeout(resolve, 10000, frames)
           function sample() {
             const map = document.querySelector('section .grid-container .textBlur')
             const heading = document.querySelectorAll('h1 .textBlur')[scrollY > (document.documentElement.scrollHeight - innerHeight) / 2 ? 1 : 0]
             frames.push({ time: performance.now(), y: scrollY, value: Number(map.style.getPropertyValue('--value')), heading: Number(heading.style.getPropertyValue('--value')) })
             if (!wrappedAt && frames.length > 1 && frames.at(-2).y - scrollY > 1000)
               wrappedAt = performance.now()
-            if (performance.now() < end && (!wrappedAt || performance.now() - wrappedAt < 1600))
+            if (performance.now() < end && (!wrappedAt || performance.now() - wrappedAt < 1600)) {
               requestAnimationFrame(() => setTimeout(sample, 0))
-            else
+            }
+            else {
+              clearTimeout(timeout)
               resolve(frames)
+            }
           }
           sample()
         }))
@@ -138,6 +143,7 @@ try {
       await page.evaluate(() => window.scrollTo(0, 2200))
       await page.waitForTimeout(300)
       await reloadRestored('From the middle of the homepage')
+      console.log(`${browserType.name()}: native history restoration`)
       const beforeBack = await page.evaluate(() => scrollY)
       await page.getByRole('link', { name: 'Work', exact: true }).click()
       await page.waitForURL('**/work')
@@ -149,8 +155,9 @@ try {
       assert.equal(await headingValue(), -75, 'Back must restore heading trails for the current position')
     }
 
+    console.log(`${browserType.name()}: ${width}px portfolio and navigation`)
     await page.goto(`${baseURL}/work`)
-    await page.evaluate(() => document.fonts.ready)
+    await page.waitForFunction(() => document.fonts.status === 'loaded')
     await page.waitForTimeout(600)
     assert.equal(await page.getByRole('button', { name: 'Datalane' }).count(), 1)
     assert.match(await page.locator('h1').textContent(), /Datalane/, 'Datalane must be the default work case')
@@ -208,6 +215,7 @@ try {
     await context.close()
   }
 
+  console.log(`${browserType.name()}: reduced motion`)
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
   const page = await context.newPage()
   page.setDefaultTimeout(30000)

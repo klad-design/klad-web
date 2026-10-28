@@ -30,9 +30,12 @@ async function ready(page, mode) {
   await page.waitForFunction((mode) => {
     const visual = document.querySelector(`[data-header-logo][data-logo-mode="${mode}"]`)
     const svg = visual?.querySelector('svg')
+    const limit = document.documentElement.scrollHeight - innerHeight
+    const expected = limit > 0 ? scrollY / limit * 2 : 0
     return svg?.animationsPaused() && svg.getAttribute('viewBox') === '106 180 748 600' && svg.querySelector('#logo-body')?.getBoundingClientRect().width > 20
+      && (mode !== 'scroll' || Math.abs(svg.getCurrentTime() - expected) < 0.015)
   }, mode)
-  await page.evaluate(() => document.fonts.ready)
+  await page.waitForFunction(() => document.fonts.status === 'loaded')
 }
 
 async function state(logo) {
@@ -51,16 +54,16 @@ async function state(logo) {
 
 async function scroll(page, progress) {
   await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-smooth'))
-  const target = await page.evaluate((progress) => {
-    const target = progress * (document.documentElement.scrollHeight - innerHeight)
-    scrollTo(0, target)
-    return target
-  }, progress)
-  await page.waitForFunction((target) => {
+  await page.waitForFunction((progress) => {
+    const limit = document.documentElement.scrollHeight - innerHeight
+    const target = progress * limit
+    if (Math.abs(scrollY - target) > 2) {
+      scrollTo(0, target)
+      return false
+    }
     const svg = document.querySelector('[data-logo-mode="scroll"] svg')
-    const expected = scrollY / (document.documentElement.scrollHeight - innerHeight) * 2
-    return Math.abs(scrollY - target) <= 2 && svg && Math.abs(svg.getCurrentTime() - expected) < 0.015
-  }, target)
+    return svg && Math.abs(svg.getCurrentTime() - scrollY / limit * 2) < 0.015
+  }, progress)
   await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-smooth'))
 }
 
@@ -494,10 +497,12 @@ async function runLayout(browser, name, mobile) {
       finally {
         await writeFile(`${artifacts}/${label}-history.json`, JSON.stringify(await page.evaluate(original => ({ original, restored: scrollY, height: document.documentElement.scrollHeight, viewport: innerHeight }), original), null, 2))
       }
+      await ready(page, 'scroll')
       const expected = await page.evaluate(() => scrollY / (document.documentElement.scrollHeight - innerHeight) * 2)
       assert.ok(Math.abs((await state(logo)).time - expected) < 0.015, 'History restoration restores the logo frame')
       await page.getByRole('link', { name: 'Klad Syndicate home' }).click()
       await page.waitForFunction(() => scrollY < 3)
+      await page.waitForFunction(() => document.querySelector('[data-logo-mode="scroll"] svg').getCurrentTime() < 0.015)
       assert.ok((await state(logo)).time < 0.015, 'Clicking the current home logo returns to frame zero')
       await navigate(page, 'Pricing', '/pricing')
       await ready(page, 'autoplay')
@@ -511,6 +516,7 @@ async function runLayout(browser, name, mobile) {
       await page.goto(`${baseURL}/#team`)
       await ready(page, 'scroll')
       await page.waitForFunction(() => scrollY > 100)
+      await ready(page, 'scroll')
       const hashExpected = await page.evaluate(() => scrollY / (document.documentElement.scrollHeight - innerHeight) * 2)
       assert.ok(Math.abs((await state(logo)).time - hashExpected) < 0.015, 'Direct hash positioning scrubs the right frame')
     })
@@ -522,6 +528,7 @@ async function runLayout(browser, name, mobile) {
         await page.mouse.move(600, 400)
         await page.mouse.wheel(0, 500)
         await page.waitForFunction(() => scrollY < 400)
+        await ready(page, 'scroll')
         assert.ok((await state(logo)).time < 0.2, 'Logo follows the infinite home seam')
       })
     }
