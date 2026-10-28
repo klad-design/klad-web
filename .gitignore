@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/.pnpm-store/
 /.pnp
 .pnp.*
 .yarn/*
@@ -13,6 +14,9 @@
 # testing
 /coverage
 /artifacts/
+/public/experiments/
+/scripts/experiments/
+/codex-session-*.md
 
 # next.js
 /.next/

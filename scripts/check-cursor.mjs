@@ -4,6 +4,8 @@ import process from 'node:process'
 
 import { chromium, firefox, webkit } from 'playwright'
 
+import { assertInversion } from './assert-inversion.mjs'
+
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
 const type = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
 const browser = await type.launch()
@@ -32,8 +34,9 @@ try {
   assert.equal(await root.evaluate(el => getComputedStyle(el).pointerEvents), 'none')
   assert.equal(await root.locator('svg').count(), 7)
   assert.equal(await root.locator('svg').last().evaluate(el => el.style.filter), 'blur(5px)')
-  assert.ok(await root.locator('path').evaluateAll(els => els.every(el => getComputedStyle(el).fill === 'rgb(1, 1, 1)')), 'Light theme uses #010101 for every ghost')
+  assert.ok(await root.locator('path').evaluateAll(els => els.every(el => getComputedStyle(el).fill === 'rgb(230, 230, 230)')), 'Every ghost has the same source color regardless of theme')
 
+  await assertInversion(page, root, 'cursor')
   await trail(page)
   const positions = await root.locator('svg').evaluateAll(els => els.map(el => new DOMMatrix(getComputedStyle(el).transform).m41))
   assert.ok(positions[0] > positions[6], 'Each ghost follows the previous arrow')
@@ -72,13 +75,14 @@ try {
   await cover.click()
   await page.waitForURL('**/work/datalane')
   await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
-  assert.ok(await root.locator('path').evaluateAll(els => els.every(el => getComputedStyle(el).fill === 'rgb(230, 230, 230)')), 'Dark theme uses #E6E6E6 for every ghost')
+  assert.ok(await root.locator('path').evaluateAll(els => els.every(el => getComputedStyle(el).fill === 'rgb(230, 230, 230)')), 'Dark pages retain the same source color')
+  await assertInversion(page, root, 'cursor')
   await trail(page)
   assert.equal(await root.count(), 1, 'One shared trail survives client navigation and dark case pages')
   await page.goBack()
   await page.waitForURL('**/work')
   await page.waitForFunction(() => document.documentElement.dataset.theme === 'light')
-  assert.ok(await root.locator('path').evaluateAll(els => els.every(el => getComputedStyle(el).fill === 'rgb(1, 1, 1)')), 'Returning to light pages restores #010101')
+  assert.ok(await root.locator('path').evaluateAll(els => els.every(el => getComputedStyle(el).fill === 'rgb(230, 230, 230)')), 'Returning to light pages needs no source color change')
   await context.close()
 
   for (const options of [

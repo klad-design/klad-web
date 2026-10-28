@@ -67,15 +67,6 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
     gsap.registerPlugin(ScrollTrigger)
     hasLoopedRef.current = false
     previousScrollRef.current = 0
-
-    if (pathname !== '/' || window.location.hash)
-      return
-
-    const restoration = window.history.scrollRestoration
-    ScrollTrigger.clearScrollMemory('manual')
-    window.scrollTo({ top: 0, behavior: 'instant' })
-
-    return () => ScrollTrigger.clearScrollMemory(restoration)
   }, { dependencies: [pathname], revertOnUpdate: true })
 
   useGSAP(() => {

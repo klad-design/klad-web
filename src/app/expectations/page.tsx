@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function Expectations() {
   return (
-    <section className="md:flex md:flex-col md:min-h-svh pb-2.5 pt-[65px] md:pt-[150px] lg:pt-0">
+    <main className="md:flex md:flex-col md:min-h-svh pb-2.5 pt-[65px] md:pt-[150px] lg:pt-0">
       <h1 className="md:text-nowrap text-[15vw] md:text-[min(88px,11vw)] lg:text-[10.2vw] tracking-normal leading-[90%] uppercase -ml-1.5 lg:-ml-2.5 -rotate-2">
         <TextBlur isBold>
           Expectations
@@ -96,6 +96,6 @@ export default function Expectations() {
           </div>
         </div>
       </div>
-    </section>
+    </main>
   )
 }

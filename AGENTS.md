@@ -8,7 +8,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# Staging previews
+## Staging previews
 
 All preview builds must use the existing `staging` branch and deploy to:
 https://klad-web-git-staging-zmaznevegors-projects.vercel.app/

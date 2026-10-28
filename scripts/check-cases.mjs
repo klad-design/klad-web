@@ -5,7 +5,7 @@ import process from 'node:process'
 import { chromium, firefox, webkit } from 'playwright'
 
 const type = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
-const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3106'
+const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
 const browser = await type.launch()
 const artifacts = `artifacts/case-motion/${type.name()}`
 await mkdir(artifacts, { recursive: true })
@@ -109,11 +109,11 @@ try {
   }
 
   const reduced = await browser.newContext({ baseURL, reducedMotion: 'reduce' })
-  await reduced.route('https://player.vimeo.com/**', route => route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>Video fixture</title>' }))
   const page = await reduced.newPage()
   page.on('pageerror', error => errors.push(error.message))
-  for (const slug of ['datalane', 'circus', 'stars-honey', 'linux-mint', 'shareio', 'chainviz', 'case', 'another-case']) {
-    await page.goto(`/work/${slug}`)
+  for (const slug of ['datalane', 'circus', 'stars-honey', 'linux-mint', 'shareio', 'chainviz']) {
+    const response = await page.goto(`/work/${slug}`)
+    assert.equal(response.status(), 200, `${slug}: published case must remain available`)
     assert.equal(await page.getByRole('main').count(), 1)
     assert.equal(await page.locator('.case-close a').count(), 1)
     assert.equal(await page.locator('main > footer a[aria-label="Close"]').count(), 1)
@@ -122,6 +122,8 @@ try {
     // Finish link prefetches before replacing the document in WebKit.
     await page.waitForLoadState('networkidle')
   }
+  for (const slug of ['case', 'another-case'])
+    assert.equal((await page.request.get(`/work/${slug}`)).status(), 404, `${slug}: deleted template must stay unavailable`)
   await reduced.close()
 
   const withoutJavaScript = await browser.newContext({ baseURL, javaScriptEnabled: false })

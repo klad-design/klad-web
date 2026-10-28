@@ -40,6 +40,21 @@ try {
     assert.equal(await headingValue(), 0, 'Returning to the top must reset heading trails')
 
     if (width === 1440) {
+      const reloadRestored = async (label) => {
+        const before = await page.evaluate(() => scrollY)
+        await page.reload()
+        await page.evaluate(() => document.fonts.ready)
+        await page.waitForTimeout(1500)
+        assert.ok(Math.abs(await page.evaluate(() => scrollY) - before) <= 2, `${label}: reload must retain the native scroll position`)
+        const restoredBlur = await headingValue()
+        await page.evaluate(() => window.scrollTo(0, 0))
+        await page.waitForTimeout(1200)
+        assert.equal(await headingValue(), 0, `${label}: the top must have no heading trails`)
+        await page.evaluate(y => window.scrollTo(0, y), before)
+        await page.waitForTimeout(1200)
+        assert.ok(Math.abs(restoredBlur - await headingValue()) < 1, `${label}: restored heading blur must match a normal scroll to the same position`)
+      }
+
       await page.mouse.wheel(0, -200)
       await page.waitForFunction(() => scrollY > document.documentElement.scrollHeight - innerHeight - 300)
       await page.waitForTimeout(1200)
@@ -48,9 +63,7 @@ try {
       await page.waitForFunction(() => scrollY < 200)
       await page.waitForTimeout(1200)
       assert.ok(await headingValue() < -1, 'Reversing down across the loop must preserve heading trails')
-      await page.reload()
-      await page.waitForTimeout(800)
-      assert.equal(await headingValue(), 0, 'Reloading after a reverse loop must reset heading trails')
+      await reloadRestored('After a reverse loop')
 
       const member = page.locator('.memberLink').last()
       await member.scrollIntoViewIfNeeded()
@@ -76,10 +89,7 @@ try {
 
       assert.equal(await page.locator('.team-track').evaluate(el => getComputedStyle(el).clipPath), 'none')
       assert.equal(await page.locator('.home-loop').evaluate(el => getComputedStyle(el).overflow), 'visible')
-      await page.reload()
-      await page.waitForTimeout(800)
-      assert.equal(await page.evaluate(() => scrollY), 0, 'Refreshing the homepage must start at the hero')
-      assert.equal(await headingValue(), 0, 'Refreshing must reset heading trails')
+      await reloadRestored('From the selected Team member')
       for (const theme of ['dark', 'light']) {
         await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight - innerHeight - 300))
         await page.waitForFunction(expected => document.documentElement.dataset.theme === expected, theme)
@@ -114,9 +124,15 @@ try {
 
       await page.evaluate(() => window.scrollTo(0, 2200))
       await page.waitForTimeout(300)
-      await page.reload()
-      await page.waitForTimeout(800)
-      assert.equal(await page.evaluate(() => scrollY), 0, 'Refreshing the homepage must start at the hero')
+      await reloadRestored('From the middle of the homepage')
+      const beforeBack = await page.evaluate(() => scrollY)
+      await page.getByRole('link', { name: 'Work', exact: true }).click()
+      await page.waitForURL('**/work')
+      await page.goBack()
+      await page.waitForURL(`${baseURL}/`)
+      await page.waitForTimeout(1500)
+      assert.ok(Math.abs(await page.evaluate(() => scrollY) - beforeBack) <= 2, 'Back must restore the homepage scroll position')
+      assert.equal(await headingValue(), -75, 'Back must restore heading trails for the current position')
     }
 
     await page.goto(`${baseURL}/work`)

@@ -104,7 +104,7 @@ export default function Home() {
   }
 
   return (
-    <>
+    <main>
       <Hero />
       <Services />
       <Team />
@@ -119,6 +119,6 @@ export default function Home() {
           __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
         }}
       />
-    </>
+    </main>
   )
 }

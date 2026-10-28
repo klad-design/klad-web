@@ -1,0 +1,6 @@
+minimumReleaseAgeExcludePrune: true
+trustPolicy: no-downgrade
+shellEmulator: true
+
+overrides:
+  katex@>=0.11.0 <0.18.2: ^0.19.1

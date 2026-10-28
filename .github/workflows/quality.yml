@@ -1,0 +1,75 @@
+name: Quality
+
+on:
+  push:
+    branches: [staging, main]
+  pull_request:
+    branches: [staging, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    env:
+      STAGING: '1'
+      STAGING_URL: http://127.0.0.1:3100
+      STAGING_BROWSER: ${{ matrix.browser }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.24.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm build:staging
+      - run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+      - name: Browser regressions
+        shell: bash
+        run: |
+          pnpm start --hostname 127.0.0.1 --port 3100 > staging-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..60}; do
+            if curl --fail --silent "$STAGING_URL" > /dev/null; then
+              break
+            fi
+            if ! kill -0 "$server_pid" 2>/dev/null; then
+              cat staging-server.log
+              exit 1
+            fi
+            sleep 1
+          done
+          curl --fail --silent "$STAGING_URL" > /dev/null || { cat staging-server.log; exit 1; }
+          pnpm test:audit-fixes
+          pnpm test:staging
+          pnpm test:logo
+          pnpm test:team
+          pnpm test:work
+          pnpm test:imprints
+          pnpm test:cases
+          pnpm test:responsive
+      - name: Save failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-${{ matrix.browser }}
+          path: |
+            artifacts/
+            staging-server.log
+          retention-days: 7

@@ -6,6 +6,7 @@ import { dirname } from 'node:path'
 import { promisify } from 'node:util'
 
 const exec = promisify(execFile)
+const output = 'artifacts/video-uploads'
 const sources = []
 for (const name of await readdir('src/app/work')) {
   let page
@@ -37,8 +38,9 @@ await Promise.all(Array.from({ length: 2 }, async () => {
   while (sources.length) {
     const { src, standard } = sources.shift()
     const cached = `artifacts/video-sources${standard}`
+    const standardFile = standard.replace('/videos/', `${output}/`)
     await mkdir(dirname(cached), { recursive: true })
-    await mkdir(dirname(`public${standard}`), { recursive: true })
+    await mkdir(dirname(standardFile), { recursive: true })
     try {
       await access(cached)
     }
@@ -51,17 +53,18 @@ await Promise.all(Array.from({ length: 2 }, async () => {
     let high = src
     if (!fitsLevel(original)) {
       high = standard.replace('.mp4', '-hd.mp4')
+      const highFile = high.replace('/videos/', `${output}/`)
       // Repair SPS metadata without re-encoding or changing the full-resolution pixels.
-      await exec('ffmpeg', ['-v', 'error', '-y', '-i', cached, '-map', '0:v:0', '-c:v', 'copy', '-bsf:v', 'h264_metadata=level=auto', '-movflags', '+faststart', `public${high}`])
-      const corrected = await probe(`public${high}`)
+      await exec('ffmpeg', ['-v', 'error', '-y', '-i', cached, '-map', '0:v:0', '-c:v', 'copy', '-bsf:v', 'h264_metadata=level=auto', '-movflags', '+faststart', highFile])
+      const corrected = await probe(highFile)
       assert.ok(fitsLevel(corrected), `Invalid corrected encoding: ${high}`)
       assert.equal(corrected.width, original.width)
       assert.equal(corrected.height, original.height)
     }
     const [numerator, denominator] = original.r_frame_rate.split('/').map(Number)
     const fps = Math.min(30, numerator / denominator)
-    await exec('ffmpeg', ['-v', 'error', '-y', '-i', cached, '-map', '0:v:0', '-an', '-vf', `scale=w='min(1920,iw)':h='min(1080,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2:flags=lanczos,setsar=1,fps=${fps}`, '-c:v', 'libx264', '-threads', '2', '-preset', 'medium', '-crf', '18', '-profile:v', 'high', '-level:v', '4.1', '-pix_fmt', 'yuv420p', '-maxrate', '12M', '-bufsize', '24M', '-movflags', '+faststart', `public${standard}`])
-    const compatible = await probe(`public${standard}`)
+    await exec('ffmpeg', ['-v', 'error', '-y', '-i', cached, '-map', '0:v:0', '-an', '-vf', `scale=w='min(1920,iw)':h='min(1080,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2:flags=lanczos,setsar=1,fps=${fps}`, '-c:v', 'libx264', '-threads', '2', '-preset', 'medium', '-crf', '18', '-profile:v', 'high', '-level:v', '4.1', '-pix_fmt', 'yuv420p', '-maxrate', '12M', '-bufsize', '24M', '-movflags', '+faststart', standardFile])
+    const compatible = await probe(standardFile)
     assert.ok(fitsLevel(compatible) && compatible.level === 41 && compatible.width <= 1920 && compatible.height <= 1080 && compatible.pix_fmt === 'yuv420p', `Invalid compatibility rendition: ${standard}`)
     manifest[src] = {
       high: high.replace(/^\/videos\//, 'https://klad.b-cdn.net/'),

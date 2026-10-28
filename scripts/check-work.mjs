@@ -29,7 +29,7 @@ async function noise(page, overMedia) {
       const style = getComputedStyle(el)
       return { position: style.position, zIndex: Number(style.zIndex), background: style.backgroundColor }
     }))
-    assert.ok(media.length > 0 && media.every(el => el.position === 'relative' && el.zIndex > overlay.zIndex && el.background === 'rgb(0, 0, 0)'), 'Case media must cover the noise, including transparent or unloaded areas')
+    assert.ok(media.length > 0 && media.every(el => el.position === 'relative' && el.zIndex > overlay.zIndex && el.background === 'rgb(1, 1, 1)'), 'Case media must cover the noise, including transparent or unloaded areas')
   }
 }
 

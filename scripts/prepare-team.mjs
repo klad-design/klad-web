@@ -2,10 +2,12 @@ import assert from 'node:assert/strict'
 import { Buffer } from 'node:buffer'
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
+import process from 'node:process'
 
 const require = createRequire(import.meta.url)
 const sharp = require(require.resolve('sharp', { paths: [require.resolve('next')] }))
-const source = 'public/images/team-mobile/v4'
+const source = process.argv[2]
+assert.ok(source, 'Pass the archived 832px Team source directory: node scripts/prepare-team.mjs /path/to/v4')
 const destination = 'public/images/team-mobile/v5'
 const frames = (await readdir(source)).filter(name => /^\d+\.avif$/.test(name))
 assert.equal(frames.length, 122, 'Expected the complete 122-frame team sequence')
@@ -55,7 +57,7 @@ for (let frame = 0; frame < frames.length; frame++) {
   images.push(encoded)
 }
 
-// Preserve v4 and validate the complete sequence before writing the versioned assets.
+// Validate the complete sequence before writing the versioned assets.
 await mkdir(destination, { recursive: true })
 for (let frame = 0; frame < images.length; frame++)
   await writeFile(`${destination}/${frame}.avif`, images[frame])

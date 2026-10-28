@@ -2,6 +2,10 @@ import antfu from '@antfu/eslint-config'
 
 export default antfu({
   nextjs: true,
+  rules: {
+    // Retain the existing compact formatting when upgrading the preset.
+    'antfu/reasonable-newline': 'off',
+  },
   stylistic: {
     overrides: {
       'padding-line-between-statements': [
@@ -20,17 +24,15 @@ export default antfu({
         'error',
         {
           groups: [
-            'type',
-            ['parent-type', 'sibling-type', 'index-type', 'internal-type'],
-            'builtin',
-            'external',
-            'internal',
-            ['parent', 'sibling', 'index'],
+            'type-import',
+            'value-builtin',
+            'value-external',
+            'value-internal',
+            ['value-parent', 'value-sibling', 'value-index'],
             'side-effect',
-            'object',
             'unknown',
           ],
-          newlinesBetween: 'always',
+          newlinesBetween: 1,
         },
       ],
     },

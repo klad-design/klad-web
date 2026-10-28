@@ -4,11 +4,11 @@ import { useGSAP } from '@gsap/react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { gsap } from 'gsap'
 import { useLenis } from 'lenis/react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
+import { HeaderLogo } from '@/components/HeaderLogo'
 import { Button } from '@/components/ui/Button'
 import { useReducedMotion } from '@/components/useReducedMotion'
 
@@ -27,6 +27,15 @@ const menu = [
 ]
 
 export function Header() {
+  const pathname = usePathname()
+
+  if (pathname.includes('/work/'))
+    return null
+
+  return <HeaderContent key={pathname} pathname={pathname} />
+}
+
+function HeaderContent({ pathname }: { pathname: string }) {
   const menuRef = useRef<HTMLDivElement | null>(null)
 
   const [isOpenMenu, setIsOpenMenu] = useState(false)
@@ -34,7 +43,6 @@ export function Header() {
   const [time, setTime] = useState<Record<string, string>>({})
 
   const smoother = useLenis()
-  const pathname = usePathname()
   const reducedMotion = useReducedMotion()
 
   // Menu items animation
@@ -68,8 +76,30 @@ export function Header() {
       }
     })
 
-    return () => mm.revert()
+    return () => {
+      mm.revert()
+      smoother?.start()
+    }
   }, [isOpenMenu, smoother])
+
+  useEffect(() => {
+    function closeMenu() {
+      setIsOpenMenu(false)
+      smoother?.start()
+    }
+
+    function restorePage(event: PageTransitionEvent) {
+      if (event.persisted)
+        closeMenu()
+    }
+
+    window.addEventListener('popstate', closeMenu)
+    window.addEventListener('pageshow', restorePage)
+    return () => {
+      window.removeEventListener('popstate', closeMenu)
+      window.removeEventListener('pageshow', restorePage)
+    }
+  }, [smoother])
 
   // Update time
   useEffect(() => {
@@ -96,9 +126,6 @@ export function Header() {
     return () => clearInterval(interval)
   }, [])
 
-  if (pathname.includes('/work/'))
-    return null
-
   return (
     <header
       className="site-header fixed z-20 top-0 right-0 lg:bottom-0 w-full lg:w-auto pt-[3px] pr-[3px] pl-2.5 md:px-2.5 md:pt-2.5 lg:px-2.5 lg:pb-2.5 lg:pt-[60px]"
@@ -119,13 +146,7 @@ export function Header() {
               <Dialog.Close asChild>
                 <Button className="fixed top-[9px]" label="Close" />
               </Dialog.Close>
-              <Image
-                className="fixed top-[3px] right-[3px] md:size-[70px] lg:size-[80px] blur-[0.6px] lg:blur-[1px] dark:invert transform-gpu"
-                src="/images/logotype.svg"
-                alt="logotype"
-                width={60}
-                height={60}
-              />
+              <HeaderLogo mode="static" className="fixed top-[3px] right-[3px]" />
               <nav ref={menuRef} className="w-full grow flex flex-col items-center gap-8 text-p1">
                 {menu.map(({ title, link }) => (
                   <div key={title} className="menuItem -rotate-2">
@@ -235,14 +256,23 @@ export function Header() {
             />
           </nav>
         </div>
-        <Link href="/" className="relative md:absolute md:right-0 lg:static z-10">
-          <Image
-            className="md:size-[70px] lg:size-[80px] blur-[0.6px] lg:blur-[1px] dark:invert transform-gpu"
-            src="/images/logotype.svg"
-            alt="logotype"
-            width={60}
-            height={60}
-          />
+        <Link
+          href="/"
+          aria-label="Klad Syndicate home"
+          className="relative md:absolute md:right-0 lg:static z-10"
+          onNavigate={(event) => {
+            if (pathname === '/') {
+              event.preventDefault()
+              if (window.location.hash)
+                window.history.replaceState(window.history.state, '', '/')
+              if (smoother)
+                smoother.scrollTo(0, { force: true, immediate: reducedMotion })
+              else
+                window.scrollTo({ top: 0, behavior: 'instant' })
+            }
+          }}
+        >
+          <HeaderLogo mode={pathname === '/' ? 'scroll' : 'autoplay'} hidden={isOpenMenu} />
         </Link>
       </div>
       <div ref={setContainer} />

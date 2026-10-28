@@ -124,6 +124,45 @@ try {
   assert.ok(redrawn, 'Portrait must redraw when the tab becomes visible')
   await landscape.close()
 
+  for (const viewport of [{ width: 844, height: 390 }, { width: 932, height: 430 }]) {
+    const context = await browser.newContext({ viewport: { width: viewport.height, height: viewport.width }, hasTouch: true })
+    await observeTeam(context)
+    const page = await visit(context, '/')
+    await page.setViewportSize(viewport)
+    await page.waitForTimeout(1000)
+    await page.evaluate(() => scrollTo(0, document.querySelector('#team').getBoundingClientRect().bottom + scrollY - innerHeight + 300))
+    await page.waitForTimeout(1500)
+    await page.waitForFunction(() => window.__portraitDraws > 0)
+    const portrait = await page.locator('.models').boundingBox()
+    assert.ok(portrait.y >= 0 && portrait.y + portrait.height <= viewport.height + 1, `${viewport.width}px: the pinned portrait box must fit vertically: ${JSON.stringify(portrait)}`)
+    const ink = await page.locator('#team canvas').evaluate((canvas) => {
+      const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data
+      let top = canvas.height
+      let bottom = 0
+      for (let i = 3; i < pixels.length; i += 4) {
+        if (pixels[i] > 16) {
+          const y = Math.floor((i - 3) / 4 / canvas.width)
+          top = Math.min(top, y)
+          bottom = Math.max(bottom, y + 1)
+        }
+      }
+      const rect = canvas.getBoundingClientRect()
+      let clipTop = 0
+      let clipBottom = innerHeight
+      for (let ancestor = canvas.parentElement; ancestor; ancestor = ancestor.parentElement) {
+        if (/hidden|clip/.test(getComputedStyle(ancestor).overflowY)) {
+          const clip = ancestor.getBoundingClientRect()
+          clipTop = Math.max(clipTop, clip.top)
+          clipBottom = Math.min(clipBottom, clip.bottom)
+        }
+      }
+      return { drawn: bottom > top, top: rect.top + top / canvas.height * rect.height, bottom: rect.top + bottom / canvas.height * rect.height, clipTop, clipBottom }
+    })
+    assert.ok(ink.drawn && ink.top >= ink.clipTop - 1 && ink.bottom <= ink.clipBottom + 1, `${viewport.width}px: the complete portrait, including the head, must remain visible: ${JSON.stringify(ink)}`)
+    await page.screenshot({ path: `${artifacts}/landscape-team-${viewport.width}.png` })
+    await context.close()
+  }
+
   if (type.name() === 'firefox') {
     const fallback = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true })
     let localFrameRequested = false
@@ -152,18 +191,20 @@ try {
     for (const name of ['Chainviz', 'Circus', 'Chainviz']) {
       const button = page.getByRole('button', { name, exact: true })
       // Reveal only the edge horizontally; selection must bring the whole title into view.
-      const point = await button.evaluate((button) => {
+      const point = await button.evaluate(async (button) => {
         const menu = button.parentElement
         const before = button.getBoundingClientRect()
         if (before.left > innerWidth - 24)
-          menu.scrollLeft += before.left - (innerWidth - 24)
+          menu.scrollTo({ left: menu.scrollLeft + before.left - (innerWidth - 24), behavior: 'instant' })
         else if (before.right < 24)
-          menu.scrollLeft += before.right - 24
+          menu.scrollTo({ left: menu.scrollLeft + before.right - 24, behavior: 'instant' })
+        await new Promise(resolve => requestAnimationFrame(resolve))
         const bounds = button.getBoundingClientRect()
         const x = (Math.max(12, bounds.left) + Math.min(innerWidth - 12, bounds.right)) / 2
         const y = bounds.top + bounds.height / 2
-        return { x, y, hit: document.elementFromPoint(x, y)?.closest('button') === button }
+        return { x, y, partial: bounds.left < 10 || bounds.right > innerWidth - 10, hit: document.elementFromPoint(x, y)?.closest('button') === button }
       })
+      assert.ok(point.partial, `${name}: start with a partially clipped title to exercise automatic reveal`)
       assert.ok(point.hit, `${name}: the touch must hit the visible edge of the intended title`)
       await page.touchscreen.tap(point.x, point.y)
       await page.waitForFunction(name => document.querySelector('button[aria-pressed="true"]')?.getAttribute('aria-label') === name, name)

@@ -2,6 +2,21 @@
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
+.inverted-ui {
+  filter: url(#brand-inversion);
+  mix-blend-mode: difference;
+}
+
+[data-header-logo] {
+  clip-path: inset(0);
+  contain: paint;
+}
+
+body:not(:has(.site-header)) [data-header-logo-initial],
+body:has([data-header-logo]) [data-header-logo-initial] {
+  display: none;
+}
+
 @font-face {
   font-family: 'Helvetica Now Display';
   font-style: normal;
@@ -14,6 +29,7 @@
 
 @theme {
   --color-gray: rgba(230, 230, 230, 1);
+  --color-black: #010101;
 
   --font-helvetica: 'Helvetica Now Display';
 
@@ -114,6 +130,8 @@
   body {
     position: relative;
     isolation: isolate;
+    /* Lenis owns scroll position; decorative updates must not trigger native anchoring. */
+    overflow-anchor: none;
     font-family: var(--font-helvetica), sans-serif;
     min-height: 100vh;
   }
@@ -135,7 +153,7 @@
   [data-case-page] video {
     position: relative;
     z-index: 31;
-    background-color: #000;
+    background-color: var(--color-black);
   }
 
   a, button {
@@ -148,13 +166,23 @@
 @layer components {
   .page-imprints {
     position: absolute;
-    top: 0;
+    top: var(--imprint-top, 0px);
     left: 0;
     width: 100%;
     height: 100svh;
     pointer-events: none;
     z-index: -1;
     filter: grayscale(1);
+    contain: layout;
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+
+  .page-imprints-ink {
+    position: absolute;
+    /* WebKit clips masked ink to this box; leave room for the canvas blur. */
+    inset: -16px;
+    mask-image: radial-gradient(circle at calc(var(--header-logo-x, -1000px) + 16px) calc(var(--header-logo-y, -1000px) - var(--imprint-top, 0px) + 16px), transparent var(--header-logo-radius, 0px), black calc(var(--header-logo-radius, 0px) + 16px));
   }
 
   .page-imprints[data-work] {
@@ -163,9 +191,9 @@
 
   .page-imprints canvas {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    inset: 16px;
+    width: calc(100% - 32px);
+    height: calc(100% - 32px);
     opacity: 0.3;
     filter: blur(4px);
   }
@@ -299,7 +327,7 @@
   }
 }
 
-@media (max-width: 767px) and (max-height: 500px) {
+@media (max-width: 1023px) and (max-height: 500px) {
   .models {
     max-width: calc(40svh * 264 / 357);
   }
@@ -324,7 +352,15 @@
     margin-top: 0;
   }
 
-  .site-header img {
+  .site-header img,
+  .site-header .header-logo-slot {
+    width: 60px;
+    height: 60px;
+  }
+
+  [data-header-logo-initial] {
+    top: 10px;
+    right: 80px;
     width: 60px;
     height: 60px;
   }

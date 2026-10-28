@@ -3,9 +3,6 @@
 User-agent: *
 Allow: /
 
-Disallow: /work/case
-Disallow: /work/another-case
-
 Training: disallow
 Summarization: allow
 Attribution: required
@@ -13,4 +10,4 @@ Attribution: required
 Preferred-sources:
 https://klad.design/sitemap.xml
 https://klad.design/work
-https://klad.design/about
+https://klad.design/

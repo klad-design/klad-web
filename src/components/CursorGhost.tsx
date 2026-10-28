@@ -88,7 +88,7 @@ export function CursorGhost() {
   }, [])
 
   return (
-    <div ref={rootRef} className="pointer-events-none fixed left-0 top-0 z-50 text-[#010101] dark:text-gray" data-cursor-ghost aria-hidden="true" hidden>
+    <div ref={rootRef} className="inverted-ui pointer-events-none fixed inset-0 z-50 text-gray" data-cursor-ghost aria-hidden="true" hidden>
       {Array.from({ length: count }, (_, index) => (
         <svg
           key={index}

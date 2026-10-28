@@ -25,7 +25,7 @@ export function PageImprints() {
     if (loop && layerRef.current) {
       // Carry the same imprint through both copies of the looping hero.
       const top = lenis.scroll > lenis.limit / 2 ? loop.getBoundingClientRect().top + window.scrollY : 0
-      layerRef.current.style.top = `${top}px`
+      layerRef.current.style.setProperty('--imprint-top', `${top}px`)
     }
   })
 
@@ -138,24 +138,26 @@ export function PageImprints() {
     pendingRef.current = null
 
     const frame = requestAnimationFrame(() => {
-      layerRef.current!.style.top = `${window.scrollY}px`
+      layerRef.current!.style.setProperty('--imprint-top', `${window.scrollY}px`)
     })
     return () => cancelAnimationFrame(frame)
   }, [pathname])
 
   return (
     <div ref={layerRef} className="page-imprints" data-work={pathname === '/work' || undefined} hidden={pathname.startsWith('/work/')} aria-hidden="true" inert>
-      {[0, 1].map(index => (
-        <canvas
-          key={index}
-          ref={(canvas) => {
-            if (canvas)
-              canvasesRef.current[index] = canvas
-          }}
-          width={0}
-          height={0}
-        />
-      ))}
+      <div className="page-imprints-ink">
+        {[0, 1].map(index => (
+          <canvas
+            key={index}
+            ref={(canvas) => {
+              if (canvas)
+                canvasesRef.current[index] = canvas
+            }}
+            width={0}
+            height={0}
+          />
+        ))}
+      </div>
     </div>
   )
 }

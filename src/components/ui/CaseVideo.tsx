@@ -61,7 +61,6 @@ export function CaseVideo({ src, poster, className }: { src: string, poster: str
 
       if (![high, standard].includes(video.getAttribute('src') || '')) {
         setFailed(false)
-        video.poster = poster
         video.src = window.matchMedia('(max-width: 1023px)').matches ? standard : high
       }
 
@@ -75,11 +74,11 @@ export function CaseVideo({ src, poster, className }: { src: string, poster: str
       video.removeEventListener('error', onError)
       video.pause()
     }
-  }, [high, standard, poster, reducedMotion])
+  }, [high, standard, reducedMotion])
 
   return (
     <>
-      <video ref={videoRef} className={className} controls={reducedMotion} loop muted playsInline preload="none" aria-label="Motion design showcase" />
+      <video ref={videoRef} className={className} poster={poster} controls={reducedMotion} loop muted playsInline preload="none" aria-label="Motion design showcase" />
       {failed && <a className="p4 underline" href={standard} target="_blank" rel="noopener noreferrer">Open video</a>}
     </>
   )
