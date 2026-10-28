@@ -50,12 +50,18 @@ async function state(logo) {
 }
 
 async function scroll(page, progress) {
-  await page.evaluate(progress => scrollTo(0, progress * (document.documentElement.scrollHeight - innerHeight)), progress)
-  await page.waitForFunction(() => {
+  await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-smooth'))
+  const target = await page.evaluate((progress) => {
+    const target = progress * (document.documentElement.scrollHeight - innerHeight)
+    scrollTo(0, target)
+    return target
+  }, progress)
+  await page.waitForFunction((target) => {
     const svg = document.querySelector('[data-logo-mode="scroll"] svg')
     const expected = scrollY / (document.documentElement.scrollHeight - innerHeight) * 2
-    return svg && Math.abs(svg.getCurrentTime() - expected) < 0.015
-  })
+    return Math.abs(scrollY - target) <= 2 && svg && Math.abs(svg.getCurrentTime() - expected) < 0.015
+  }, target)
+  await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-smooth'))
 }
 
 async function navigate(page, name, path) {
