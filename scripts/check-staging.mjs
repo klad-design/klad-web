@@ -48,10 +48,10 @@ try {
         assert.ok(Math.abs(await page.evaluate(() => scrollY) - before) <= 2, `${label}: reload must retain the native scroll position`)
         const restoredBlur = await headingValue()
         await page.evaluate(() => window.scrollTo(0, 0))
-        await page.waitForTimeout(1200)
+        await page.waitForFunction(() => scrollY === 0 && Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value')) === 0)
         assert.equal(await headingValue(), 0, `${label}: the top must have no heading trails`)
         await page.evaluate(y => window.scrollTo(0, y), before)
-        await page.waitForTimeout(1200)
+        await page.waitForFunction(expected => Math.abs(Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value')) - expected) < 1, restoredBlur)
         assert.ok(Math.abs(restoredBlur - await headingValue()) < 1, `${label}: restored heading blur must match a normal scroll to the same position`)
       }
 

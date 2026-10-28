@@ -166,6 +166,7 @@ try {
       const cover = await page.getByRole('link', { name: 'View Stars+Honey case study' }).boundingBox()
       await page.mouse.move(cover.x + cover.width / 2, Math.min(cover.y + 100, viewport.height - 20))
       await page.mouse.wheel(0, 140)
+      await page.waitForFunction(() => scrollY > 0)
       await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-scrolling'))
       assert.ok(await page.evaluate(() => scrollY) > 0, 'Wheel must scroll overflowing project content before switching cases')
       await selected(page, 'Stars+Honey')
