@@ -7,7 +7,7 @@ const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
 const type = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
 assert.ok(type)
 const browser = await type.launch()
-const frameURL = /\/images\/(?:team-mobile\/v3|team)\/\d+\.avif$/
+const frameURL = /\/images\/(?:team-mobile\/v4|team)\/\d+\.avif$/
 const seedFrames = [...new Set([...Array.from({ length: 16 }, (_, index) => index * 8), 30, 60, 90, 121])]
 const errors = []
 
@@ -27,7 +27,7 @@ async function visit(options, setup) {
   for (const event of ['requestfinished', 'requestfailed'])
     context.on(event, request => pending.delete(request))
   await context.addInitScript(() => {
-    const source = /\/images\/(?:team-mobile\/v3|team)\/(\d+)\.avif$/
+    const source = /\/images\/(?:team-mobile\/v4|team)\/(\d+)\.avif$/
     const decoded = new WeakSet()
     const decode = HTMLImageElement.prototype.decode
     window.__teamDecoded = new Set()
@@ -176,13 +176,14 @@ try {
   )
   const { page } = phone
   await page.waitForFunction(seeds => seeds.every(frame => [...window.__teamDecoded].some(url => url.endsWith(`/${frame}.avif`))), seedFrames)
-  assert.ok([...phone.requests][0].includes('/team-mobile/v3/'), 'Touch devices must use the smaller rendition')
+  assert.ok([...phone.requests][0].includes('/team-mobile/v4/'), 'Phones must use the sharper optimized rendition')
+  assert.equal((await paints(page)).at(-1).draws[0].width, 832, 'Phone portraits must retain the higher-resolution source detail')
   const range = await mobileRange(page)
   await page.evaluate(y => scrollTo(0, y), range.start - 500)
   await page.waitForFunction(() => window.__teamDecoded.size === 121, null, { timeout: 30000 })
   assert.equal(phone.requests.size, 122, 'Approaching Team must prepare every source frame')
   assert.ok(phone.peakRequests() <= 6, 'Portrait preparation must bound concurrent requests')
-  assert.ok(await page.locator('#team canvas').evaluate(el => el.width <= Math.round(el.clientWidth * 1.5)), 'Touch canvas resolution must be capped at 1.5x')
+  assert.ok(await page.locator('#team canvas').evaluate(el => el.width === Math.round(el.clientWidth * Math.min(devicePixelRatio, 2))), 'Phone canvas must render at full 2x resolution on high-density screens')
 
   await paints(page, true)
   await seek(page, range, 60.5)
@@ -248,7 +249,7 @@ try {
     await page.waitForTimeout(800)
     const models = await page.locator('.models').boundingBox()
     assert.ok(viewport.height < 500 ? models.height <= 151 : Math.abs(models.height - 357) < 2, 'Orientation must resize the portrait without consuming the reading area')
-    assert.ok(await page.locator('#team canvas').evaluate(el => el.width <= Math.round(el.clientWidth * 1.5)))
+    assert.ok(await page.locator('#team canvas').evaluate(el => el.width === Math.round(el.clientWidth * Math.min(devicePixelRatio, 2))))
     await seek(page, await mobileRange(page), 90)
     await verifyPortraitSides(page)
   }
@@ -265,7 +266,7 @@ try {
 
   const fallback = await visit(
     { viewport: { width: 390, height: 844 }, hasTouch: true },
-    context => context.route(/\/team-mobile\/v3\/(?:0|61)\.avif$/, route => route.abort()),
+    context => context.route(/\/team-mobile\/v4\/(?:0|61)\.avif$/, route => route.abort()),
   )
   assert.ok(fallback.requests.has(`${baseURL}/images/team/0.avif`), 'A failed initial mobile portrait must fall back to the original')
   await fallback.page.waitForFunction(() => window.__teamPaints.some(paint => paint.draws.some(draw => draw.frame === 0 && draw.width === 1080)))
@@ -283,9 +284,9 @@ try {
     const wide = await visit({ viewport: { width: 1024, height: 900 }, hasTouch, deviceScaleFactor: 3 })
     await wide.page.locator('#team').scrollIntoViewIfNeeded()
     await wide.page.waitForFunction(() => window.__teamDecoded.size === 122, null, { timeout: 30000 })
-    assert.ok([...wide.requests].every(url => hasTouch ? url.includes('/team-mobile/v3/') : url.includes('/images/team/')), 'Tablet touch and mouse desktop must select the appropriate assets')
-    const cap = hasTouch ? 1.5 : 2
-    assert.ok(await wide.page.locator('#team canvas').evaluate((el, cap) => el.width <= Math.round(el.clientWidth * cap), cap))
+    assert.ok([...wide.requests].every(url => url.includes('/images/team/')), 'Tablets and desktops must use original-resolution portraits')
+    assert.equal((await paints(wide.page)).at(-1).draws[0].width, 1080, 'Large portrait layouts must preserve original source detail')
+    assert.ok(await wide.page.locator('#team canvas').evaluate(el => el.width === Math.round(el.clientWidth * Math.min(devicePixelRatio, 2))))
     verifyPaints(await paints(wide.page))
     await wide.context.close()
   }

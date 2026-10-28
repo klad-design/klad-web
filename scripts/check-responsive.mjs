@@ -69,7 +69,7 @@ try {
   const landscape = await browser.newContext({ viewport: { width: 667, height: 375 }, hasTouch: true, deviceScaleFactor: 3 })
   const portraitRequests = new Set()
   landscape.on('request', (request) => {
-    if (/\/images\/team-mobile\/v3\/\d+\.avif/.test(request.url()))
+    if (/\/images\/team-mobile\/v4\/\d+\.avif/.test(request.url()))
       portraitRequests.add(request.url())
   })
   await landscape.addInitScript(() => {
@@ -80,7 +80,7 @@ try {
     CanvasRenderingContext2D.prototype.drawImage = function (...args) {
       if (this.canvas.closest?.('#team')) {
         window.__portraitDraws++
-        const frame = Number(args[0].src?.match(/\/(?:team|team-mobile\/v3)\/(\d+)\.avif/)?.[1])
+        const frame = Number(args[0].src?.match(/\/(?:team|team-mobile\/v4)\/(\d+)\.avif/)?.[1])
         if (Number.isInteger(frame) && this.globalCompositeOperation !== 'lighter')
           window.__portraitFrames.push(frame + 1 - this.globalAlpha)
         if (innerWidth < 768)
@@ -93,7 +93,7 @@ try {
   assert.ok(await team.evaluate(() => window.__portraitDraws > 0), 'The initial mobile portrait must be drawn')
   await team.evaluate(() => scrollTo(0, document.querySelector('.memberDescription').getBoundingClientRect().top + scrollY - 195))
   await team.waitForTimeout(1500)
-  await team.waitForFunction(() => performance.getEntriesByType('resource').filter(entry => /\/images\/team-mobile\/v3\/\d+\.avif/.test(entry.name)).length === 122)
+  await team.waitForFunction(() => performance.getEntriesByType('resource').filter(entry => /\/images\/team-mobile\/v4\/\d+\.avif/.test(entry.name)).length === 122)
   assert.equal(portraitRequests.size, 122, 'Mobile must prepare the complete lightweight frame sequence near Team')
   const portrait = await team.locator('.models').boundingBox()
   assert.ok(portrait.height <= 151 && portrait.y + portrait.height < 275, 'Landscape portrait must leave at least 100px to read below it')
@@ -141,7 +141,7 @@ try {
     const fallback = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true })
     let localFrameRequested = false
     fallback.on('request', (request) => {
-      if (request.url().endsWith('/images/team-mobile/v3/0.avif'))
+      if (request.url().endsWith('/images/team-mobile/v4/0.avif'))
         localFrameRequested = true
     })
     await visit(fallback, '/')

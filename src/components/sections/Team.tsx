@@ -530,7 +530,7 @@ export function Team() {
     let timer: ReturnType<typeof setTimeout> | undefined
     const pending: number[] = []
     const requested = new Set<number>()
-    const lightweight = window.matchMedia('(max-width: 767px), (pointer: coarse)').matches
+    const mobileFrames = window.innerWidth < 768
     imagesRef.current = []
     drawnFrameRef.current = -1
 
@@ -549,10 +549,10 @@ export function Team() {
         const img = new Image()
         img.decoding = 'async'
         img.fetchPriority = index === 0 ? 'auto' : 'low'
-        img.src = lightweight ? `/images/team-mobile/v3/${index}.avif` : `/images/team/${index}.avif`
+        img.src = mobileFrames ? `/images/team-mobile/v4/${index}.avif` : `/images/team/${index}.avif`
         loading++
         img.decode().catch(() => {
-          if (!lightweight || disposed)
+          if (!mobileFrames || disposed)
             throw new Error('Portrait unavailable')
           img.src = `/images/team/${index}.avif`
           return img.decode()
@@ -609,7 +609,7 @@ export function Team() {
       prepareFrames()
       if (modelsRef.current)
         observer.observe(modelsRef.current)
-      if (!lightweight)
+      if (!mobileFrames && !window.matchMedia('(pointer: coarse)').matches)
         return
       // Keep page assets ahead of the full sequence on the initial visit.
       if (document.readyState === 'complete')
@@ -625,7 +625,7 @@ export function Team() {
       const mobile = window.innerWidth < 768
       const interpolate = window.matchMedia('(max-width: 767px), (pointer: coarse)').matches
       canvasModeRef.current = { mobile, interpolate }
-      const pixelRatio = Math.min(window.devicePixelRatio, interpolate ? 1.5 : 2)
+      const pixelRatio = Math.min(window.devicePixelRatio, 2)
       canvas.width = Math.round(canvas.clientWidth * pixelRatio)
       canvas.height = Math.round(canvas.clientHeight * pixelRatio)
       drawnFrameRef.current = -1
