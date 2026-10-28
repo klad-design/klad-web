@@ -180,6 +180,8 @@ try {
       const beforeBack = await page.evaluate(() => scrollY)
       await page.getByRole('link', { name: 'Work', exact: true }).click()
       await page.waitForURL('**/work')
+      await page.locator('h1').filter({ hasText: 'Datalane' }).waitFor()
+      await page.locator('[data-logo-mode="autoplay"] svg').waitFor()
       await page.goBack()
       await page.waitForURL(`${baseURL}/`)
       await page.waitForFunction(expected => Math.abs(scrollY - expected) <= 2, beforeBack)
