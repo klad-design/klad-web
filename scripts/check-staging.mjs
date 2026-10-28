@@ -72,6 +72,7 @@ try {
       await member.focus()
       await member.press('Enter')
       await page.waitForFunction(() => document.querySelector('.memberLink.button--active')?.textContent?.includes('Dasha'))
+      await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-scrolling'))
       await page.waitForTimeout(1200)
       await page.screenshot({ path: `${artifacts}/team-desktop.png` })
 
@@ -93,6 +94,7 @@ try {
       assert.equal(await page.locator('.home-loop').evaluate(el => getComputedStyle(el).overflow), 'visible')
       await reloadRestored('From the selected Team member')
       for (const theme of ['dark', 'light']) {
+        await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-scrolling'))
         await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight - innerHeight - 300))
         await page.waitForFunction(expected => document.documentElement.dataset.theme === expected, theme)
         await page.waitForTimeout(400)
@@ -101,6 +103,7 @@ try {
         await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight - innerHeight - 100))
         await page.waitForTimeout(300)
         await page.waitForFunction(() => Number(document.querySelector('.home-loop h1 .textBlur').style.getPropertyValue('--value')) < -1)
+        await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-scrolling') && Math.abs(scrollY - (document.documentElement.scrollHeight - innerHeight - 100)) <= 2)
         assert.ok(await page.locator('.home-loop h1 .textBlur').evaluate(el => Number(el.style.getPropertyValue('--value'))) < -1, 'The repeated hero must animate before the loop wraps')
         const recording = page.evaluate(() => new Promise((resolve) => {
           const frames = []
