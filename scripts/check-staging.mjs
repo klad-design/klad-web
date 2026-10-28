@@ -105,7 +105,7 @@ try {
           function sample() {
             const map = document.querySelector('section .grid-container .textBlur')
             const heading = document.querySelectorAll('h1 .textBlur')[scrollY > (document.documentElement.scrollHeight - innerHeight) / 2 ? 1 : 0]
-            frames.push({ y: scrollY, value: Number(map.style.getPropertyValue('--value')), heading: Number(heading.style.getPropertyValue('--value')) })
+            frames.push({ time: performance.now(), y: scrollY, value: Number(map.style.getPropertyValue('--value')), heading: Number(heading.style.getPropertyValue('--value')) })
             if (performance.now() < end)
               requestAnimationFrame(sample)
             else
@@ -118,7 +118,7 @@ try {
         const wrap = frames.findIndex((frame, index) => index > 0 && frames[index - 1].y - frame.y > 1000)
         assert.ok(wrap > 0, 'Wheel scrolling must wrap back to the hero')
         assert.equal(frames[wrap].value, 0, 'Map layers must already align on the first frame after wrapping')
-        assert.ok(Math.abs(frames[wrap].heading - frames[wrap - 1].heading) < 5, 'Heading trails must stay continuous across the loop')
+        assert.ok(Math.abs(frames[wrap].heading - frames[wrap - 1].heading) < 5, `Heading trails must stay continuous across the loop: ${JSON.stringify(frames.slice(Math.max(0, wrap - 2), wrap + 3))}`)
         assert.equal(await page.locator('html').getAttribute('data-theme'), theme)
       }
 
