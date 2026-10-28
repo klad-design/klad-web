@@ -104,12 +104,15 @@ try {
         assert.ok(await page.locator('.home-loop h1 .textBlur').evaluate(el => Number(el.style.getPropertyValue('--value'))) < -1, 'The repeated hero must animate before the loop wraps')
         const recording = page.evaluate(() => new Promise((resolve) => {
           const frames = []
-          const end = performance.now() + 1600
+          const end = performance.now() + 10000
+          let wrappedAt = 0
           function sample() {
             const map = document.querySelector('section .grid-container .textBlur')
             const heading = document.querySelectorAll('h1 .textBlur')[scrollY > (document.documentElement.scrollHeight - innerHeight) / 2 ? 1 : 0]
             frames.push({ time: performance.now(), y: scrollY, value: Number(map.style.getPropertyValue('--value')), heading: Number(heading.style.getPropertyValue('--value')) })
-            if (performance.now() < end)
+            if (!wrappedAt && frames.length > 1 && frames.at(-2).y - scrollY > 1000)
+              wrappedAt = performance.now()
+            if (performance.now() < end && (!wrappedAt || performance.now() - wrappedAt < 1600))
               requestAnimationFrame(sample)
             else
               resolve(frames)
@@ -119,7 +122,7 @@ try {
         await page.mouse.wheel(0, 200)
         const frames = await recording
         const wrap = frames.findIndex((frame, index) => index > 0 && frames[index - 1].y - frame.y > 1000)
-        assert.ok(wrap > 0, 'Wheel scrolling must wrap back to the hero')
+        assert.ok(wrap > 0, `Wheel scrolling must wrap back to the hero: ${JSON.stringify({ count: frames.length, first: frames.slice(0, 3), last: frames.slice(-3) })}`)
         assert.equal(frames[wrap].value, 0, 'Map layers must already align on the first frame after wrapping')
         assert.ok(frames[wrap].heading < -1, 'The active heading trail must survive the wrap')
         // A delayed render can span several 60 Hz frames.
