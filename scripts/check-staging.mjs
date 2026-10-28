@@ -34,7 +34,7 @@ try {
     })
     const frames = new Set()
     page.on('request', (request) => {
-      if (request.url().includes('/images/team/'))
+      if (/\/images\/(?:team|team-mobile\/v3)\//.test(request.url()))
         frames.add(request.url())
     })
 
@@ -44,7 +44,7 @@ try {
     await page.waitForTimeout(600)
     assert.equal(await page.locator('[aria-label="[object Object]"]').count(), 0)
     assert.equal(await page.locator('#team').count(), 1)
-    const teamCameNear = await page.evaluate(() => window.__nearestTeamTop <= innerHeight + (innerWidth < 768 ? 400 : 800))
+    const teamCameNear = await page.evaluate(() => window.__nearestTeamTop <= innerHeight + Math.max(innerHeight, 800))
     assert.ok(frames.size < 122 || teamCameNear, `Portrait sequence should wait until Team approaches the viewport at ${width}px`)
     if (width >= 768)
       assert.equal(await page.locator('.p5').first().evaluate(el => getComputedStyle(el).fontSize), '10px')

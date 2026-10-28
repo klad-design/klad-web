@@ -69,7 +69,7 @@ try {
   const landscape = await browser.newContext({ viewport: { width: 667, height: 375 }, hasTouch: true, deviceScaleFactor: 3 })
   const portraitRequests = new Set()
   landscape.on('request', (request) => {
-    if (/\/images\/team\/\d+\.avif/.test(request.url()))
+    if (/\/images\/team-mobile\/v3\/\d+\.avif/.test(request.url()))
       portraitRequests.add(request.url())
   })
   await landscape.addInitScript(() => {
@@ -80,9 +80,9 @@ try {
     CanvasRenderingContext2D.prototype.drawImage = function (...args) {
       if (this.canvas.closest?.('#team')) {
         window.__portraitDraws++
-        const frame = Number(args[0].src?.match(/\/team\/(\d+)\.avif/)?.[1])
-        if (Number.isInteger(frame))
-          window.__portraitFrames.push(frame)
+        const frame = Number(args[0].src?.match(/\/(?:team|team-mobile\/v3)\/(\d+)\.avif/)?.[1])
+        if (Number.isInteger(frame) && this.globalCompositeOperation !== 'lighter')
+          window.__portraitFrames.push(frame + 1 - this.globalAlpha)
         if (innerWidth < 768)
           window.__portraitWidths.push(args[3] / this.canvas.width)
       }
@@ -93,7 +93,8 @@ try {
   assert.ok(portraitRequests.size <= 1, 'Mobile must fetch only the first portrait before Team approaches')
   await team.evaluate(() => scrollTo(0, document.querySelector('.memberDescription').getBoundingClientRect().top + scrollY - 195))
   await team.waitForTimeout(1500)
-  assert.equal(portraitRequests.size, 122, 'Mobile must prepare the complete frame sequence near Team, as on main')
+  await team.waitForFunction(() => performance.getEntriesByType('resource').filter(entry => /\/images\/team-mobile\/v3\/\d+\.avif/.test(entry.name)).length === 122)
+  assert.equal(portraitRequests.size, 122, 'Mobile must prepare the complete lightweight frame sequence near Team')
   const portrait = await team.locator('.models').boundingBox()
   assert.ok(portrait.height <= 151 && portrait.y + portrait.height < 275, 'Landscape portrait must leave at least 100px to read below it')
   assert.ok(Number(await team.locator('.memberDescription').first().evaluate(el => getComputedStyle(el).opacity)) > 0.98, 'Biography must remain readable beneath the portrait')
@@ -140,12 +141,11 @@ try {
     const fallback = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true })
     let localFrameRequested = false
     fallback.on('request', (request) => {
-      if (request.url().endsWith('/images/team/0.avif'))
+      if (request.url().endsWith('/images/team-mobile/v3/0.avif'))
         localFrameRequested = true
     })
-    await fallback.route('https://klad.b-cdn.net/klad-web/team/0.avif', route => route.abort())
     await visit(fallback, '/')
-    assert.ok(localFrameRequested, 'A failed Bunny portrait must fall back to the local frame')
+    assert.ok(localFrameRequested, 'The portrait must stay same-origin for imprint capture')
     await fallback.close()
   }
 

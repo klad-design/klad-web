@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   headers: async () => [
     { source: '/images/team-mobile/v1/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }] },
     { source: '/images/team-mobile/v2/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }] },
+    { source: '/images/team-mobile/v3/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }] },
     ...(process.env.STAGING === '1'
       ? [{ source: '/:path*', headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }] }]
       : []),

@@ -306,6 +306,7 @@ export function Team() {
   const imagesRef = useRef<HTMLImageElement[]>([])
   const frameRef = useRef(0)
   const drawnFrameRef = useRef(-1)
+  const canvasModeRef = useRef({ mobile: false, interpolate: false })
 
   const [activeMemberIndex, setActiveMemberIndex] = useState(0)
 
@@ -319,35 +320,41 @@ export function Team() {
     const images = imagesRef.current
 
     if (index >= 0 && index <= lastFrame && canvas && context) {
-      const mobile = window.innerWidth < 768
-      const pixelRatio = Math.min(window.devicePixelRatio, 2)
-      const width = Math.round(canvas.clientWidth * pixelRatio)
-      const height = Math.round(canvas.clientHeight * pixelRatio)
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width
-        canvas.height = height
-        drawnFrameRef.current = -1
-      }
-
-      let nearest = mobile ? index : -1
-      if (mobile && (!images[index]?.complete || !images[index].naturalWidth))
-        return
-      if (!mobile) {
+      const { mobile, interpolate } = canvasModeRef.current
+      let frame = interpolate ? index : Math.round(index)
+      if (!images[Math.floor(frame)] || !images[Math.ceil(frame)]) {
+        if (drawnFrameRef.current >= 0)
+          return
+        let nearest = -1
         for (let i = 0; i < images.length; i++) {
-          if (images[i]?.complete && images[i].naturalWidth && (nearest < 0 || Math.abs(i - index) < Math.abs(nearest - index)))
+          if (images[i] && (nearest < 0 || Math.abs(i - frame) < Math.abs(nearest - frame)))
             nearest = i
         }
+        frame = nearest
       }
-      if (nearest < 0 || nearest === drawnFrameRef.current)
+      if (frame < 0 || frame === drawnFrameRef.current)
         return
 
-      const img = images[nearest]
-      drawnFrameRef.current = nearest
+      const img = images[Math.floor(frame)]
+      const next = images[Math.ceil(frame)]
+      const blend = frame % 1
+      drawnFrameRef.current = frame
       const scale = Math.min(canvas.width / img.width, canvas.height / img.height)
       const drawWidth = img.width * scale
       const drawHeight = img.height * scale
+      const x = (canvas.width - drawWidth) / 2
+      const y = mobile ? (canvas.height - drawHeight) / 2 : canvas.height - drawHeight
       context.clearRect(0, 0, canvas.width, canvas.height)
-      context.drawImage(img, (canvas.width - drawWidth) / 2, mobile ? (canvas.height - drawHeight) / 2 : canvas.height - drawHeight, drawWidth, drawHeight)
+      context.globalAlpha = 1 - blend
+      context.drawImage(img, x, y, drawWidth, drawHeight)
+      if (blend) {
+        // Add premultiplied pixels so transparent edges keep their opacity.
+        context.globalCompositeOperation = 'lighter'
+        context.globalAlpha = blend
+        context.drawImage(next, x, y, drawWidth, drawHeight)
+        context.globalCompositeOperation = 'source-over'
+      }
+      context.globalAlpha = 1
     }
   }, [])
 
@@ -363,7 +370,7 @@ export function Team() {
       gsap.to(playhead, {
         frame: lastFrame,
         ease: 'none',
-        onUpdate: () => loadImageOnCanvas(Math.round(playhead.frame)),
+        onUpdate: () => loadImageOnCanvas(playhead.frame),
         scrollTrigger: {
           trigger: modelsRef.current,
           endTrigger: '.memberDescriptionEnd',
@@ -425,7 +432,7 @@ export function Team() {
         onUpdate() {
           const progress = this.progress()
           setActiveMemberIndex(Math.min(Math.floor(progress * team.length), team.length - 1))
-          loadImageOnCanvas(Math.round(progress * lastFrame))
+          loadImageOnCanvas(progress * lastFrame)
           descriptions.forEach((description, index) => {
             const fade = Math.min(1, Math.max(0, progress * (team.length - 1) - index))
             description.style.opacity = String(1 - fade * 0.95)
@@ -506,39 +513,87 @@ export function Team() {
 
   useEffect(() => {
     let disposed = false
-    const loadFrame = (index: number) => {
-      const img = imagesRef.current[index] || new Image()
-      imagesRef.current[index] = img
-      img.onload = () => {
-        if (!disposed)
+    let loading = 0
+    const pending: number[] = []
+    const requested = new Set<number>()
+    const lightweight = window.matchMedia('(max-width: 767px), (pointer: coarse)').matches
+    imagesRef.current = []
+    drawnFrameRef.current = -1
+
+    const prepareFrames = () => {
+      if (disposed)
+        return
+      // Prepare the current pose first if a fast swipe outruns the preload.
+      pending.sort((a, b) => Math.abs(a - frameRef.current) - Math.abs(b - frameRef.current))
+      while (loading < 4 && pending.length) {
+        const index = pending.shift()!
+        const img = new Image()
+        img.decoding = 'async'
+        img.src = lightweight ? `/images/team-mobile/v3/${index}.avif` : `/images/team/${index}.avif`
+        loading++
+        img.decode().catch(() => {
+          if (!lightweight || disposed)
+            throw new Error('Portrait unavailable')
+          img.src = `/images/team/${index}.avif`
+          return img.decode()
+        }).then(() => {
+          if (disposed)
+            return
+          imagesRef.current[index] = img
           loadImageOnCanvas(frameRef.current)
+        }).catch(() => {
+          // Keep a prepared portrait visible if a frame cannot load.
+        }).finally(() => {
+          loading--
+          prepareFrames()
+        })
       }
-      // Local frames keep the portrait canvas readable for imprints.
-      if (!img.src)
-        img.src = `/images/team/${index}.avif`
-      if (img.complete && index === frameRef.current)
-        loadImageOnCanvas(index)
+    }
+    const loadFrame = (index: number) => {
+      if (requested.has(index))
+        return
+      requested.add(index)
+      pending.push(index)
     }
 
     frameRef.current = 0
     loadFrame(0)
-    if (!reducedMotion && window.innerWidth >= 768) {
+    if (!reducedMotion && !lightweight) {
       for (let index = 8; index <= lastFrame; index += 8)
         loadFrame(index)
     }
+    prepareFrames()
 
     const observer = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting || reducedMotion)
         return
       for (let index = 1; index <= lastFrame; index++)
         loadFrame(index)
+      prepareFrames()
       observer.disconnect()
-    }, { rootMargin: window.innerWidth < 768 ? '400px' : '800px' })
+    }, { rootMargin: `${Math.max(window.innerHeight, 800)}px` })
 
-    if (sectionRef.current)
-      observer.observe(sectionRef.current)
+    // Start from the portrait's final layout, after the page font has loaded.
+    document.fonts.ready.then(() => {
+      if (!disposed && modelsRef.current)
+        observer.observe(modelsRef.current)
+    })
 
-    const resize = new ResizeObserver(() => loadImageOnCanvas(frameRef.current))
+    const resizeCanvas = () => {
+      const canvas = canvasRef.current
+      if (!canvas)
+        return
+      const mobile = window.innerWidth < 768
+      const interpolate = window.matchMedia('(max-width: 767px), (pointer: coarse)').matches
+      canvasModeRef.current = { mobile, interpolate }
+      const pixelRatio = Math.min(window.devicePixelRatio, interpolate ? 1.5 : 2)
+      canvas.width = Math.round(canvas.clientWidth * pixelRatio)
+      canvas.height = Math.round(canvas.clientHeight * pixelRatio)
+      drawnFrameRef.current = -1
+      loadImageOnCanvas(frameRef.current)
+    }
+    resizeCanvas()
+    const resize = new ResizeObserver(resizeCanvas)
     if (canvasRef.current)
       resize.observe(canvasRef.current)
 
@@ -558,10 +613,6 @@ export function Team() {
       resize.disconnect()
       document.removeEventListener('visibilitychange', restore)
       window.removeEventListener('pageshow', restore)
-      imagesRef.current.forEach((img) => {
-        img.onload = null
-        img.onerror = null
-      })
     }
   }, [reducedMotion, loadImageOnCanvas])
 
