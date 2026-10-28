@@ -173,8 +173,9 @@ try {
         assert.equal(await page.locator('html').getAttribute('data-theme'), theme)
       }
 
+      await settledScroll()
       await page.evaluate(() => window.scrollTo(0, 2200))
-      await page.waitForTimeout(300)
+      await page.waitForFunction(() => Math.abs(scrollY - 2200) <= 2)
       await reloadRestored('From the middle of the homepage')
       console.log(`${browserType.name()}: native history restoration`)
       const beforeBack = await page.evaluate(() => scrollY)
