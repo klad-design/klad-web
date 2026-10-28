@@ -8,6 +8,7 @@ const type = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chrom
 assert.ok(type)
 const browser = await type.launch()
 const frameURL = /\/images\/(?:team-mobile\/v3|team)\/\d+\.avif$/
+const seedFrames = [...new Set([...Array.from({ length: 16 }, (_, index) => index * 8), 30, 60, 90, 121])]
 const errors = []
 
 async function visit(options, setup) {
@@ -31,13 +32,17 @@ async function visit(options, setup) {
     const decode = HTMLImageElement.prototype.decode
     window.__teamDecoded = new Set()
     window.__teamPaints = []
-    window.__teamHold61 = false
+    window.__teamHold61 ??= false
+    window.__teamReleases = []
     HTMLImageElement.prototype.decode = function () {
       return decode.call(this).then(async () => {
         if (!source.test(this.src))
           return
-        if (window.__teamHold61 && Number(this.src.match(source)[1]) === 61)
+        const frame = Number(this.src.match(source)[1])
+        if (window.__teamHold61 && frame === 61)
           await new Promise(resolve => window.__teamRelease61 = resolve)
+        if (window.__teamHoldNonSeeds && frame % 8 !== 0 && ![30, 60, 90, 121].includes(frame))
+          await new Promise(resolve => window.__teamReleases.push(resolve))
         decoded.add(this)
         window.__teamDecoded.add(this.src)
       })
@@ -114,13 +119,64 @@ function verifyPaints(result) {
   }
 }
 
+async function verifyPortraitSides(page) {
+  const bounds = await page.locator('#team canvas').evaluate((canvas) => {
+    const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data
+    let left = canvas.width
+    let right = 0
+    for (let i = 3; i < pixels.length; i += 4) {
+      if (pixels[i] > 16) {
+        const x = ((i - 3) / 4) % canvas.width
+        left = Math.min(left, x)
+        right = Math.max(right, x + 1)
+      }
+    }
+    const rect = canvas.getBoundingClientRect()
+    let clipLeft = 0
+    let clipRight = innerWidth
+    for (let ancestor = canvas.parentElement; ancestor; ancestor = ancestor.parentElement) {
+      if (/hidden|clip/.test(getComputedStyle(ancestor).overflowX)) {
+        const clip = ancestor.getBoundingClientRect()
+        clipLeft = Math.max(clipLeft, clip.left)
+        clipRight = Math.min(clipRight, clip.right)
+      }
+    }
+    return { left: rect.left + left / canvas.width * rect.width, right: rect.left + right / canvas.width * rect.width, clipLeft, clipRight }
+  })
+  assert.ok(bounds.left >= bounds.clipLeft - 1 && bounds.right <= bounds.clipRight + 1, `Portrait shoulders must stay inside visible bounds: ${JSON.stringify(bounds)}`)
+}
+
 try {
-  const phone = await visit({ viewport: { width: 390, height: 844 }, hasTouch: true, deviceScaleFactor: 3 })
+  const cold = await visit(
+    { viewport: { width: 390, height: 844 }, hasTouch: true },
+    context => context.addInitScript(() => window.__teamHoldNonSeeds = true),
+  )
+  await cold.page.waitForFunction(seeds => seeds.every(frame => [...window.__teamDecoded].some(url => url.endsWith(`/${frame}.avif`))), seedFrames)
+  const coldRange = await mobileRange(cold.page)
+  const coldForward = await seek(cold.page, coldRange, 96.5)
+  const forwardFrame = coldForward.at(-1).frame
+  assert.ok(forwardFrame > 88 && forwardFrame <= 96.5, 'A cold forward swipe must follow prepared poses instead of freezing on the first portrait')
+  await paints(cold.page, true)
+  const coldReverse = await seek(cold.page, coldRange, 24.5)
+  assert.ok(coldReverse.at(-1).frame >= 24.5 && coldReverse.at(-1).frame < 33, 'A cold reverse swipe must follow prepared poses')
+  assert.ok(coldReverse.every((paint, index) => index === 0 || paint.frame <= coldReverse[index - 1].frame + 0.001), 'Cold reverse poses must remain ordered')
+  await cold.page.evaluate(() => {
+    window.__teamHoldNonSeeds = false
+    window.__teamReleases.forEach(release => release())
+  })
+  await cold.page.waitForFunction(() => window.__teamDecoded.size === 122)
+  await cold.page.waitForTimeout(100)
+  assert.ok(Math.abs((await paints(cold.page)).at(-1).frame - 24.5) < 0.2, 'Refinement frames must settle at the current target instead of replaying the missed swipe')
+  verifyPaints(await paints(cold.page))
+  await cold.context.close()
+
+  const phone = await visit(
+    { viewport: { width: 390, height: 844 }, hasTouch: true, deviceScaleFactor: 3 },
+    context => context.addInitScript(() => window.__teamHold61 = true),
+  )
   const { page } = phone
-  await page.waitForTimeout(500)
-  assert.equal(phone.requests.size, 1, 'Cold mobile load must fetch only the first portrait')
+  await page.waitForFunction(seeds => seeds.every(frame => [...window.__teamDecoded].some(url => url.endsWith(`/${frame}.avif`))), seedFrames)
   assert.ok([...phone.requests][0].includes('/team-mobile/v3/'), 'Touch devices must use the smaller rendition')
-  await page.evaluate(() => window.__teamHold61 = true)
   const range = await mobileRange(page)
   await page.evaluate(y => scrollTo(0, y), range.start - 500)
   await page.waitForFunction(() => window.__teamDecoded.size === 121, null, { timeout: 30000 })
@@ -169,6 +225,10 @@ try {
 
   await seek(page, range, 121)
   assert.ok(Math.abs((await paints(page)).at(-1).frame - 121) < 0.2, 'Forward scrolling must settle at the final portrait')
+  for (const frame of [0, 30, 60, 90, 121]) {
+    await seek(page, range, frame)
+    await verifyPortraitSides(page)
+  }
   await paints(page, true)
   const reverse = await seek(page, range, 0)
   assert.ok(reverse.every((paint, index) => index === 0 || paint.frame <= reverse[index - 1].frame + 0.001), 'Reverse motion must remain ordered')
@@ -183,12 +243,14 @@ try {
   assert.equal(pixels.cornerAlpha, 0, 'Canvas must retain the portrait transparency')
   assert.ok(pixels.opaque, 'Portrait must remain visible at full opacity')
 
-  for (const viewport of [{ width: 667, height: 375 }, { width: 390, height: 844 }]) {
+  for (const viewport of [{ width: 320, height: 844 }, { width: 667, height: 375 }, { width: 390, height: 844 }]) {
     await page.setViewportSize(viewport)
     await page.waitForTimeout(800)
     const models = await page.locator('.models').boundingBox()
     assert.ok(viewport.height < 500 ? models.height <= 151 : Math.abs(models.height - 357) < 2, 'Orientation must resize the portrait without consuming the reading area')
     assert.ok(await page.locator('#team canvas').evaluate(el => el.width <= Math.round(el.clientWidth * 1.5)))
+    await seek(page, await mobileRange(page), 90)
+    await verifyPortraitSides(page)
   }
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.waitForTimeout(500)
@@ -206,6 +268,7 @@ try {
     context => context.route(/\/team-mobile\/v3\/(?:0|61)\.avif$/, route => route.abort()),
   )
   assert.ok(fallback.requests.has(`${baseURL}/images/team/0.avif`), 'A failed initial mobile portrait must fall back to the original')
+  await fallback.page.waitForFunction(() => window.__teamPaints.some(paint => paint.draws.some(draw => draw.frame === 0 && draw.width === 1080)))
   assert.equal((await paints(fallback.page)).at(-1).draws[0].width, 1080, 'The fallback portrait must decode and paint successfully')
   const fallbackRange = await mobileRange(fallback.page)
   await fallback.page.evaluate(y => scrollTo(0, y), fallbackRange.start)
@@ -227,7 +290,7 @@ try {
     await wide.context.close()
   }
   assert.deepEqual(errors, [], 'Team scenarios must not raise browser errors')
-  console.log(`Team checks passed in ${type.name()}: deferred bounded loading, decoded-only draws, transparent interpolation, ordered playback, late frames, failed-image fallback, rotation, reduced motion and touch tablets.`)
+  console.log(`Team checks passed in ${type.name()}: cold-swipe fallback, bounded loading, decoded-only draws, transparent interpolation, ordered playback, late frames, unclipped shoulders, failed-image fallback, rotation, reduced motion and touch tablets.`)
 }
 finally {
   await browser.close()

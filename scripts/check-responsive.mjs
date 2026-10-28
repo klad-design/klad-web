@@ -90,7 +90,7 @@ try {
     }
   })
   const team = await visit(landscape, '/')
-  assert.ok(portraitRequests.size <= 1, 'Mobile must fetch only the first portrait before Team approaches')
+  assert.ok(await team.evaluate(() => window.__portraitDraws > 0), 'The initial mobile portrait must be drawn')
   await team.evaluate(() => scrollTo(0, document.querySelector('.memberDescription').getBoundingClientRect().top + scrollY - 195))
   await team.waitForTimeout(1500)
   await team.waitForFunction(() => performance.getEntriesByType('resource').filter(entry => /\/images\/team-mobile\/v3\/\d+\.avif/.test(entry.name)).length === 122)

@@ -295,6 +295,7 @@ const team: TeamMember[] = [
 const mobileGap = 30
 const mobileScrub = 0.35
 const lastFrame = 121
+const previewFrames = new Set([0, 30, 60, 90, lastFrame, ...Array.from({ length: 15 }, (_, index) => (index + 1) * 8)])
 
 export function Team() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -305,6 +306,7 @@ export function Team() {
 
   const imagesRef = useRef<HTMLImageElement[]>([])
   const frameRef = useRef(0)
+  const directionRef = useRef(1)
   const drawnFrameRef = useRef(-1)
   const canvasModeRef = useRef({ mobile: false, interpolate: false })
 
@@ -314,6 +316,8 @@ export function Team() {
   const reducedMotion = useReducedMotion()
 
   const loadImageOnCanvas = useCallback((index: number) => {
+    if (index !== frameRef.current)
+      directionRef.current = Math.sign(index - frameRef.current)
     frameRef.current = index
     const canvas = canvasRef.current
     const context = canvas?.getContext('2d')
@@ -323,12 +327,20 @@ export function Team() {
       const { mobile, interpolate } = canvasModeRef.current
       let frame = interpolate ? index : Math.round(index)
       if (!images[Math.floor(frame)] || !images[Math.ceil(frame)]) {
-        if (drawnFrameRef.current >= 0)
-          return
+        const direction = directionRef.current
         let nearest = -1
-        for (let i = 0; i < images.length; i++) {
-          if (images[i] && (nearest < 0 || Math.abs(i - frame) < Math.abs(nearest - frame)))
+        // Follow the gesture with prepared poses instead of waiting on one frame.
+        for (let i = direction > 0 ? Math.floor(frame) : Math.ceil(frame); i >= 0 && i <= lastFrame; i -= direction) {
+          if (images[i]) {
             nearest = i
+            break
+          }
+        }
+        if (nearest < 0) {
+          for (let i = 0; i < images.length; i++) {
+            if (images[i] && (nearest < 0 || Math.abs(i - frame) < Math.abs(nearest - frame)))
+              nearest = i
+          }
         }
         frame = nearest
       }
@@ -514,6 +526,8 @@ export function Team() {
   useEffect(() => {
     let disposed = false
     let loading = 0
+    let idle: number | undefined
+    let timer: ReturnType<typeof setTimeout> | undefined
     const pending: number[] = []
     const requested = new Set<number>()
     const lightweight = window.matchMedia('(max-width: 767px), (pointer: coarse)').matches
@@ -523,12 +537,18 @@ export function Team() {
     const prepareFrames = () => {
       if (disposed)
         return
-      // Prepare the current pose first if a fast swipe outruns the preload.
-      pending.sort((a, b) => Math.abs(a - frameRef.current) - Math.abs(b - frameRef.current))
+      // Prepare the current pair first, then cover the rest of the sequence.
+      const target = frameRef.current
+      pending.sort((a, b) => {
+        const targetPriority = Number(Math.abs(b - target) < 1) - Number(Math.abs(a - target) < 1)
+        const previewPriority = Number(previewFrames.has(b)) - Number(previewFrames.has(a))
+        return targetPriority || previewPriority || (previewFrames.has(a) ? 0 : Math.abs(a - target) - Math.abs(b - target))
+      })
       while (loading < 4 && pending.length) {
         const index = pending.shift()!
         const img = new Image()
         img.decoding = 'async'
+        img.fetchPriority = index === 0 ? 'auto' : 'low'
         img.src = lightweight ? `/images/team-mobile/v3/${index}.avif` : `/images/team/${index}.avif`
         loading++
         img.decode().catch(() => {
@@ -557,26 +577,45 @@ export function Team() {
     }
 
     frameRef.current = 0
+    directionRef.current = 1
     loadFrame(0)
-    if (!reducedMotion && !lightweight) {
-      for (let index = 8; index <= lastFrame; index += 8)
-        loadFrame(index)
-    }
     prepareFrames()
 
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting || reducedMotion)
+    const loadSequence = () => {
+      if (disposed || reducedMotion)
         return
       for (let index = 1; index <= lastFrame; index++)
         loadFrame(index)
       prepareFrames()
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting || reducedMotion)
+        return
+      loadSequence()
       observer.disconnect()
     }, { rootMargin: `${Math.max(window.innerHeight, 800)}px` })
 
-    // Start from the portrait's final layout, after the page font has loaded.
+    const preloadWhenIdle = () => {
+      if ('requestIdleCallback' in window)
+        idle = window.requestIdleCallback(loadSequence, { timeout: 1500 })
+      else
+        timer = setTimeout(loadSequence, 200)
+    }
+
     document.fonts.ready.then(() => {
-      if (!disposed && modelsRef.current)
+      if (disposed || reducedMotion)
+        return
+      previewFrames.forEach(loadFrame)
+      prepareFrames()
+      if (modelsRef.current)
         observer.observe(modelsRef.current)
+      if (!lightweight)
+        return
+      // Keep page assets ahead of the full sequence on the initial visit.
+      if (document.readyState === 'complete')
+        preloadWhenIdle()
+      else
+        window.addEventListener('load', preloadWhenIdle, { once: true })
     })
 
     const resizeCanvas = () => {
@@ -609,6 +648,10 @@ export function Team() {
 
     return () => {
       disposed = true
+      if (idle !== undefined)
+        window.cancelIdleCallback(idle)
+      clearTimeout(timer)
+      window.removeEventListener('load', preloadWhenIdle)
       observer.disconnect()
       resize.disconnect()
       document.removeEventListener('visibilitychange', restore)
@@ -638,8 +681,8 @@ export function Team() {
           ))}
         </div>
         <div className="self-stretch z-1 lg:col-span-2">
-          <div ref={modelsRef} className="models mx-auto md:w-full relative aspect-[264/357] max-w-[264px] md:max-w-[314px] lg:max-w-[70%] overflow-hidden md:overflow-visible will-change-transform">
-            <canvas ref={canvasRef} className="absolute left-1/2 top-0 h-[calc(100%/0.86)] aspect-square -translate-x-1/2 -translate-y-[14%]" />
+          <div ref={modelsRef} className="models mx-auto md:w-full relative aspect-[264/357] max-w-[264px] md:max-w-[314px] lg:max-w-[70%] will-change-transform">
+            <canvas ref={canvasRef} className="absolute left-1/2 bottom-0 h-[calc(100%/0.86)] max-h-[calc(100vw_-_20px)] md:max-h-none aspect-square -translate-x-1/2" />
           </div>
         </div>
         <div ref={descriptionsRef} className="team-track flex flex-col md:flex-row">

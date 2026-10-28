@@ -15,37 +15,18 @@ await mkdir(artifacts, { recursive: true })
 try {
   for (const width of [1440, 768, 390, 320]) {
     const context = await browser.newContext({ baseURL, viewport: { width, height: 900 }, hasTouch: width < 1024 })
-    await context.addInitScript(() => {
-      window.__nearestTeamTop = Infinity
-      function measureTeam() {
-        const team = document.querySelector('#team')
-        if (team)
-          window.__nearestTeamTop = Math.min(window.__nearestTeamTop, team.getBoundingClientRect().top)
-        if (performance.now() < 2000)
-          requestAnimationFrame(measureTeam)
-      }
-      requestAnimationFrame(measureTeam)
-    })
     const page = await context.newPage()
     page.on('pageerror', error => errors.push(error.message))
     page.on('console', (message) => {
       if (message.type() === 'error' && /hydration|cannot update/i.test(message.text()))
         errors.push(message.text())
     })
-    const frames = new Set()
-    page.on('request', (request) => {
-      if (/\/images\/(?:team|team-mobile\/v3)\//.test(request.url()))
-        frames.add(request.url())
-    })
-
     const response = await page.goto(`${baseURL}/`)
     assert.equal(response.status(), 200)
     assert.match(response.headers()['x-robots-tag'] || '', /noindex/, 'Use a staging build for this check')
     await page.waitForTimeout(600)
     assert.equal(await page.locator('[aria-label="[object Object]"]').count(), 0)
     assert.equal(await page.locator('#team').count(), 1)
-    const teamCameNear = await page.evaluate(() => window.__nearestTeamTop <= innerHeight + Math.max(innerHeight, 800))
-    assert.ok(frames.size < 122 || teamCameNear, `Portrait sequence should wait until Team approaches the viewport at ${width}px`)
     if (width >= 768)
       assert.equal(await page.locator('.p5').first().evaluate(el => getComputedStyle(el).fontSize), '10px')
 
