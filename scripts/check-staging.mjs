@@ -142,7 +142,8 @@ try {
       await page.waitForURL('**/work')
       await page.goBack()
       await page.waitForURL(`${baseURL}/`)
-      await page.waitForTimeout(1500)
+      await page.waitForFunction(expected => Math.abs(scrollY - expected) <= 2, beforeBack)
+      await page.waitForFunction(() => Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value')) === -75)
       assert.ok(Math.abs(await page.evaluate(() => scrollY) - beforeBack) <= 2, 'Back must restore the homepage scroll position')
       assert.equal(await headingValue(), -75, 'Back must restore heading trails for the current position')
     }
@@ -169,8 +170,10 @@ try {
 
     if (width < 768) {
       await page.getByRole('button', { name: 'Menu', exact: true }).click()
+      await page.getByRole('dialog').waitFor()
       assert.equal(await page.getByRole('dialog').count(), 1)
       await page.keyboard.press('Escape')
+      await page.getByRole('dialog').waitFor({ state: 'hidden' })
       assert.equal(await page.getByRole('dialog').count(), 0)
     }
 
@@ -217,6 +220,7 @@ try {
   await page.goto(`${baseURL}/work/stars-honey`)
   await page.locator('video').first().scrollIntoViewIfNeeded()
   await page.waitForFunction(() => !!document.querySelector('video')?.getAttribute('src'))
+  await page.waitForFunction(() => document.querySelector('video')?.paused && document.querySelector('video')?.controls)
   assert.equal(await page.locator('video').first().evaluate(el => el.paused && el.controls), true, 'Reduced motion keeps manual video playback available')
   const sitemap = await page.request.get(`${baseURL}/sitemap.xml`)
   assert.ok((await sitemap.text()).includes('/work/datalane'), 'Datalane must appear in the sitemap')
