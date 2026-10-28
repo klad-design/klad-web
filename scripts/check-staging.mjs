@@ -34,6 +34,11 @@ try {
 
     const heading = page.locator('h1 .textBlur').first()
     const headingValue = () => heading.evaluate(el => Number(getComputedStyle(el).getPropertyValue('--value')))
+    const settledScroll = () => page.waitForFunction((sample) => {
+      sample.stable = sample.y === scrollY && !document.documentElement.classList.contains('lenis-smooth') ? sample.stable + 1 : 0
+      sample.y = scrollY
+      return sample.stable >= 4
+    }, { y: null, stable: 0 })
     const settledHeadingValue = async () => {
       await page.waitForFunction((sample) => {
         const value = Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value'))
@@ -52,11 +57,7 @@ try {
 
     if (width === 1440) {
       const reloadRestored = async (label) => {
-        await page.waitForFunction((sample) => {
-          sample.stable = sample.y === scrollY && !document.documentElement.classList.contains('lenis-smooth') ? sample.stable + 1 : 0
-          sample.y = scrollY
-          return sample.stable >= 4
-        }, { y: null, stable: 0 })
+        await settledScroll()
         await settledHeadingValue()
         const before = await page.evaluate(() => scrollY)
         await page.evaluate(() => {
@@ -92,7 +93,9 @@ try {
       await page.waitForTimeout(1200)
       await page.waitForFunction(() => Number(document.querySelector('.home-loop h1 .textBlur').style.getPropertyValue('--value')) < -1)
       assert.ok(await page.locator('.home-loop h1 .textBlur').evaluate(el => Number(el.style.getPropertyValue('--value'))) < -1, 'Scrolling up from the initial hero must animate the loop heading')
-      await page.mouse.wheel(0, 300)
+      await settledScroll()
+      const reverseDelta = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight - scrollY + 100)
+      await page.mouse.wheel(0, reverseDelta)
       await page.waitForFunction(() => scrollY < 200)
       await page.waitForTimeout(1200)
       await page.waitForFunction(() => Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value')) < -1)

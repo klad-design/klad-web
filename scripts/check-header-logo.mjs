@@ -27,15 +27,18 @@ async function check(label, page, task) {
 }
 
 async function ready(page, mode) {
-  await page.waitForFunction((mode) => {
-    const visual = document.querySelector(`[data-header-logo][data-logo-mode="${mode}"]`)
+  await page.waitForFunction(() => document.fonts.status === 'loaded')
+  await page.waitForFunction((sample) => {
+    const visual = document.querySelector(`[data-header-logo][data-logo-mode="${sample.mode}"]`)
     const svg = visual?.querySelector('svg')
     const limit = document.documentElement.scrollHeight - innerHeight
     const expected = limit > 0 ? scrollY / limit * 2 : 0
-    return svg?.animationsPaused() && svg.getAttribute('viewBox') === '106 180 748 600' && svg.querySelector('#logo-body')?.getBoundingClientRect().width > 20
-      && (mode !== 'scroll' || Math.abs(svg.getCurrentTime() - expected) < 0.015)
-  }, mode)
-  await page.waitForFunction(() => document.fonts.status === 'loaded')
+    const valid = svg?.animationsPaused() && svg.getAttribute('viewBox') === '106 180 748 600' && svg.querySelector('#logo-body')?.getBoundingClientRect().width > 20
+    sample.stable = valid && sample.y === scrollY && sample.limit === limit && Math.abs(svg.getCurrentTime() - expected) < 0.015 ? sample.stable + 1 : 0
+    sample.y = scrollY
+    sample.limit = limit
+    return sample.mode === 'scroll' ? sample.stable >= 4 : valid
+  }, { mode, y: null, limit: null, stable: 0 })
 }
 
 async function state(logo) {
@@ -44,6 +47,7 @@ async function state(logo) {
     const matrix = svg.querySelector('#logo-word-face').getCTM()
     return {
       time: svg.getCurrentTime(),
+      scrollTime: scrollY / (document.documentElement.scrollHeight - innerHeight) * 2,
       paused: svg.animationsPaused(),
       body: [bounds.x, bounds.y, bounds.width, bounds.height],
       lettering: [matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f],
@@ -501,8 +505,8 @@ async function runLayout(browser, name, mobile) {
         await writeFile(`${artifacts}/${label}-history.json`, JSON.stringify(await page.evaluate(original => ({ original, restored: scrollY, height: document.documentElement.scrollHeight, viewport: innerHeight }), original), null, 2))
       }
       await ready(page, 'scroll')
-      const expected = await page.evaluate(() => scrollY / (document.documentElement.scrollHeight - innerHeight) * 2)
-      assert.ok(Math.abs((await state(logo)).time - expected) < 0.015, 'History restoration restores the logo frame')
+      const restored = await state(logo)
+      assert.ok(Math.abs(restored.time - restored.scrollTime) < 0.015, 'History restoration restores the logo frame')
       await page.getByRole('link', { name: 'Klad Syndicate home' }).click()
       await page.waitForFunction(() => scrollY < 3)
       await page.waitForFunction(() => document.querySelector('[data-logo-mode="scroll"] svg').getCurrentTime() < 0.015)
@@ -520,8 +524,8 @@ async function runLayout(browser, name, mobile) {
       await ready(page, 'scroll')
       await page.waitForFunction(() => scrollY > 100)
       await ready(page, 'scroll')
-      const hashExpected = await page.evaluate(() => scrollY / (document.documentElement.scrollHeight - innerHeight) * 2)
-      assert.ok(Math.abs((await state(logo)).time - hashExpected) < 0.015, 'Direct hash positioning scrubs the right frame')
+      const hash = await state(logo)
+      assert.ok(Math.abs(hash.time - hash.scrollTime) < 0.015, 'Direct hash positioning scrubs the right frame')
     })
     if (!mobile) {
       await check(`${label}-home-loop`, page, async () => {
