@@ -34,6 +34,15 @@ try {
 
     const heading = page.locator('h1 .textBlur').first()
     const headingValue = () => heading.evaluate(el => Number(getComputedStyle(el).getPropertyValue('--value')))
+    const settledHeadingValue = async () => {
+      await page.waitForFunction((sample) => {
+        const value = Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value'))
+        sample.stable = sample.value === value ? sample.stable + 1 : 0
+        sample.value = value
+        return sample.stable >= 4
+      }, { value: null, stable: 0 })
+      return headingValue()
+    }
     assert.equal(await headingValue(), 0, `Heading must start without scroll trails at ${width}px`)
     await page.evaluate(() => window.scrollTo(0, 80))
     await page.waitForFunction(() => Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value')) < -1)
@@ -43,18 +52,22 @@ try {
 
     if (width === 1440) {
       const reloadRestored = async (label) => {
+        await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-smooth'))
         const before = await page.evaluate(() => scrollY)
         await page.reload()
         await page.waitForFunction(() => document.fonts.status === 'loaded')
+        await page.waitForFunction(() => document.querySelector('[data-logo-mode="scroll"] svg'))
+        await page.waitForFunction(expected => Math.abs(scrollY - expected) <= 2, before)
         await page.waitForTimeout(1500)
         assert.ok(Math.abs(await page.evaluate(() => scrollY) - before) <= 2, `${label}: reload must retain the native scroll position`)
-        const restoredBlur = await headingValue()
+        const restoredBlur = await settledHeadingValue()
         await page.evaluate(() => window.scrollTo(0, 0))
         await page.waitForFunction(() => scrollY === 0 && Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value')) === 0)
         assert.equal(await headingValue(), 0, `${label}: the top must have no heading trails`)
         await page.evaluate(y => window.scrollTo(0, y), before)
-        await page.waitForFunction(expected => Math.abs(Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value')) - expected) < 1, restoredBlur)
-        assert.ok(Math.abs(restoredBlur - await headingValue()) < 1, `${label}: restored heading blur must match a normal scroll to the same position`)
+        await page.waitForFunction(expected => Math.abs(scrollY - expected) <= 2, before)
+        const normalBlur = await settledHeadingValue()
+        assert.ok(Math.abs(restoredBlur - normalBlur) < 1, `${label}: restored heading blur must match a normal scroll to the same position`)
       }
 
       await page.mouse.wheel(0, -200)
