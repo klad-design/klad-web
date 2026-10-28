@@ -36,7 +36,7 @@ try {
     await page.evaluate(() => window.scrollTo(0, 80))
     await page.waitForFunction(() => Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value')) < -1)
     await page.evaluate(() => window.scrollTo(0, 0))
-    await page.waitForTimeout(1200)
+    await page.waitForFunction(() => scrollY === 0 && Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value')) === 0)
     assert.equal(await headingValue(), 0, 'Returning to the top must reset heading trails')
 
     if (width === 1440) {
@@ -58,10 +58,12 @@ try {
       await page.mouse.wheel(0, -200)
       await page.waitForFunction(() => scrollY > document.documentElement.scrollHeight - innerHeight - 300)
       await page.waitForTimeout(1200)
+      await page.waitForFunction(() => Number(document.querySelector('.home-loop h1 .textBlur').style.getPropertyValue('--value')) < -1)
       assert.ok(await page.locator('.home-loop h1 .textBlur').evaluate(el => Number(el.style.getPropertyValue('--value'))) < -1, 'Scrolling up from the initial hero must animate the loop heading')
       await page.mouse.wheel(0, 300)
       await page.waitForFunction(() => scrollY < 200)
       await page.waitForTimeout(1200)
+      await page.waitForFunction(() => Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value')) < -1)
       assert.ok(await headingValue() < -1, 'Reversing down across the loop must preserve heading trails')
       await reloadRestored('After a reverse loop')
 
@@ -98,6 +100,7 @@ try {
         await page.screenshot({ path: `${artifacts}/loop-${theme}.png` })
         await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight - innerHeight - 100))
         await page.waitForTimeout(300)
+        await page.waitForFunction(() => Number(document.querySelector('.home-loop h1 .textBlur').style.getPropertyValue('--value')) < -1)
         assert.ok(await page.locator('.home-loop h1 .textBlur').evaluate(el => Number(el.style.getPropertyValue('--value'))) < -1, 'The repeated hero must animate before the loop wraps')
         const recording = page.evaluate(() => new Promise((resolve) => {
           const frames = []
