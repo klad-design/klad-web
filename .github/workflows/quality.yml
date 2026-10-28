@@ -32,9 +32,7 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - uses: pnpm/action-setup@v6.1.0
-        with:
-          version: 11.24.0
+      - run: npm install --global pnpm@11.24.0 --force
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm build:staging
