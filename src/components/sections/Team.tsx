@@ -530,12 +530,33 @@ export function Team() {
     let timer: ReturnType<typeof setTimeout> | undefined
     const pending: number[] = []
     const requested = new Set<number>()
+    const pendingImages = new Set<HTMLImageElement>()
     const mobileFrames = window.innerWidth < 768
-    imagesRef.current = []
+    const images: HTMLImageElement[] = []
+    imagesRef.current = images
     drawnFrameRef.current = -1
 
+    const prepareFrame = async (index: number, mobileSource: boolean) => {
+      const size = mobileSource ? 832 : 1080
+      const source = mobileSource ? `/images/team-mobile/v5/${index}.avif` : `/images/team/${index}.avif`
+      const image = new Image()
+      image.decoding = 'async'
+      image.fetchPriority = index === 0 ? 'auto' : 'low'
+      pendingImages.add(image)
+      image.src = source
+      try {
+        await image.decode()
+        if (disposed || image.naturalWidth !== size || image.naturalHeight !== size)
+          throw new Error('Portrait unavailable')
+        return image
+      }
+      finally {
+        pendingImages.delete(image)
+      }
+    }
+
     const prepareFrames = () => {
-      if (disposed)
+      if (disposed || document.visibilityState !== 'visible')
         return
       // Prepare the current pair first, then cover the rest of the sequence.
       const target = frameRef.current
@@ -546,20 +567,17 @@ export function Team() {
       })
       while (loading < 4 && pending.length) {
         const index = pending.shift()!
-        const img = new Image()
-        img.decoding = 'async'
-        img.fetchPriority = index === 0 ? 'auto' : 'low'
-        img.src = mobileFrames ? `/images/team-mobile/v4/${index}.avif` : `/images/team/${index}.avif`
         loading++
-        img.decode().catch(() => {
+        prepareFrame(index, mobileFrames).catch(() => {
           if (!mobileFrames || disposed)
             throw new Error('Portrait unavailable')
-          img.src = `/images/team/${index}.avif`
-          return img.decode()
-        }).then(() => {
-          if (disposed)
+          return prepareFrame(index, false)
+        }).then((image) => {
+          if (disposed) {
+            image.src = ''
             return
-          imagesRef.current[index] = img
+          }
+          images[index] = image
           loadImageOnCanvas(frameRef.current)
         }).catch(() => {
           // Keep a prepared portrait visible if a frame cannot load.
@@ -620,7 +638,7 @@ export function Team() {
 
     const resizeCanvas = () => {
       const canvas = canvasRef.current
-      if (!canvas)
+      if (disposed || !canvas)
         return
       const mobile = window.innerWidth < 768
       const interpolate = window.matchMedia('(max-width: 767px), (pointer: coarse)').matches
@@ -637,8 +655,9 @@ export function Team() {
       resize.observe(canvasRef.current)
 
     const restore = () => {
-      if (document.visibilityState !== 'visible')
+      if (disposed || document.visibilityState !== 'visible')
         return
+      prepareFrames()
       drawnFrameRef.current = -1
       ScrollTrigger.refresh()
       loadImageOnCanvas(frameRef.current)
@@ -648,6 +667,12 @@ export function Team() {
 
     return () => {
       disposed = true
+      pendingImages.forEach(image => image.src = '')
+      for (const image of images) {
+        if (image)
+          image.src = ''
+      }
+      images.length = 0
       if (idle !== undefined)
         window.cancelIdleCallback(idle)
       clearTimeout(timer)

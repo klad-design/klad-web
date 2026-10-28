@@ -2,9 +2,9 @@ import assert from 'node:assert/strict'
 import { mkdir } from 'node:fs/promises'
 import process from 'node:process'
 
-import { chromium, webkit } from 'playwright'
+import { chromium, firefox, webkit } from 'playwright'
 
-const type = { chromium, webkit }[process.env.STAGING_BROWSER || 'chromium']
+const type = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3106'
 const browser = await type.launch()
 const artifacts = `artifacts/case-motion/${type.name()}`

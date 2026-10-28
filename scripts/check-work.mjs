@@ -142,6 +142,8 @@ try {
         const image = page.locator(`main img[src*="${file}"]`)
         assert.equal(await image.count(), 1, `The replacement ${file} must be used once`)
         await image.scrollIntoViewIfNeeded()
+        await image.waitFor({ state: 'visible' })
+        await page.waitForFunction(file => document.querySelector(`main img[src*="${file}"]`)?.complete && document.querySelector(`main img[src*="${file}"]`)?.naturalWidth > 0, file)
         await image.evaluate(el => el.decode())
       }
       assert.equal(await page.locator('main img[src*="-left.avif"]').count(), 7, 'Only the seven numbered Datalane subframe pairs should be split')

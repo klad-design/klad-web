@@ -3,11 +3,13 @@ import process from 'node:process'
 
 import { chromium, firefox, webkit } from 'playwright'
 
+import { observeTeam, teamFrameURL } from './team-test-observer.mjs'
+
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
 const type = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
 assert.ok(type)
 const browser = await type.launch()
-const frameURL = /\/images\/(?:team-mobile\/v4|team)\/\d+\.avif$/
+const frameURL = teamFrameURL
 const seedFrames = [...new Set([...Array.from({ length: 16 }, (_, index) => index * 8), 30, 60, 90, 121])]
 const errors = []
 
@@ -26,50 +28,7 @@ async function visit(options, setup) {
   })
   for (const event of ['requestfinished', 'requestfailed'])
     context.on(event, request => pending.delete(request))
-  await context.addInitScript(() => {
-    const source = /\/images\/(?:team-mobile\/v4|team)\/(\d+)\.avif$/
-    const decoded = new WeakSet()
-    const decode = HTMLImageElement.prototype.decode
-    window.__teamDecoded = new Set()
-    window.__teamPaints = []
-    window.__teamHold61 ??= false
-    window.__teamReleases = []
-    HTMLImageElement.prototype.decode = function () {
-      return decode.call(this).then(async () => {
-        if (!source.test(this.src))
-          return
-        const frame = Number(this.src.match(source)[1])
-        if (window.__teamHold61 && frame === 61)
-          await new Promise(resolve => window.__teamRelease61 = resolve)
-        if (window.__teamHoldNonSeeds && frame % 8 !== 0 && ![30, 60, 90, 121].includes(frame))
-          await new Promise(resolve => window.__teamReleases.push(resolve))
-        decoded.add(this)
-        window.__teamDecoded.add(this.src)
-      })
-    }
-    const clear = CanvasRenderingContext2D.prototype.clearRect
-    const draw = CanvasRenderingContext2D.prototype.drawImage
-    let paint
-    CanvasRenderingContext2D.prototype.clearRect = function (...args) {
-      if (this.canvas.closest?.('#team')) {
-        paint = { time: performance.now(), draws: [] }
-        window.__teamPaints.push(paint)
-      }
-      return clear.apply(this, args)
-    }
-    CanvasRenderingContext2D.prototype.drawImage = function (...args) {
-      if (this.canvas.closest?.('#team') && source.test(args[0].src)) {
-        paint?.draws.push({
-          frame: Number(args[0].src.match(source)[1]),
-          alpha: this.globalAlpha,
-          operation: this.globalCompositeOperation,
-          decoded: decoded.has(args[0]),
-          width: args[0].naturalWidth,
-        })
-      }
-      return draw.apply(this, args)
-    }
-  })
+  await observeTeam(context)
   const page = await context.newPage()
   page.on('pageerror', error => errors.push(error.message))
   const response = await page.goto(baseURL)
@@ -109,7 +68,9 @@ async function seek(page, range, frame) {
 function verifyPaints(result) {
   assert.ok(result.length)
   for (const paint of result) {
-    assert.ok(paint.draws.every(draw => draw.decoded), 'A frame must finish decode() before drawing')
+    assert.ok(paint.draws.every(draw => draw.decoded), 'A frame must finish decoding before drawing')
+    assert.ok(paint.draws.every(draw => !draw.cleared), 'Canceled image sources must never be drawn')
+    assert.ok(paint.draws.every(draw => draw.mappingError < 0.00001 && draw.sourceDimensionsValid), 'Each portrait must preserve its canonical source scale and placement')
     assert.ok(paint.draws.length <= 2, 'Each render needs at most two adjacent source frames')
     assert.ok(Math.abs(paint.draws.reduce((sum, draw) => sum + draw.alpha, 0) - 1) < 0.00001, 'Blend weights must preserve portrait opacity')
     if (paint.draws.length === 2) {
@@ -153,17 +114,37 @@ try {
   )
   await cold.page.waitForFunction(seeds => seeds.every(frame => [...window.__teamDecoded].some(url => url.endsWith(`/${frame}.avif`))), seedFrames)
   const coldRange = await mobileRange(cold.page)
-  const coldForward = await seek(cold.page, coldRange, 96.5)
+  await seek(cold.page, coldRange, 96.5)
+  await cold.page.waitForFunction(() => {
+    const draws = window.__teamPaints.filter(paint => paint.draws.length).at(-1)?.draws || []
+    const frame = draws.reduce((sum, draw) => sum + draw.frame * draw.alpha, 0)
+    return frame > 88 && frame <= 96.5
+  }, null, { timeout: 5000 })
+  const coldForward = await paints(cold.page)
   const forwardFrame = coldForward.at(-1).frame
-  assert.ok(forwardFrame > 88 && forwardFrame <= 96.5, 'A cold forward swipe must follow prepared poses instead of freezing on the first portrait')
+  assert.ok(forwardFrame > 88 && forwardFrame <= 96.5, `A cold forward swipe must follow prepared poses instead of freezing on the first portrait (observed ${forwardFrame})`)
   await paints(cold.page, true)
-  const coldReverse = await seek(cold.page, coldRange, 24.5)
+  await seek(cold.page, coldRange, 24.5)
+  await cold.page.waitForFunction(() => {
+    const draws = window.__teamPaints.filter(paint => paint.draws.length).at(-1)?.draws || []
+    const frame = draws.reduce((sum, draw) => sum + draw.frame * draw.alpha, 0)
+    return frame >= 24.5 && frame < 33
+  }, null, { timeout: 5000 })
+  const coldReverse = await paints(cold.page)
   assert.ok(coldReverse.at(-1).frame >= 24.5 && coldReverse.at(-1).frame < 33, 'A cold reverse swipe must follow prepared poses')
   assert.ok(coldReverse.every((paint, index) => index === 0 || paint.frame <= coldReverse[index - 1].frame + 0.001), 'Cold reverse poses must remain ordered')
+  await cold.page.evaluate(() => window.__teamSetVisibility('hidden'))
+  const hiddenRequests = await cold.page.evaluate(() => window.__teamImages.length)
   await cold.page.evaluate(() => {
     window.__teamHoldNonSeeds = false
     window.__teamReleases.forEach(release => release())
   })
+  await cold.page.waitForTimeout(300)
+  assert.equal(await cold.page.evaluate(() => window.__teamImages.length), hiddenRequests, 'A hidden tab must stop advancing the preparation queue after in-flight work settles')
+  const hiddenPaints = (await paints(cold.page)).length
+  await cold.page.waitForTimeout(200)
+  assert.equal((await paints(cold.page)).length, hiddenPaints, 'A stationary hidden Team must not keep painting')
+  await cold.page.evaluate(() => window.__teamSetVisibility('visible'))
   await cold.page.waitForFunction(() => window.__teamDecoded.size === 122)
   await cold.page.waitForTimeout(100)
   assert.ok(Math.abs((await paints(cold.page)).at(-1).frame - 24.5) < 0.2, 'Refinement frames must settle at the current target instead of replaying the missed swipe')
@@ -176,13 +157,15 @@ try {
   )
   const { page } = phone
   await page.waitForFunction(seeds => seeds.every(frame => [...window.__teamDecoded].some(url => url.endsWith(`/${frame}.avif`))), seedFrames)
-  assert.ok([...phone.requests][0].includes('/team-mobile/v4/'), 'Phones must use the sharper optimized rendition')
+  assert.ok([...phone.requests][0].includes('/team-mobile/v5/'), 'Phones must use the sharper optimized rendition')
   assert.equal((await paints(page)).at(-1).draws[0].width, 832, 'Phone portraits must retain the higher-resolution source detail')
+  assert.equal(await page.evaluate(() => window.__teamBitmapCalls), 0, 'Photographic frames must preserve the native HTML image resampling path')
   const range = await mobileRange(page)
   await page.evaluate(y => scrollTo(0, y), range.start - 500)
   await page.waitForFunction(() => window.__teamDecoded.size === 121, null, { timeout: 30000 })
   assert.equal(phone.requests.size, 122, 'Approaching Team must prepare every source frame')
   assert.ok(phone.peakRequests() <= 6, 'Portrait preparation must bound concurrent requests')
+  assert.ok(await page.evaluate(() => window.__teamDecodePeak <= 4), 'Portrait preparation must keep at most four decode operations in flight')
   assert.ok(await page.locator('#team canvas').evaluate(el => el.width === Math.round(el.clientWidth * Math.min(devicePixelRatio, 2))), 'Phone canvas must render at full 2x resolution on high-density screens')
 
   await paints(page, true)
@@ -266,7 +249,7 @@ try {
 
   const fallback = await visit(
     { viewport: { width: 390, height: 844 }, hasTouch: true },
-    context => context.route(/\/team-mobile\/v4\/(?:0|61)\.avif$/, route => route.abort()),
+    context => context.route(/\/team-mobile\/v5\/(?:0|61)\.avif$/, route => route.abort()),
   )
   assert.ok(fallback.requests.has(`${baseURL}/images/team/0.avif`), 'A failed initial mobile portrait must fall back to the original')
   await fallback.page.waitForFunction(() => window.__teamPaints.some(paint => paint.draws.some(draw => draw.frame === 0 && draw.width === 1080)))
@@ -286,12 +269,45 @@ try {
     await wide.page.waitForFunction(() => window.__teamDecoded.size === 122, null, { timeout: 30000 })
     assert.ok([...wide.requests].every(url => url.includes('/images/team/')), 'Tablets and desktops must use original-resolution portraits')
     assert.equal((await paints(wide.page)).at(-1).draws[0].width, 1080, 'Large portrait layouts must preserve original source detail')
+    assert.equal(await wide.page.evaluate(() => window.__teamBitmapCalls), 0, 'Desktop portraits must preserve native HTML image resampling')
     assert.ok(await wide.page.locator('#team canvas').evaluate(el => el.width === Math.round(el.clientWidth * Math.min(devicePixelRatio, 2))))
     verifyPaints(await paints(wide.page))
     await wide.context.close()
   }
+
+  let releaseRequest
+  const lifecycle = await visit(
+    { viewport: { width: 1024, height: 900 }, hasTouch: true },
+    async (context) => {
+      await context.addInitScript(() => window.__teamHold61 = true)
+      await context.route(/\/images\/team\/117\.avif$/, async (route) => {
+        await new Promise(resolve => releaseRequest = resolve)
+        await route.continue().catch(() => {})
+      })
+    },
+  )
+  await lifecycle.page.locator('#team').scrollIntoViewIfNeeded()
+  await lifecycle.page.waitForFunction(() => window.__teamDecoded.size === 120 && window.__teamImages.some(image => image.frame === 117 && image.decoding), null, { timeout: 30000 })
+  assert.ok(await lifecycle.page.evaluate(() => window.__teamImages.some(image => image.frame === 61 && image.nativeDecoded && image.decoding)), 'Lifecycle check must hold a native-decoded image before publishing it')
+  await lifecycle.page.locator('a[href="/process"]').first().evaluate(link => link.click())
+  await lifecycle.page.waitForURL('**/process')
+  await lifecycle.page.waitForFunction(() => window.__teamImages.every(image => image.cleared))
+  const unmountedPaints = (await paints(lifecycle.page)).length
+  const unmountedImages = await lifecycle.page.evaluate(() => window.__teamImages.length)
+  await lifecycle.page.evaluate(() => window.__teamRelease61())
+  releaseRequest()
+  await lifecycle.page.waitForFunction(() => window.__teamImages.filter(image => image.frame === 61).every(image => !image.decoding))
+  await lifecycle.page.waitForTimeout(200)
+  const canceled = await lifecycle.page.evaluate(() => window.__teamImages.filter(image => image.decoding).map(image => ({ frame: image.frame, cleared: image.cleared })))
+  // Chromium can leave a canceled native decode pending when its network request was intercepted.
+  assert.ok(canceled.every(image => image.cleared), 'Any remaining native decode must already have its source canceled')
+  if (canceled.length)
+    console.log(`${type.name()} canceled native decode observation: ${JSON.stringify(canceled)}`)
+  assert.equal((await paints(lifecycle.page)).length, unmountedPaints, 'A late image decode must not paint after unmount')
+  assert.equal(await lifecycle.page.evaluate(() => window.__teamImages.length), unmountedImages, 'Unmount must clear pending and retained sources without advancing the queue')
+  await lifecycle.context.close()
   assert.deepEqual(errors, [], 'Team scenarios must not raise browser errors')
-  console.log(`Team checks passed in ${type.name()}: cold-swipe fallback, bounded loading, decoded-only draws, transparent interpolation, ordered playback, late frames, unclipped shoulders, failed-image fallback, rotation, reduced motion and touch tablets.`)
+  console.log(`Team checks passed in ${type.name()}: native image identity and geometry, cold swipes, bounded/hidden loading, decoded-only draws, transparent interpolation, ordered playback, late frames, unclipped shoulders, image fallback, rotation, reduced motion, touch tablets, source cancellation and late decode cleanup on unmount.`)
 }
 finally {
   await browser.close()

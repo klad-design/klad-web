@@ -4,10 +4,10 @@ import { mkdir } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import process from 'node:process'
 
-import { chromium, webkit } from 'playwright'
+import { chromium, firefox, webkit } from 'playwright'
 
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
-const type = { chromium, webkit }[process.env.STAGING_BROWSER || 'chromium']
+const type = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
 const browser = await type.launch()
 const artifacts = `artifacts/imprints/${type.name()}`
 await mkdir(artifacts, { recursive: true })
@@ -42,6 +42,24 @@ async function pixels(page, y, layer = 0) {
 
 async function imprintLayers(page) {
   return page.locator('.page-imprints canvas').evaluateAll(canvases => canvases.map(canvas => canvas.toDataURL()))
+}
+
+async function assertRestoredLayers(actual, expected) {
+  assert.equal(actual.length, expected.length, 'Reload must preserve the layer count')
+  for (const [index, source] of actual.entries()) {
+    const decode = value => sharp(Buffer.from(value.split(',')[1], 'base64')).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
+    const [restored, previous] = await Promise.all([decode(source), decode(expected[index])])
+    assert.deepEqual(restored.info, previous.info, 'Reload must preserve the layer dimensions')
+    let maxDelta = 0
+    for (let i = 0; i < restored.data.length; i += 4) {
+      const alpha = previous.data[i + 3]
+      assert.equal(restored.data[i + 3], alpha, 'Reload must preserve every alpha value')
+      // Firefox rounds color when serializing and restoring premultiplied PNGs.
+      for (let channel = 0; channel < 3; channel++)
+        maxDelta = Math.max(maxDelta, Math.abs(restored.data[i + channel] - previous.data[i + channel]) * alpha / 255)
+    }
+    assert.ok(maxDelta <= 2, 'Reload must preserve the visible pixels within two color levels')
+  }
 }
 
 async function marker(page, y, selector = '[data-page-content]') {
@@ -190,7 +208,7 @@ try {
     await page.waitForURL('**/work/datalane')
     await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
     await page.waitForFunction(() => document.querySelector('.page-imprints canvas').getContext('2d').getImageData(innerWidth - 5, 704, 1, 1).data[3] > 80)
-    const beforeCase = await imprintLayers(page)
+    let beforeCase = await imprintLayers(page)
     await page.waitForTimeout(250)
     assert.equal(await page.locator('.page-imprints').isVisible(), false, 'Case pages must hide all previous-page imprints')
     await marker(page, 760)
@@ -206,7 +224,9 @@ try {
     await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
     await page.waitForFunction(() => document.querySelector('.page-imprints canvas').getContext('2d').getImageData(innerWidth - 5, 704, 1, 1).data[3] > 80)
     await page.waitForFunction(() => document.querySelectorAll('.page-imprints canvas')[1].width > 0)
-    assert.deepEqual(await imprintLayers(page), beforeCase, 'Reloading a case must restore only the previously eligible page layers')
+    const restored = await imprintLayers(page)
+    await assertRestoredLayers(restored, beforeCase)
+    beforeCase = restored
     assert.equal(await page.locator('.page-imprints').isVisible(), false, 'Reloading a case must not reveal stored imprints')
     await page.screenshot({ path: `${artifacts}/dark-case-${width}.png` })
 

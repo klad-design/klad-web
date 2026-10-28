@@ -4,6 +4,8 @@ import process from 'node:process'
 
 import { chromium, firefox, webkit } from 'playwright'
 
+import { observeTeam } from './team-test-observer.mjs'
+
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
 const type = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
 assert.ok(type)
@@ -69,31 +71,15 @@ try {
   const landscape = await browser.newContext({ viewport: { width: 667, height: 375 }, hasTouch: true, deviceScaleFactor: 3 })
   const portraitRequests = new Set()
   landscape.on('request', (request) => {
-    if (/\/images\/team-mobile\/v4\/\d+\.avif/.test(request.url()))
+    if (/\/images\/team-mobile\/v5\/\d+\.avif/.test(request.url()))
       portraitRequests.add(request.url())
   })
-  await landscape.addInitScript(() => {
-    window.__portraitDraws = 0
-    window.__portraitFrames = []
-    window.__portraitWidths = []
-    const drawImage = CanvasRenderingContext2D.prototype.drawImage
-    CanvasRenderingContext2D.prototype.drawImage = function (...args) {
-      if (this.canvas.closest?.('#team')) {
-        window.__portraitDraws++
-        const frame = Number(args[0].src?.match(/\/(?:team|team-mobile\/v4)\/(\d+)\.avif/)?.[1])
-        if (Number.isInteger(frame) && this.globalCompositeOperation !== 'lighter')
-          window.__portraitFrames.push(frame + 1 - this.globalAlpha)
-        if (innerWidth < 768)
-          window.__portraitWidths.push(args[3] / this.canvas.width)
-      }
-      return drawImage.apply(this, args)
-    }
-  })
+  await observeTeam(landscape)
   const team = await visit(landscape, '/')
   assert.ok(await team.evaluate(() => window.__portraitDraws > 0), 'The initial mobile portrait must be drawn')
   await team.evaluate(() => scrollTo(0, document.querySelector('.memberDescription').getBoundingClientRect().top + scrollY - 195))
   await team.waitForTimeout(1500)
-  await team.waitForFunction(() => performance.getEntriesByType('resource').filter(entry => /\/images\/team-mobile\/v4\/\d+\.avif/.test(entry.name)).length === 122)
+  await team.waitForFunction(() => performance.getEntriesByType('resource').filter(entry => /\/images\/team-mobile\/v5\/\d+\.avif/.test(entry.name)).length === 122)
   assert.equal(portraitRequests.size, 122, 'Mobile must prepare the complete lightweight frame sequence near Team')
   const portrait = await team.locator('.models').boundingBox()
   assert.ok(portrait.height <= 151 && portrait.y + portrait.height < 275, 'Landscape portrait must leave at least 100px to read below it')
@@ -127,7 +113,8 @@ try {
   assert.ok(new Set(reversed).size > 4 && reversed.every((frame, index) => index === 0 || frame <= reversed[index - 1]), 'Reverse playback must also play intermediate frames in order')
   assert.equal(reversed.at(-1), 0, 'Reverse scrolling must settle on the first frame')
   const widths = await team.evaluate(() => window.__portraitWidths)
-  assert.ok(Math.max(...widths) - Math.min(...widths) < 0.001, 'Mobile portraits must keep one fixed scale while scrolling')
+  assert.ok(Math.max(...widths) - Math.min(...widths) < 0.001 && Math.abs(widths[0] - 1) < 0.001, 'Mobile portraits must retain one full canonical-stage scale while scrolling')
+  assert.ok(await team.evaluate(() => window.__teamPaints.every(paint => paint.draws.every(draw => draw.mappingError < 0.00001 && draw.sourceDimensionsValid))), 'Portraits must preserve their canonical placement and source density')
   assert.ok(await team.locator('#team canvas').evaluate(el => el.width <= Math.round(el.clientWidth * 2)), 'Canvas resolution must be capped at 2x on high-density phones')
   const redrawn = await team.locator('#team canvas').evaluate(() => {
     const before = window.__portraitDraws
@@ -141,7 +128,7 @@ try {
     const fallback = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true })
     let localFrameRequested = false
     fallback.on('request', (request) => {
-      if (request.url().endsWith('/images/team-mobile/v4/0.avif'))
+      if (request.url().endsWith('/images/team-mobile/v5/0.avif'))
         localFrameRequested = true
     })
     await visit(fallback, '/')
@@ -164,9 +151,21 @@ try {
     await page.evaluate(() => scrollTo(0, 40))
     for (const name of ['Chainviz', 'Circus', 'Chainviz']) {
       const button = page.getByRole('button', { name, exact: true })
-      const before = await button.boundingBox()
-      // Tap the visible edge: locator.click() would scroll the title for us.
-      await page.touchscreen.tap(Math.max(12, Math.min(378, before.x + before.width / 2)), before.y + before.height / 2)
+      // Reveal only the edge horizontally; selection must bring the whole title into view.
+      const point = await button.evaluate((button) => {
+        const menu = button.parentElement
+        const before = button.getBoundingClientRect()
+        if (before.left > innerWidth - 24)
+          menu.scrollLeft += before.left - (innerWidth - 24)
+        else if (before.right < 24)
+          menu.scrollLeft += before.right - 24
+        const bounds = button.getBoundingClientRect()
+        const x = (Math.max(12, bounds.left) + Math.min(innerWidth - 12, bounds.right)) / 2
+        const y = bounds.top + bounds.height / 2
+        return { x, y, hit: document.elementFromPoint(x, y)?.closest('button') === button }
+      })
+      assert.ok(point.hit, `${name}: the touch must hit the visible edge of the intended title`)
+      await page.touchscreen.tap(point.x, point.y)
       await page.waitForFunction(name => document.querySelector('button[aria-pressed="true"]')?.getAttribute('aria-label') === name, name)
       await page.waitForTimeout(650)
       const after = await button.boundingBox()
