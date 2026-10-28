@@ -54,10 +54,22 @@ try {
       const reloadRestored = async (label) => {
         await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-smooth'))
         const before = await page.evaluate(() => scrollY)
+        await page.evaluate(() => {
+          const state = () => ({ y: scrollY, limit: document.documentElement.scrollHeight - innerHeight, classes: document.documentElement.className, fonts: document.fonts.status, history: history.scrollRestoration })
+          sessionStorage.setItem('smoke-before-reload', JSON.stringify(state()))
+          addEventListener('pagehide', () => sessionStorage.setItem('smoke-pagehide', JSON.stringify(state())), { once: true })
+        })
         await page.reload()
         await page.waitForFunction(() => document.fonts.status === 'loaded')
         await page.waitForFunction(() => document.querySelector('[data-logo-mode="scroll"] svg'))
-        await page.waitForFunction(expected => Math.abs(scrollY - expected) <= 2, before)
+        try {
+          await page.waitForFunction(expected => Math.abs(scrollY - expected) <= 2, before)
+        }
+        catch (error) {
+          console.error(label, await page.evaluate(() => ({ before: sessionStorage.getItem('smoke-before-reload'), pagehide: sessionStorage.getItem('smoke-pagehide'), y: scrollY, limit: document.documentElement.scrollHeight - innerHeight, classes: document.documentElement.className, fonts: document.fonts.status, history: history.scrollRestoration })))
+          await page.screenshot({ path: `${artifacts}/reload-failure.png` })
+          throw error
+        }
         await page.waitForTimeout(1500)
         assert.ok(Math.abs(await page.evaluate(() => scrollY) - before) <= 2, `${label}: reload must retain the native scroll position`)
         const restoredBlur = await settledHeadingValue()
