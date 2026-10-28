@@ -17,7 +17,7 @@ try {
     const context = await browser.newContext({ baseURL, viewport: { width, height: 900 }, hasTouch: width < 1024 })
     const page = await context.newPage()
     page.setDefaultTimeout(30000)
-    page.on('pageerror', error => errors.push(error.message))
+    page.on('pageerror', error => errors.push(`${page.url()}: ${error.stack}`))
     page.on('console', (message) => {
       if (message.type() === 'error' && /hydration|cannot update/i.test(message.text()))
         errors.push(message.text())
@@ -186,6 +186,7 @@ try {
     }
 
     console.log(`${browserType.name()}: ${width}px portfolio and navigation`)
+    await page.waitForLoadState('networkidle')
     await page.goto(`${baseURL}/work`)
     await page.waitForFunction(() => document.fonts.status === 'loaded')
     await page.waitForTimeout(600)
@@ -237,11 +238,14 @@ try {
     if (width >= 1024) {
       for (let visit = 0; visit < 3; visit++) {
         await page.getByRole('link', { name: 'About', exact: true }).click()
+        await page.waitForURL(`${baseURL}/`)
         await page.waitForTimeout(300)
         assert.equal(await page.locator('html').getAttribute('data-theme'), 'light')
         await page.getByRole('link', { name: 'Work', exact: true }).click()
+        await page.waitForURL(`${baseURL}/work`)
       }
     }
+    await page.waitForLoadState('networkidle')
     await context.close()
   }
 

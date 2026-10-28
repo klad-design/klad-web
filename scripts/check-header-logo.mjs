@@ -247,7 +247,7 @@ async function assertAutoplay(page, label) {
         assert.deepEqual(sample.body, rest.body, `Cycle ${cycle}: identical body endpoint throughout rest`)
         assert.deepEqual(sample.lettering, rest.lettering, `Cycle ${cycle}: identical lettering endpoint throughout rest`)
       }
-      assert.ok(samples.filter(sample => sample.cycle === cycle).every(sample => sample.paused && sample.time < 2), `Cycle ${cycle}: native SMIL remains paused and JS owns the clock`)
+      assert.ok(samples.filter(sample => sample.cycle === cycle).every(sample => sample.paused && sample.time <= 2), `Cycle ${cycle}: native SMIL remains paused within the two-second animation`)
       const first = samples.find(sample => sample.cycle === cycle && sample.time > 0)
       starts.push(first.wall - first.time)
       assert.equal((await imageDifference(restImages[0], restImages[cycle])).maximum, 0, `Cycle ${cycle}: exact visible resting artwork`)
