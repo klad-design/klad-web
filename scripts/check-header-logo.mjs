@@ -197,18 +197,15 @@ async function assertLiveScroll(page, label, mobile) {
 }
 
 async function assertAutoplay(page, label) {
-  await page.goto(`${baseURL}/pricing`)
-  await ready(page, 'autoplay')
-  const visual = page.locator('[data-header-logo]').first()
-  const logo = visual.locator('svg')
-  const style = await page.addStyleTag({ content: 'body::after{display:none!important}html,body{transition:none!important}' })
-  await page.evaluate(() => {
-    const svg = document.querySelector('[data-header-logo] svg')
+  await page.addInitScript(() => {
     const start = performance.now()
     let previous = 0
     let cycle = -1
     window.__headerLogoAudit = { samples: [] }
     function sample() {
+      const svg = document.querySelector('[data-header-logo][data-logo-mode="autoplay"] svg')
+      if (!svg)
+        return
       const time = svg.getCurrentTime()
       if (time > 0 && previous === 0)
         cycle++
@@ -217,23 +214,34 @@ async function assertAutoplay(page, label) {
       const matrix = svg.querySelector('#logo-word-face').getCTM()
       window.__headerLogoAudit.samples.push({ wall: (performance.now() - start) / 1000, cycle, time, paused: svg.animationsPaused(), body: [bounds.x, bounds.y, bounds.width, bounds.height], lettering: [matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f], scale: svg.querySelector('#logo-word-scale').transform.animVal.getItem(0).matrix.d })
     }
+    window.__headerLogoAudit.sample = sample
     sample()
     window.__headerLogoAudit.timer = setInterval(sample, 80)
   })
+  await page.goto(`${baseURL}/pricing`)
+  await ready(page, 'autoplay')
+  const visual = page.locator('[data-header-logo]').first()
+  const logo = visual.locator('svg')
+  const style = await page.addStyleTag({ content: 'body::after{display:none!important}html,body{transition:none!important}' })
+  const firstCycle = await page.evaluate(() => {
+    window.__headerLogoAudit.sample()
+    return window.__headerLogoAudit.samples.at(-1).cycle + 1
+  })
   try {
     const restImages = []
-    for (let cycle = 0; cycle < 4; cycle++) {
+    for (let index = 0; index < 4; index++) {
+      const cycle = firstCycle + index
       await page.waitForFunction((cycle) => {
         const sample = window.__headerLogoAudit.samples.at(-1)
         return sample.cycle === cycle && sample.time > 0.6 && sample.time < 1.4
-      }, cycle, { timeout: cycle === 0 ? 6000 : 15000, polling: 40 })
+      }, cycle, { timeout: 15000, polling: 40 })
       await visual.screenshot({ path: `${artifacts}/${label}-cycle-${cycle}-active.png` })
       await page.waitForFunction((cycle) => {
         const sample = window.__headerLogoAudit.samples.at(-1)
         return sample.cycle === cycle && sample.time === 0
       }, cycle, { timeout: 5000 })
       restImages.push(await visual.screenshot({ path: `${artifacts}/${label}-cycle-${cycle}-rest.png` }))
-      if (cycle === 0) {
+      if (index === 0) {
         await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight / 2))
         assert.equal((await state(logo)).time, 0, 'Secondary page scrolling does not seek its idle animation')
         await page.evaluate(() => scrollTo(0, 0))
@@ -241,9 +249,10 @@ async function assertAutoplay(page, label) {
     }
     const samples = await page.evaluate(() => window.__headerLogoAudit.samples)
     const starts = []
-    const rest = samples.find(sample => sample.cycle === 0 && sample.time === 0)
+    const rest = samples.find(sample => sample.cycle === firstCycle && sample.time === 0)
     assert.ok(rest?.body[2] > 100, 'Measure rendered body geometry, not a zero-sized defs path')
-    for (let cycle = 0; cycle < 4; cycle++) {
+    for (let index = 0; index < 4; index++) {
+      const cycle = firstCycle + index
       const active = samples.filter(sample => sample.cycle === cycle && sample.time > 0.4 && sample.time < 1.6)
       const idle = samples.filter(sample => sample.cycle === cycle && sample.time === 0)
       assert.ok(active.length >= 3, `Cycle ${cycle}: visible playback has multiple measured frames`)
@@ -257,9 +266,9 @@ async function assertAutoplay(page, label) {
       assert.ok(samples.filter(sample => sample.cycle === cycle).every(sample => sample.paused && sample.time <= 2), `Cycle ${cycle}: native SMIL remains paused within the two-second animation`)
       const first = samples.find(sample => sample.cycle === cycle && sample.time > 0)
       starts.push(first.wall - first.time)
-      assert.equal((await imageDifference(restImages[0], restImages[cycle])).maximum, 0, `Cycle ${cycle}: exact visible resting artwork`)
-      if (cycle)
-        assert.ok(starts[cycle] - starts[cycle - 1] >= 11.7 && starts[cycle] - starts[cycle - 1] <= 15, `Cycle ${cycle}: next playback starts about twelve seconds later (${starts[cycle] - starts[cycle - 1]})`)
+      assert.equal((await imageDifference(restImages[0], restImages[index])).maximum, 0, `Cycle ${cycle}: exact visible resting artwork`)
+      if (index)
+        assert.ok(starts[index] - starts[index - 1] >= 11.7 && starts[index] - starts[index - 1] <= 15, `Cycle ${cycle}: next playback starts about twelve seconds later (${starts[index] - starts[index - 1]})`)
     }
   }
   finally {
@@ -398,8 +407,8 @@ async function runLayout(browser, name, mobile) {
   const autoplayContext = await browser.newContext(options)
   const autoplayPage = await autoplayContext.newPage()
   autoplayPage.on('pageerror', error => errors.push(error.message))
-  const autoplay = check(`${label}-autoplay-four-cycles`, autoplayPage, () => assertAutoplay(autoplayPage, label)).finally(() => autoplayContext.close())
   try {
+    await check(`${label}-autoplay-four-cycles`, autoplayPage, () => assertAutoplay(autoplayPage, label)).finally(() => autoplayContext.close())
     await page.goto(baseURL)
     await ready(page, 'scroll')
     const inkStyle = await page.locator('.page-imprints-ink').evaluate((ink) => {
@@ -557,11 +566,9 @@ async function runLayout(browser, name, mobile) {
     })
     await check(`${label}-loading-and-validation`, page, () => assertLoading(browser, options, label))
     await check(`${label}-initial-fallback`, page, () => assertInitial(browser, options, label))
-    await autoplay
     await check(`${label}-client-errors`, page, async () => assert.deepEqual(errors, []))
   }
   finally {
-    await autoplay
     await context.close()
   }
 }
@@ -569,21 +576,25 @@ async function runLayout(browser, name, mobile) {
 const engines = { chromium, firefox, webkit }
 if (process.env.STAGING_BROWSER)
   assert.ok(engines[process.env.STAGING_BROWSER], 'STAGING_BROWSER must be chromium, firefox or webkit')
-await Promise.all(Object.entries(engines).map(async ([name, engine]) => {
+// Timing and pixel probes must not compete with other rendered test pages.
+for (const [name, engine] of Object.entries(engines)) {
   if (process.env.STAGING_BROWSER && name !== process.env.STAGING_BROWSER)
-    return
+    continue
   const browser = await engine.launch()
   try {
-    const results = await Promise.allSettled([runLayout(browser, name, false), runLayout(browser, name, true)])
-    for (const result of results) {
-      if (result.status === 'rejected')
-        failures.push(`${name}: ${result.reason.stack}`)
+    for (const mobile of [false, true]) {
+      try {
+        await runLayout(browser, name, mobile)
+      }
+      catch (error) {
+        failures.push(`${name}: ${error.stack}`)
+      }
     }
   }
   finally {
     await browser.close()
   }
-}))
+}
 await writeFile(`${artifacts}/results.json`, JSON.stringify({ failures }, null, 2))
 assert.deepEqual(failures, [], 'Every logo regression must pass; see artifacts/header-logo/results.json')
 console.log('All logo checks passed across the requested desktop and touch browser matrix.')
