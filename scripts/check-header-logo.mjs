@@ -68,8 +68,11 @@ async function scroll(page, progress) {
 }
 
 async function navigate(page, name, path) {
-  if (await page.getByRole('button', { name: 'Menu', exact: true }).isVisible())
+  if (await page.getByRole('button', { name: 'Menu', exact: true }).isVisible()) {
     await page.getByRole('button', { name: 'Menu', exact: true }).click()
+    await page.getByRole('dialog').waitFor()
+    await page.waitForFunction(() => [...document.querySelectorAll('[role="dialog"] .menuItem')].every(element => Number(getComputedStyle(element).opacity) > 0.98))
+  }
   await page.getByRole('link', { name, exact: true }).click()
   await page.waitForURL(`**${path}`)
 }
