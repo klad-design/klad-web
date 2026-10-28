@@ -113,7 +113,7 @@ try {
             if (!wrappedAt && frames.length > 1 && frames.at(-2).y - scrollY > 1000)
               wrappedAt = performance.now()
             if (performance.now() < end && (!wrappedAt || performance.now() - wrappedAt < 1600))
-              requestAnimationFrame(sample)
+              requestAnimationFrame(() => setTimeout(sample, 0))
             else
               resolve(frames)
           }
@@ -123,7 +123,7 @@ try {
         const frames = await recording
         const wrap = frames.findIndex((frame, index) => index > 0 && frames[index - 1].y - frame.y > 1000)
         assert.ok(wrap > 0, `Wheel scrolling must wrap back to the hero: ${JSON.stringify({ count: frames.length, first: frames.slice(0, 3), last: frames.slice(-3) })}`)
-        assert.equal(frames[wrap].value, 0, 'Map layers must already align on the first frame after wrapping')
+        assert.equal(frames[wrap].value, 0, `Map layers must already align on the first frame after wrapping: ${JSON.stringify(frames.slice(Math.max(0, wrap - 2), wrap + 3))}`)
         assert.ok(frames[wrap].heading < -1, 'The active heading trail must survive the wrap')
         // A delayed render can span several 60 Hz frames.
         const maxChange = 5 * Math.max(1, (frames[wrap].time - frames[wrap - 1].time) / (1000 / 60))
