@@ -59,9 +59,27 @@ async function paints(page, reset = false) {
   }, reset)
 }
 
+async function waitForPose(page, frame) {
+  try {
+    await page.waitForFunction((frame) => {
+      const ready = [Math.floor(frame), Math.ceil(frame)].every(index => [...window.__teamDecoded].some(url => url.endsWith(`/${index}.avif`)))
+      // Cold-frame scenarios deliberately hold the neighboring decode.
+      if (!ready)
+        return true
+      const draws = window.__teamPaints.filter(paint => paint.draws.length).at(-1)?.draws || []
+      return draws.length > 0 && Math.abs(draws.reduce((sum, draw) => sum + draw.frame * draw.alpha, 0) - frame) < 0.2
+    }, frame)
+  }
+  catch (error) {
+    console.error('Team pose failed:', await page.evaluate(frame => ({ frame, y: scrollY, fonts: document.fonts.status, paints: window.__teamPaints.filter(paint => paint.draws.length).slice(-3) }), frame))
+    throw error
+  }
+}
+
 async function seek(page, range, frame) {
   await page.evaluate(y => scrollTo(0, y), range.start + (range.end - range.start) * frame / 121)
   await page.waitForTimeout(1000)
+  await waitForPose(page, frame)
   return paints(page)
 }
 
@@ -146,7 +164,7 @@ try {
   assert.equal((await paints(cold.page)).length, hiddenPaints, 'A stationary hidden Team must not keep painting')
   await cold.page.evaluate(() => window.__teamSetVisibility('visible'))
   await cold.page.waitForFunction(() => window.__teamDecoded.size === 122)
-  await cold.page.waitForTimeout(100)
+  await waitForPose(cold.page, 24.5)
   assert.ok(Math.abs((await paints(cold.page)).at(-1).frame - 24.5) < 0.2, 'Refinement frames must settle at the current target instead of replaying the missed swipe')
   verifyPaints(await paints(cold.page))
   await cold.context.close()
@@ -175,7 +193,7 @@ try {
   assert.ok(Math.abs(beforeRelease.at(-1).frame - 70.5) < 0.2)
   await page.evaluate(() => window.__teamRelease61())
   await page.waitForFunction(() => window.__teamDecoded.size === 122)
-  await page.waitForTimeout(100)
+  await waitForPose(page, 70.5)
   assert.ok(Math.abs((await paints(page)).at(-1).frame - 70.5) < 0.2, 'Late decode completion must preserve the current playhead')
   verifyPaints(await paints(page))
 
