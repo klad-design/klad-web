@@ -4,6 +4,8 @@ import process from 'node:process'
 
 import { chromium, firefox, webkit } from 'playwright'
 
+import { observeRoutePrefetches } from './route-test-observer.mjs'
+
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
 const browserType = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
 assert.ok(browserType, 'STAGING_BROWSER must be chromium, firefox or webkit')
@@ -17,6 +19,7 @@ try {
     const context = await browser.newContext({ baseURL, viewport: { width, height: 900 }, hasTouch: width < 1024 })
     const page = await context.newPage()
     page.setDefaultTimeout(30000)
+    const settleRoutes = observeRoutePrefetches(page, baseURL)
     page.on('pageerror', error => errors.push(`${page.url()}: ${error.stack}`))
     page.on('console', (message) => {
       if (message.type() === 'error' && /hydration|cannot update/i.test(message.text()))
@@ -192,7 +195,7 @@ try {
     }
 
     console.log(`${browserType.name()}: ${width}px portfolio and navigation`)
-    await page.waitForLoadState('networkidle')
+    await settleRoutes()
     await page.goto(`${baseURL}/work`)
     await page.waitForFunction(() => document.fonts.status === 'loaded')
     await page.waitForTimeout(600)
@@ -223,12 +226,12 @@ try {
     }
 
     // Let link prefetches finish before replacing the document in WebKit.
-    await page.waitForLoadState('networkidle')
+    await settleRoutes()
     await page.goto(`${baseURL}/process`)
     assert.equal(await page.locator('[aria-hidden] a:not([inert] a)').count(), 0, 'Decorative links must be inert')
     assert.ok(!(await page.locator('meta[property="og:image"]').getAttribute('content')).includes('localhost'))
 
-    await page.waitForLoadState('networkidle')
+    await settleRoutes()
     await page.goto(`${baseURL}/work/stars-honey`)
     await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
     assert.ok(await page.locator('video[src]').count() <= 1, 'Offscreen videos should not all load at once')
@@ -251,7 +254,7 @@ try {
         await page.waitForURL(`${baseURL}/work`)
       }
     }
-    await page.waitForLoadState('networkidle')
+    await settleRoutes()
     await context.close()
   }
 

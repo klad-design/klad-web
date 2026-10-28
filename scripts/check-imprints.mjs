@@ -6,6 +6,8 @@ import process from 'node:process'
 
 import { chromium, firefox, webkit } from 'playwright'
 
+import { observeRoutePrefetches } from './route-test-observer.mjs'
+
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
 const type = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
 const browser = await type.launch()
@@ -83,6 +85,7 @@ try {
     for (const { format, body } of rasterFixtures)
       await context.route(`**/imprint-test.${format}`, route => route.fulfill({ contentType: `image/${format}`, body }))
     const page = await context.newPage()
+    const settleRoutes = observeRoutePrefetches(page, baseURL)
     page.on('pageerror', error => errors.push(error.message))
     await page.addInitScript(src => sessionStorage.setItem('klad-page-imprints-v3', JSON.stringify([src])), `data:image/png;base64,${rasterFixtures[0].body.toString('base64')}`)
     await page.goto('/pricing')
@@ -187,6 +190,7 @@ try {
     assert.equal((await pixels(page, 404))[3], 0, 'The newest layer must not contain ink from older pages')
     assert.ok((await pixels(page, 404, 1))[3] > 80, 'The previous imprint must move to the older layer')
     assert.ok((await pixels(page, 504))[3] > 80, 'The newest viewport must join the history')
+    await settleRoutes()
     await page.reload()
     await page.waitForFunction(() => document.querySelector('.page-imprints canvas').width > 0)
     await page.waitForFunction(() => document.querySelectorAll('.page-imprints canvas')[1].width > 0)
@@ -220,6 +224,7 @@ try {
     await page.waitForURL('**/work/datalane')
     await page.waitForTimeout(200)
     assert.deepEqual(await imprintLayers(page), beforeCase, 'Returning to the previous case must preserve existing layers')
+    await settleRoutes()
     await page.reload()
     await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
     await page.waitForFunction(() => document.querySelector('.page-imprints canvas').getContext('2d').getImageData(innerWidth - 5, 704, 1, 1).data[3] > 80)
@@ -273,6 +278,7 @@ try {
     }, points), points.map(() => [171, 171, 171, 255]), 'The older imprint must retain the case-cover fill while layer opacity changes')
     await page.setViewportSize({ width: width === 1440 ? 768 : 320, height: 700 })
     assert.ok(await page.locator('.page-imprints').evaluate(el => el.getBoundingClientRect().right <= innerWidth), 'Resize must not create horizontal overflow')
+    await settleRoutes()
     await context.close()
   }
 

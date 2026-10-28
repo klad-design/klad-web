@@ -5,6 +5,7 @@ import process from 'node:process'
 import { chromium, firefox, webkit } from 'playwright'
 
 import { assertImprintExclusion, assertInversion, assertLogoBounds, assertLogoPhotoInversion, assertPageInversion, imageDifference, pngPixels } from './assert-inversion.mjs'
+import { observeRoutePrefetches } from './route-test-observer.mjs'
 
 const frozenLogo = await readFile('public/images/logo-still.svg', 'utf8')
 const motionLogo = await readFile('public/images/logo-scroll-motion.svg', 'utf8')
@@ -399,16 +400,25 @@ async function runLayout(browser, name, mobile) {
   const options = { viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 900 }, hasTouch: mobile, ...(name === 'firefox' ? {} : { isMobile: mobile }), reducedMotion: 'no-preference' }
   const context = await browser.newContext(options)
   const page = await context.newPage()
+  const settleRoutes = observeRoutePrefetches(page, baseURL)
   page.setDefaultTimeout(15000)
   const errors = []
-  context.on('page', page => page.on('pageerror', error => errors.push(error.message)))
-  page.on('pageerror', error => errors.push(error.message))
+  context.on('page', page => page.on('pageerror', error => errors.push(`${page.url()}: ${error.stack}`)))
+  page.on('pageerror', error => errors.push(`${page.url()}: ${error.stack}`))
   // Home scroll changes the persisted theme; keep the playback pixel reference in its own storage context.
   const autoplayContext = await browser.newContext(options)
   const autoplayPage = await autoplayContext.newPage()
-  autoplayPage.on('pageerror', error => errors.push(error.message))
+  const settleAutoplay = observeRoutePrefetches(autoplayPage, baseURL)
+  autoplayPage.on('pageerror', error => errors.push(`${autoplayPage.url()}: ${error.stack}`))
   try {
-    await check(`${label}-autoplay-four-cycles`, autoplayPage, () => assertAutoplay(autoplayPage, label)).finally(() => autoplayContext.close())
+    await check(`${label}-autoplay-four-cycles`, autoplayPage, () => assertAutoplay(autoplayPage, label)).finally(async () => {
+      try {
+        await settleAutoplay()
+      }
+      finally {
+        await autoplayContext.close()
+      }
+    })
     await page.goto(baseURL)
     await ready(page, 'scroll')
     const inkStyle = await page.locator('.page-imprints-ink').evaluate((ink) => {
@@ -504,6 +514,7 @@ async function runLayout(browser, name, mobile) {
       const original = await page.evaluate(() => scrollY)
       await navigate(page, 'Pricing', '/pricing')
       await ready(page, 'autoplay')
+      await settleRoutes()
       await page.goBack()
       await page.waitForURL(`${baseURL}/`)
       await ready(page, 'scroll')
@@ -525,10 +536,12 @@ async function runLayout(browser, name, mobile) {
       await navigate(page, 'Process', '/process')
       await ready(page, 'autoplay')
       assert.equal(await page.locator('[data-header-logo] svg').count(), 1, 'Secondary route changes leave one animation')
+      await settleRoutes()
       await page.goto(`${baseURL}/work/datalane`)
       await page.waitForTimeout(250)
       assert.equal(await page.locator('[data-header-logo]').count(), 0, 'Case pages clean up the portal')
       assert.equal(await page.locator('[data-header-logo-initial]').isVisible(), false, 'Case pages never display initial artwork')
+      await settleRoutes()
       await page.goto(`${baseURL}/#team`)
       await ready(page, 'scroll')
       await page.waitForFunction(() => scrollY > 100)
@@ -538,6 +551,7 @@ async function runLayout(browser, name, mobile) {
     })
     if (!mobile) {
       await check(`${label}-home-loop`, page, async () => {
+        await settleRoutes()
         await page.goto(baseURL)
         await ready(page, 'scroll')
         await scroll(page, 0.99)
@@ -551,6 +565,7 @@ async function runLayout(browser, name, mobile) {
     }
     await check(`${label}-reduced-motion`, page, async () => {
       for (const path of ['/', '/pricing']) {
+        await settleRoutes()
         await page.goto(`${baseURL}${path}`)
         await ready(page, path === '/' ? 'scroll' : 'autoplay')
         for (let iteration = 0; iteration < 2; iteration++) {
@@ -566,6 +581,7 @@ async function runLayout(browser, name, mobile) {
     })
     await check(`${label}-loading-and-validation`, page, () => assertLoading(browser, options, label))
     await check(`${label}-initial-fallback`, page, () => assertInitial(browser, options, label))
+    await settleRoutes()
     await check(`${label}-client-errors`, page, async () => assert.deepEqual(errors, []))
   }
   finally {

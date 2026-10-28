@@ -4,6 +4,8 @@ import process from 'node:process'
 
 import { chromium, firefox, webkit } from 'playwright'
 
+import { observeRoutePrefetches } from './route-test-observer.mjs'
+
 const type = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
 const browser = await type.launch()
@@ -22,6 +24,7 @@ try {
   for (const width of [1440, 390]) {
     const context = await browser.newContext({ baseURL, viewport: { width, height: 900 }, hasTouch: width < 768 })
     const page = await context.newPage()
+    const settleRoutes = observeRoutePrefetches(page, baseURL)
     page.on('pageerror', error => errors.push(error.message))
     await page.goto('/work')
     await page.evaluate(() => document.fonts.ready)
@@ -104,12 +107,13 @@ try {
     await page.waitForURL('**/work/chainviz')
     await page.waitForFunction(() => !document.querySelector('.case-close').hidden)
     await page.waitForFunction(() => getComputedStyle([...document.querySelectorAll('[data-case-reveal] img')].at(-1)).filter === 'blur(6px)')
-    await page.waitForLoadState('networkidle')
+    await settleRoutes()
     await context.close()
   }
 
   const reduced = await browser.newContext({ baseURL, reducedMotion: 'reduce' })
   const page = await reduced.newPage()
+  const settleReducedRoutes = observeRoutePrefetches(page, baseURL)
   page.on('pageerror', error => errors.push(error.message))
   for (const slug of ['datalane', 'circus', 'stars-honey', 'linux-mint', 'shareio', 'chainviz']) {
     const response = await page.goto(`/work/${slug}`)
@@ -120,7 +124,7 @@ try {
     assert.ok(await page.locator('[data-case-reveal] img, [data-case-reveal] video').evaluateAll(elements => elements.every(el => getComputedStyle(el).filter === 'none' && getComputedStyle(el).opacity === '1')), 'Reduced motion must keep case media clear and visible')
     assert.ok(await page.locator('main > header > div').evaluateAll(elements => elements.every(el => el.style.opacity === '' && el.style.transform === '')), 'Reduced motion must skip opening motion')
     // Finish link prefetches before replacing the document in WebKit.
-    await page.waitForLoadState('networkidle')
+    await settleReducedRoutes()
   }
   for (const slug of ['case', 'another-case'])
     assert.equal((await page.request.get(`/work/${slug}`)).status(), 404, `${slug}: deleted template must stay unavailable`)

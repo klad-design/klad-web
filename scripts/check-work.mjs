@@ -4,6 +4,8 @@ import process from 'node:process'
 
 import { chromium, firefox, webkit } from 'playwright'
 
+import { observeRoutePrefetches } from './route-test-observer.mjs'
+
 const type = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
 const browser = await type.launch()
@@ -46,6 +48,7 @@ try {
 
   const desktop = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 } })
   const page = await desktop.newPage()
+  const settleRoutes = observeRoutePrefetches(page, baseURL)
   page.on('pageerror', error => errors.push(error.message))
   await page.goto('/work')
   await selected(page, 'Datalane')
@@ -121,6 +124,7 @@ try {
   await page.waitForURL('**/work/chainviz')
   await page.goBack()
   await selected(page, 'Chainviz')
+  await settleRoutes()
   await page.reload()
   await selected(page, 'Chainviz')
   await page.getByRole('link', { name: 'Work', exact: true }).click()
@@ -198,6 +202,7 @@ try {
   await page.waitForTimeout(400)
   assert.ok(await page.locator('.site-header').evaluate(el => el.scrollTop) > 0, 'An extra-short sidebar must allow its own content to scroll')
   assert.equal(await page.evaluate(() => scrollY), 0, 'Scrolling inside the sidebar must not move the page')
+  await settleRoutes()
   await desktop.close()
 
   const touchDesktop = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 }, hasTouch: true })
