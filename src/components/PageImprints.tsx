@@ -14,6 +14,7 @@ export function PageImprints() {
   const layerRef = useRef<HTMLDivElement>(null)
   const canvasesRef = useRef<HTMLCanvasElement[]>([])
   const pendingRef = useRef<ReturnType<typeof captureImprint> | null>(null)
+  const pendingHashRef = useRef('')
   const mergeRef = useRef(Promise.resolve())
   const pathRef = useRef(pathname)
   const reducedMotion = useReducedMotion()
@@ -60,8 +61,9 @@ export function PageImprints() {
       // Storage can be disabled; the effect still works for client navigations.
     }
 
-    function capture() {
+    function capture(hash = '') {
       pendingRef.current = null
+      pendingHashRef.current = hash
       if (pathRef.current.startsWith('/work/'))
         return
       const root = document.querySelector<HTMLElement>('[data-page-content]')
@@ -75,7 +77,7 @@ export function PageImprints() {
         return
       const url = new URL(link.href)
       if (url.origin === location.origin && url.pathname !== pathRef.current)
-        capture()
+        capture(url.hash.slice(1))
     }
 
     function onPopState() {
@@ -100,6 +102,7 @@ export function PageImprints() {
   useLayoutEffect(() => {
     const [canvas, older] = canvasesRef.current
     const pending = pendingRef.current
+    const hash = pendingHashRef.current
     if (pathRef.current !== pathname && pending) {
       // Keep navigation order when SVG decoding finishes after a later capture.
       mergeRef.current = mergeRef.current.then(async () => {
@@ -136,9 +139,19 @@ export function PageImprints() {
     }
     pathRef.current = pathname
     pendingRef.current = null
+    pendingHashRef.current = ''
 
     const frame = requestAnimationFrame(() => {
-      layerRef.current!.style.setProperty('--imprint-top', `${window.scrollY}px`)
+      let target: HTMLElement | null = null
+      try {
+        target = hash ? document.getElementById(decodeURIComponent(hash)) : null
+      }
+      catch {
+        // Malformed fragments must not interrupt navigation.
+      }
+      // Hash scrolling can arrive after this frame; anchor to its destination.
+      const top = target ? target.getBoundingClientRect().top + window.scrollY : window.scrollY
+      layerRef.current!.style.setProperty('--imprint-top', `${top}px`)
     })
     return () => cancelAnimationFrame(frame)
   }, [pathname])

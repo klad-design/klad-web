@@ -385,10 +385,21 @@ try {
   await navigate(page, 'Process', '/process')
   assert.equal(await page.locator('.page-imprints canvas').first().evaluate(el => el.toDataURL()), beforeSamePage, 'A same-page link must not add another imprint')
   await navigate(page, 'Expectations', '/expectations')
+  await page.evaluate(() => {
+    const nativeScroll = Element.prototype.scrollIntoView
+    Element.prototype.scrollIntoView = function (...args) {
+      if (this.id === 'team')
+        setTimeout(() => nativeScroll.apply(this, args), 600)
+      else
+        nativeScroll.apply(this, args)
+    }
+  })
   await page.getByRole('link', { name: 'team', exact: true }).click()
   await page.waitForURL('**/#team')
-  await page.waitForTimeout(250)
+  await page.waitForFunction(() => scrollY > 0 && Math.abs(document.getElementById('team')?.getBoundingClientRect().top ?? Infinity) < 2 && Math.abs(document.querySelector('.page-imprints').getBoundingClientRect().top) < 2)
   assert.ok(await page.locator('.page-imprints').evaluate(el => Math.abs(el.getBoundingClientRect().top) < 2), 'Hash navigation must anchor the imprint to the arriving viewport')
+  await page.evaluate(() => scrollBy(0, 100))
+  assert.ok(await page.locator('.page-imprints').evaluate(el => Math.abs(el.getBoundingClientRect().top + 100) < 2), 'Imprints remain anchored to the document after arrival')
   assert.deepEqual(errors, [])
   console.log(`${type.name()}: case-study capture exclusion, preserved eligible history, old-cache cleanup, solid gray Work covers, PNG/AVIF/canvas alpha, grayscale, mobile menu capture, cover/contain, two-layer limit, dissolve, SVG capture, reverse theme loops, reload, back/forward, resize, reduced motion and storage fallback passed`)
   await context.close()

@@ -61,7 +61,7 @@ jobs:
         timeout-minutes: 5
         run: pnpm test:staging
       - name: Header logo
-        timeout-minutes: 5
+        timeout-minutes: 10
         run: pnpm test:logo
       - name: Team
         timeout-minutes: 5
