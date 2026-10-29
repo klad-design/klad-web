@@ -242,6 +242,7 @@ try {
     }
 
     await replaceDocument(page, () => page.goto(`${baseURL}/process`))
+    await page.locator('[data-logo-mode="autoplay"] svg').waitFor()
     assert.equal(await page.locator('[aria-hidden] a:not([inert] a)').count(), 0, 'Decorative links must be inert')
     assert.ok(!(await page.locator('meta[property="og:image"]').getAttribute('content')).includes('localhost'))
 
