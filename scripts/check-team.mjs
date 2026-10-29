@@ -152,14 +152,35 @@ try {
   await cold.page.waitForFunction(seeds => seeds.every(frame => [...window.__teamDecoded].some(url => url.endsWith(`/${frame}.avif`))), seedFrames)
   const coldRange = await mobileRange(cold.page)
   await seek(cold.page, coldRange, 96.5)
-  await cold.page.waitForFunction(() => {
-    const draws = window.__teamPaints.filter(paint => paint.draws.length).at(-1)?.draws || []
-    const frame = draws.reduce((sum, draw) => sum + draw.frame * draw.alpha, 0)
-    return frame > 88 && frame <= 96.5
-  }, null, { timeout: 5000 })
+  try {
+    await cold.page.waitForFunction(() => {
+      const draws = window.__teamPaints.filter(paint => paint.draws.length).at(-1)?.draws || []
+      const frame = draws.reduce((sum, draw) => sum + draw.frame * draw.alpha, 0)
+      return frame > 88 && frame <= 96.5
+    }, null, { timeout: 5000 })
+  }
+  catch (error) {
+    console.error('Cold forward pose failed:', JSON.stringify({
+      range: coldRange,
+      state: await cold.page.evaluate(() => ({ y: scrollY, decoded: [...window.__teamDecoded], fonts: document.fonts.status })),
+      paints: (await paints(cold.page)).slice(-3),
+    }, null, 2))
+    throw error
+  }
   const coldForward = await paints(cold.page)
   const forwardFrame = coldForward.at(-1).frame
   assert.ok(forwardFrame > 88 && forwardFrame <= 96.5, `A cold forward swipe must follow prepared poses instead of freezing on the first portrait (observed ${forwardFrame})`)
+  assert.equal(forwardFrame, 96, 'The cold forward target must reach prepared seed 96')
+  const beforePixelReverseY = await cold.page.evaluate(() => {
+    const y = scrollY
+    scrollTo(0, y - 1)
+    return y
+  })
+  await cold.page.waitForTimeout(1000)
+  assert.equal(await cold.page.evaluate(() => scrollY), beforePixelReverseY - 1, 'The cold jitter check must scroll exactly one native pixel backward')
+  const coldPixelReverse = await paints(cold.page)
+  assert.equal(coldPixelReverse.at(-1).frame, 96, 'A one-pixel cold reverse must hold seed 96 instead of jumping forward to seed 104')
+  assert.ok(coldPixelReverse.slice(coldForward.length).every(paint => paint.frame === 96), `A one-pixel cold reverse must never paint a forward jump: ${JSON.stringify(coldPixelReverse.slice(coldForward.length))}`)
   await paints(cold.page, true)
   await seek(cold.page, coldRange, 24.5)
   await cold.page.waitForFunction(() => {

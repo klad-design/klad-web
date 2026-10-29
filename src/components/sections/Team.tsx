@@ -316,8 +316,9 @@ export function Team() {
   const reducedMotion = useReducedMotion()
 
   const loadImageOnCanvas = useCallback((index: number) => {
-    if (index !== frameRef.current)
-      directionRef.current = Math.sign(index - frameRef.current)
+    const previousFrame = drawnFrameRef.current < 0 ? frameRef.current : drawnFrameRef.current
+    if (index !== previousFrame)
+      directionRef.current = Math.sign(index - previousFrame)
     frameRef.current = index
     const canvas = canvasRef.current
     const context = canvas?.getContext('2d')

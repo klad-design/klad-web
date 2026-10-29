@@ -52,6 +52,7 @@ try {
     if (!isCanceledRoutePrefetch(page, error))
       errors.push(error.message)
   })
+  await page.clock.install()
   await page.goto('/work')
   await selected(page, 'Datalane')
   await noise(page, true)
@@ -68,6 +69,8 @@ try {
   await page.mouse.wheel(0, 40)
   await page.waitForTimeout(250)
   await selected(page, 'Datalane')
+  // Keep one sustained gesture even when CI takes over 200ms between commands.
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000))
   const fade = page.evaluate(async () => {
     let outgoing = false
     let incoming = false
@@ -84,14 +87,16 @@ try {
     return { outgoing, incoming }
   })
   await page.mouse.wheel(0, 140)
+  await page.clock.runFor(16)
   await page.waitForFunction(() => document.querySelector('button[aria-pressed="true"]')?.getAttribute('aria-label') === 'Circus')
   await page.mouse.wheel(0, -300)
-  await page.evaluate(async () => {
-    for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 12; i++) {
+    await page.evaluate(() => {
       document.querySelector('main').dispatchEvent(new WheelEvent('wheel', { deltaY: 80, bubbles: true, cancelable: true }))
-      await new Promise(resolve => setTimeout(resolve, 100))
-    }
-  })
+    })
+    await page.clock.runFor(100)
+  }
+  await page.clock.resume()
   assert.deepEqual(await fade, { outgoing: true, incoming: true }, 'Wheel selection must fade the outgoing and incoming project')
   await selected(page, 'Circus')
   assert.equal(await page.evaluate(() => scrollY), 0, 'Wheel selection must not move the page when content fits')
