@@ -94,13 +94,8 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
         animation: tl,
         start: () => initialHero && !hasLoopedRef.current ? 0 : 'center center',
         end: 'bottom top',
+        invalidateOnRefresh: true,
         scrub: 1,
-        onRefresh: (self) => {
-          // Refresh invalidates the scrub, so persist its target before restarting.
-          const scrub = self.getTween()
-          scrub.vars.totalProgress = self.progress
-          scrub.invalidate().restart()
-        },
       })
     })
   }, { dependencies: [pathname, reducedMotion], revertOnUpdate: true })
