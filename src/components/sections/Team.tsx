@@ -388,6 +388,7 @@ export function Team() {
           endTrigger: '.memberDescriptionEnd',
           start: `top +=${mobileGap}px`,
           end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
+          invalidateOnRefresh: true,
           pinSpacing: false,
           pin: true,
           scrub: mobileScrub,
@@ -410,6 +411,7 @@ export function Team() {
             animation: tl,
             start: () => `top ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
             end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
+            invalidateOnRefresh: true,
             scrub: mobileScrub,
           })
         }

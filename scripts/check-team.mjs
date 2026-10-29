@@ -59,7 +59,7 @@ async function paints(page, reset = false) {
   }, reset)
 }
 
-async function waitForPose(page, frame) {
+async function waitForPose(page, frame, seek = null) {
   try {
     await page.waitForFunction((frame) => {
       const ready = [Math.floor(frame), Math.ceil(frame)].every(index => [...window.__teamDecoded].some(url => url.endsWith(`/${index}.avif`)))
@@ -71,15 +71,34 @@ async function waitForPose(page, frame) {
     }, frame)
   }
   catch (error) {
-    console.error('Team pose failed:', await page.evaluate(frame => ({ frame, y: scrollY, fonts: document.fonts.status, paints: window.__teamPaints.filter(paint => paint.draws.length).slice(-3) }), frame))
+    console.error('Team pose failed:', JSON.stringify(await page.evaluate(({ frame, seek }) => {
+      const models = document.querySelector('.models')
+      const start = (models.closest('.pin-spacer') || models).getBoundingClientRect().top + scrollY - 30
+      const end = document.querySelector('.memberDescriptionEnd').getBoundingClientRect().bottom + scrollY - models.clientHeight - 30
+      return {
+        frame,
+        seek,
+        y: scrollY,
+        viewport: { width: innerWidth, height: innerHeight, dpr: devicePixelRatio },
+        fonts: document.fonts.status,
+        classes: document.documentElement.className,
+        range: { start, end, height: models.clientHeight, mappedFrame: (scrollY - Math.round(start)) / (Math.round(end) - Math.round(start)) * 121 },
+        decoded: window.__teamDecoded.size,
+        paints: window.__teamPaints.filter(paint => paint.draws.length).slice(-3).map(paint => ({
+          ...paint,
+          frame: paint.draws.reduce((sum, draw) => sum + draw.frame * draw.alpha, 0),
+        })),
+      }
+    }, { frame, seek }), null, 2))
     throw error
   }
 }
 
 async function seek(page, range, frame) {
-  await page.evaluate(y => scrollTo(0, y), range.start + (range.end - range.start) * frame / 121)
+  const requestedY = range.start + (range.end - range.start) * frame / 121
+  await page.evaluate(y => scrollTo(0, y), requestedY)
   await page.waitForTimeout(1000)
-  await waitForPose(page, frame)
+  await waitForPose(page, frame, { range, requestedY })
   return paints(page)
 }
 
@@ -254,6 +273,55 @@ try {
     await seek(page, await mobileRange(page), 90)
     await verifyPortraitSides(page)
   }
+
+  const refreshRange = await mobileRange(page)
+  const biographyState = () => page.locator('.memberDescription').evaluateAll(elements => elements.slice(0, -1).map((element) => {
+    const style = getComputedStyle(element)
+    return { opacity: Number(style.opacity), trail: Number(style.getPropertyValue('--value') || 0) }
+  }))
+  await seek(page, refreshRange, 90)
+  const normalBiographies = await biographyState()
+  const normalY = await page.evaluate(() => scrollY)
+  assert.ok(normalBiographies.some(state => state.trail > 0.1 && state.trail < 74.9), 'The refresh target must exercise an intermediate biography trail')
+  await seek(page, refreshRange, 60)
+  const interrupted = await page.evaluate(range => new Promise((resolve, reject) => {
+    const requestedY = range.start + (range.end - range.start) * 90 / 121
+    const deadline = performance.now() + 5000
+    scrollTo(0, requestedY)
+    function sample() {
+      const draws = window.__teamPaints.filter(paint => paint.draws.length).at(-1)?.draws || []
+      const frame = draws.reduce((sum, draw) => sum + draw.frame * draw.alpha, 0)
+      if (frame > 60.5 && frame < 89.5) {
+        window.dispatchEvent(new Event('load'))
+        resolve({ frame, y: scrollY, requestedY })
+      }
+      else if (performance.now() >= deadline) {
+        reject(new Error(`Mobile refresh must interrupt an intermediate pose: ${JSON.stringify({ frame, y: scrollY, requestedY })}`))
+      }
+      else {
+        requestAnimationFrame(sample)
+      }
+    }
+    requestAnimationFrame(sample)
+  }), refreshRange)
+  await waitForPose(page, 90, { range: refreshRange, interrupted })
+  assert.ok(Math.abs((await paints(page)).at(-1).frame - 90) < 0.2, 'A global refresh during mobile scrubbing must settle at the current portrait target')
+  try {
+    await page.waitForFunction((expected) => {
+      const elements = [...document.querySelectorAll('.memberDescription')].slice(0, -1)
+      return elements.length === expected.length && elements.every((element, index) => {
+        const style = getComputedStyle(element)
+        return Math.abs(Number(style.opacity) - expected[index].opacity) < 0.01
+          && Math.abs(Number(style.getPropertyValue('--value') || 0) - expected[index].trail) < 0.1
+      })
+    }, normalBiographies)
+  }
+  catch (error) {
+    console.error('Team biography refresh failed:', JSON.stringify({ normalBiographies, actual: await biographyState(), interrupted }, null, 2))
+    throw error
+  }
+  assert.equal(await page.evaluate(() => scrollY), normalY, 'Refreshing Team must preserve the normal target scroll position')
+
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.waitForTimeout(500)
   assert.equal(await page.locator('.team-track').evaluate(el => getComputedStyle(el).flexDirection), 'column')
@@ -283,7 +351,7 @@ try {
 
   for (const hasTouch of [true, false]) {
     const wide = await visit({ viewport: { width: 1024, height: 900 }, hasTouch, deviceScaleFactor: 3 })
-    await wide.page.locator('#team').scrollIntoViewIfNeeded()
+    await wide.page.locator('#team canvas').scrollIntoViewIfNeeded()
     await wide.page.waitForFunction(() => window.__teamDecoded.size === 122, null, { timeout: 30000 })
     assert.ok([...wide.requests].every(url => url.includes('/images/team/')), 'Tablets and desktops must use original-resolution portraits')
     assert.equal((await paints(wide.page)).at(-1).draws[0].width, 1080, 'Large portrait layouts must preserve original source detail')
