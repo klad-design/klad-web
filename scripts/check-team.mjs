@@ -156,7 +156,7 @@ try {
     await cold.page.waitForFunction(() => {
       const draws = window.__teamPaints.filter(paint => paint.draws.length).at(-1)?.draws || []
       const frame = draws.reduce((sum, draw) => sum + draw.frame * draw.alpha, 0)
-      return frame > 88 && frame <= 96.5
+      return frame === 96
     }, null, { timeout: 5000 })
   }
   catch (error) {

@@ -14,3 +14,5 @@ All preview builds must use the existing `staging` branch and deploy to:
 https://klad-web-git-staging-zmaznevegors-projects.vercel.app/
 
 Push preview changes to `origin/staging` through the connected Vercel Git integration. Verify that the Vercel deployment succeeds and share this stable branch URL for review. Use `STAGING=1` and `pnpm build:staging` for staging builds. `main` is the production branch.
+
+Complete fixes locally and obtain independent QA-agent approval. Share the local preview for user review and wait for an explicit instruction before pushing to `origin/staging`. After the push, have a QA agent verify the deployed application at the stable URL and confirm its deployed commit. A successful build alone does not establish that the deployed behavior passed QA.

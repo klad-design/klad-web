@@ -4,7 +4,7 @@ import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
@@ -102,31 +102,36 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
   const menuRef = useRef<HTMLDivElement>(null)
   const swipeStart = useRef<{ x: number, y: number, axis: 'x' | 'y' | null } | null>(null)
   const suppressClick = useRef(false)
-  const wheel = useRef({ delta: 0, direction: 0, lastEvent: 0, lastSwitch: -200 })
+  const wheel = useRef({ delta: 0, lastDelta: 0, lastEvent: -Infinity, lastStep: -Infinity, falling: 0, coasting: false, timer: 0 })
   const selection = useRef(getCaseIndex(initialCase))
-  const fadeOut = useRef<gsap.core.Tween | null>(null)
-  const transitionSource = useRef<'select' | 'swipe' | 'wheel'>('select')
+  const current = useRef(getCaseIndex(initialCase))
+  const transitioning = useRef(false)
+  const transitionSource = useRef<'select' | 'swipe' | 'wheel' | 'key'>('select')
   const [activeIndex, setActiveIndex] = useState(() => getCaseIndex(initialCase))
-  const [selectedIndex, setSelectedIndex] = useState(() => getCaseIndex(initialCase))
   const reducedMotion = useReducedMotion()
 
   useGSAP(() => {
     function restoreSelection() {
       const project = new URLSearchParams(window.location.search).get('case')
       const index = getCaseIndex(project)
-      fadeOut.current?.kill()
-      fadeOut.current = null
+      gsap.killTweensOf('.case-anim-target')
+      gsap.set('.case-anim-target', { opacity: 1 })
+      clearTimeout(wheel.current.timer)
+      wheel.current.delta = 0
+      wheel.current.lastEvent = -Infinity
+      wheel.current.lastStep = -Infinity
+      transitioning.current = false
       selection.current = index
+      current.current = index
       setActiveIndex(index)
-      setSelectedIndex(index)
     }
 
     restoreSelection()
     window.addEventListener('popstate', restoreSelection)
     return () => window.removeEventListener('popstate', restoreSelection)
-  }, { dependencies: [initialCase], revertOnUpdate: true })
+  }, { scope: containerRef, dependencies: [initialCase], revertOnUpdate: true })
 
-  // ✅ Minimal fix: warm the browser cache for all case images once.
+  // Warm posters so queued transitions don't wait on a new download.
   useEffect(() => {
     cases.forEach(({ image }) => {
       const img = new window.Image()
@@ -205,54 +210,82 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
 
   const { contextSafe } = useGSAP(() => {
     const fromGesture = transitionSource.current !== 'select'
-    gsap.fromTo('.case-anim-target', { opacity: 0 }, { opacity: 1, duration: reducedMotion ? 0 : fromGesture ? 0.12 : 0.5, ease: fromGesture ? 'power2.out' : 'power1.out' })
+    if (transitionSource.current === 'key') {
+      menuRef.current?.querySelectorAll('button')[activeIndex]?.focus({ preventScroll: true })
+    }
+    gsap.fromTo('.case-anim-target', { opacity: 0 }, {
+      opacity: 1,
+      duration: reducedMotion ? 0 : fromGesture ? 0.12 : 0.5,
+      ease: fromGesture ? 'power2.out' : 'power1.out',
+      onComplete: () => {
+        transitioning.current = false
+        advance()
+      },
+    })
   }, { scope: containerRef, dependencies: [activeIndex, reducedMotion], revertOnUpdate: true })
 
   useGSAP(() => {
     const menu = menuRef.current
     if (menu && menu.scrollWidth > menu.clientWidth) {
-      const button = menu.children[selectedIndex].getBoundingClientRect()
+      const button = menu.children[activeIndex].getBoundingClientRect()
       const bounds = menu.getBoundingClientRect()
       menu.scrollBy({
         left: Math.min(button.left - bounds.left - 10, 0) || Math.max(button.right - bounds.right + 10, 0),
         behavior: reducedMotion ? 'instant' : 'smooth',
       })
     }
-  }, { dependencies: [selectedIndex, reducedMotion] })
+  }, { dependencies: [activeIndex, reducedMotion] })
 
-  const handleCaseChange = contextSafe((index: number, source: 'select' | 'swipe' | 'wheel' = 'select') => {
+  function advance() {
+    if (transitioning.current || selection.current === current.current)
+      return
+    transitioning.current = true
+    gsap.killTweensOf('.case-anim-target')
+    gsap.to('.case-anim-target', {
+      opacity: 0,
+      duration: reducedMotion ? 0 : transitionSource.current === 'select' ? 0.1 : 0.08,
+      ease: 'power1.in',
+      onComplete: () => {
+        const index = transitionSource.current === 'select'
+          ? selection.current
+          : current.current + Math.sign(selection.current - current.current)
+        if (index === current.current) {
+          gsap.to('.case-anim-target', {
+            opacity: 1,
+            duration: reducedMotion ? 0 : 0.12,
+            onComplete: () => {
+              transitioning.current = false
+              advance()
+            },
+          })
+          return
+        }
+        current.current = index
+        const url = new URL(window.location.href)
+        url.searchParams.set('case', cases[index].link.split('/').pop()!)
+        window.history.replaceState(null, '', url)
+        setActiveIndex(index)
+      },
+    })
+  }
+
+  const handleCaseChange = contextSafe((index: number, source: 'select' | 'swipe' | 'wheel' | 'key' = 'select') => {
+    if (source !== 'wheel') {
+      clearTimeout(wheel.current.timer)
+      wheel.current.delta = 0
+      wheel.current.lastEvent = -Infinity
+      wheel.current.lastStep = -Infinity
+    }
     index = Math.max(0, Math.min(cases.length - 1, index))
     if (index === selection.current)
       return
 
     selection.current = index
     transitionSource.current = source
-    setSelectedIndex(index)
-    const url = new URL(window.location.href)
-    url.searchParams.set('case', cases[index].link.split('/').pop()!)
-    window.history.replaceState(null, '', url)
-
-    if (index === activeIndex) {
-      fadeOut.current?.kill()
-      fadeOut.current = null
-      gsap.killTweensOf('.case-anim-target')
-      gsap.to('.case-anim-target', { opacity: 1, duration: reducedMotion ? 0 : source === 'select' ? 0.5 : 0.12 })
-      return
-    }
-
-    if (fadeOut.current?.isActive())
-      return
-    gsap.killTweensOf('.case-anim-target')
-    fadeOut.current = gsap.to('.case-anim-target', {
-      opacity: 0,
-      duration: reducedMotion ? 0 : source === 'select' ? 0.1 : 0.08,
-      ease: source === 'wheel' ? 'power2.in' : 'power1.out',
-      onComplete: () => {
-        fadeOut.current = null
-        setActiveIndex(selection.current)
-      },
-    })
+    advance()
   })
+
+  const requestCase = useEffectEvent(handleCaseChange)
 
   useEffect(() => {
     const main = containerRef.current
@@ -267,9 +300,40 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
       event.preventDefault()
       if (!event.repeat) {
         const index = selection.current + (event.key === 'ArrowDown' ? 1 : -1)
-        handleCaseChange(index)
-        menuRef.current?.querySelectorAll('button')[index]?.focus({ preventScroll: true })
+        requestCase(index, 'key')
       }
+    }
+
+    function flushWheel() {
+      const gesture = wheel.current
+      clearTimeout(gesture.timer)
+      if (!desktop.matches) {
+        gesture.delta = 0
+        return
+      }
+      if (gesture.coasting || Math.abs(gesture.delta) < 60)
+        return
+      if (gesture.falling > 0 && performance.now() - gesture.lastEvent > 80) {
+        gesture.coasting = true
+        gesture.delta = 0
+        return
+      }
+      const wait = 200 - (performance.now() - gesture.lastStep)
+      if (wait > 0) {
+        gesture.timer = window.setTimeout(flushWheel, Math.ceil(wait))
+        return
+      }
+      const direction = Math.sign(gesture.delta)
+      const index = Math.max(0, Math.min(cases.length - 1, selection.current + direction))
+      if (index === selection.current) {
+        gesture.delta = 0
+        return
+      }
+      requestCase(index, 'wheel')
+      gesture.delta -= direction * 60
+      gesture.lastStep = performance.now()
+      if (Math.abs(gesture.delta) >= 60)
+        gesture.timer = window.setTimeout(flushWheel, 200)
     }
 
     function onWheel(event: WheelEvent) {
@@ -282,30 +346,54 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
       const now = performance.now()
       const gesture = wheel.current
       const delta = movement * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1)
+      const magnitude = Math.abs(delta)
       const idle = now - gesture.lastEvent
-      const reversed = Math.sign(delta) !== gesture.direction
+      const reversed = Math.sign(delta) !== Math.sign(gesture.lastDelta)
+      const tick = event.deltaMode !== 0 || (magnitude >= 60 && (idle > 160 || magnitude >= Math.abs(gesture.lastDelta)))
       if (idle > 160 || reversed) {
-        gesture.delta = 0
-        gesture.lastSwitch = -200
+        gesture.falling = 0
+        gesture.coasting = false
+        if (reversed) {
+          gesture.delta = 0
+          gesture.lastStep = -Infinity
+        }
+      }
+      else if (magnitude < Math.abs(gesture.lastDelta) - 0.5) {
+        gesture.falling++
+        if (gesture.falling >= 3)
+          gesture.coasting = true
+      }
+      else if (magnitude > Math.abs(gesture.lastDelta) + 0.5) {
+        gesture.falling = 0
+        gesture.coasting = false
       }
       gesture.lastEvent = now
-      gesture.direction = Math.sign(delta)
+      gesture.lastDelta = delta
       const bottom = document.documentElement.scrollHeight - window.innerHeight
       if (!horizontal && ((delta > 0 && window.scrollY < bottom - 2) || (delta < 0 && window.scrollY > 2))) {
         gesture.delta = 0
+        clearTimeout(gesture.timer)
         return
       }
       event.preventDefault()
       event.stopPropagation()
-      // Count fresh movement after the fade instead of accumulating its inertial tail.
-      if (now - gesture.lastSwitch < 200)
+      if (tick) {
+        clearTimeout(gesture.timer)
+        gesture.delta = 0
+        gesture.falling = 0
+        gesture.coasting = false
+        gesture.lastStep = now
+        requestCase(selection.current + Math.sign(delta), 'wheel')
         return
+      }
+      // shortcut: WheelEvent has no momentum phase, replace three-sample decay detection when native phases are available.
+      if (gesture.coasting) {
+        clearTimeout(gesture.timer)
+        gesture.delta = 0
+        return
+      }
       gesture.delta += delta
-      if (Math.abs(gesture.delta) < 60)
-        return
-      gesture.lastSwitch = now
-      handleCaseChange(selection.current + Math.sign(gesture.delta), 'wheel')
-      gesture.delta = 0
+      flushWheel()
     }
 
     window.addEventListener('keydown', onKeyDown)
@@ -313,8 +401,9 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
     return () => {
       window.removeEventListener('keydown', onKeyDown)
       main?.removeEventListener('wheel', onWheel, { capture: true })
+      clearTimeout(wheel.current.timer)
     }
-  }, [handleCaseChange])
+  }, [])
 
   return (
     <main ref={containerRef} className="pt-[97px] pb-2.5 md:pt-[150px] lg:pt-0 lg:min-h-svh">
@@ -329,8 +418,8 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
               <Button
                 key={title}
                 label={title}
-                isActive={selectedIndex === index}
-                aria-pressed={selectedIndex === index}
+                isActive={activeIndex === index}
+                aria-pressed={activeIndex === index}
                 className="shrink-0"
                 onClick={() => handleCaseChange(index)}
               />

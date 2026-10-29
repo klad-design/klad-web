@@ -4,7 +4,7 @@ import process from 'node:process'
 
 import { chromium, firefox, webkit } from 'playwright'
 
-import { assertImprintExclusion, assertInversion, assertLogoBounds, assertLogoPhotoInversion, assertPageInversion, imageDifference, pngPixels } from './assert-inversion.mjs'
+import { assertImprintInversion, assertInversion, assertLogoBounds, assertLogoPhotoInversion, assertPageInversion, imageDifference, pngPixels, pngRegion } from './assert-inversion.mjs'
 import { isCanceledRoutePrefetch, replaceDocument } from './document-test-navigation.mjs'
 
 const frozenLogo = await readFile('public/images/logo-still.svg', 'utf8')
@@ -13,9 +13,13 @@ assert.doesNotMatch(frozenLogo, /<animate(?:Transform)?\b/)
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
 const artifacts = 'artifacts/header-logo'
 const failures = []
+let checked = 0
 await mkdir(artifacts, { recursive: true })
 
 async function check(label, page, task) {
+  if (process.env.STAGING_CHECK && !label.includes(process.env.STAGING_CHECK))
+    return
+  checked++
   try {
     await task()
     console.log(`PASS ${label}`)
@@ -136,65 +140,304 @@ async function assertSharedArtwork(page, logo) {
   }
 }
 
-async function assertLiveScroll(page, label, mobile) {
-  const visual = page.locator('[data-header-logo]').first()
-  const logo = visual.locator('svg')
-  const style = await page.addStyleTag({ content: 'html,body{transition:none!important}' })
-  const records = []
+async function assertIntegerLogoBounds(page) {
+  const slot = page.locator('.header-logo-slot').first()
+  const original = await slot.getAttribute('style')
   try {
-    for (const theme of ['light', 'dark']) {
-      for (const progress of [0, 0.1, 0.25, 0.4, 0.45, 0.48, 0.49, 0.5, 0.51, 0.52, 0.55, 0.6, 0.75, mobile ? 1 : 0.99]) {
-        await scroll(page, progress)
-        await page.waitForTimeout(200)
-        await page.evaluate(theme => document.documentElement.dataset.theme = theme, theme)
-        const bounds = await visual.boundingBox()
-        const body = await logo.locator('#logo-body').boundingBox()
-        const clip = { x: Math.max(0, Math.floor(bounds.x) - 8), y: Math.max(0, Math.floor(bounds.y) - 8) }
-        clip.width = Math.min(page.viewportSize().width, Math.ceil(bounds.x + bounds.width) + 8) - clip.x
-        clip.height = Math.min(page.viewportSize().height, Math.ceil(bounds.y + bounds.height) + 8) - clip.y
-        await page.screenshot({ clip, path: `${artifacts}/${label}-${theme}-scroll-${Math.round(progress * 100)}-live.png` })
-        await visual.evaluate(element => element.style.visibility = 'hidden')
-        const background = await page.screenshot({ clip })
-        // Freeze the captured page pixels for comparison; moving text or noise is not logo paint.
-        await page.evaluate(async ({ source, clip }) => {
-          const image = new Image()
-          image.id = 'logo-backdrop-freeze'
-          image.src = `data:image/png;base64,${source}`
-          image.style.cssText = `position:fixed;left:${clip.x}px;top:${clip.y}px;width:${clip.width}px;height:${clip.height}px;z-index:39;pointer-events:none`
-          await image.decode()
-          document.body.append(image)
-        }, { source: background.toString('base64'), clip })
-        const baseline = await pngPixels(await page.screenshot({ clip, path: `${artifacts}/${label}-${theme}-scroll-${Math.round(progress * 100)}-backdrop.png` }))
-        await visual.evaluate(element => element.style.removeProperty('visibility'))
-        const png = await page.screenshot({ clip, path: `${artifacts}/${label}-${theme}-scroll-${Math.round(progress * 100)}.png` })
-        const pixels = await pngPixels(png)
-        await page.locator('#logo-backdrop-freeze').evaluate(element => element.remove())
-        let stripes = 0
-        let stableBackdrop = 0
-        for (let y = 0; y < pixels.height; y++) {
-          for (let x = 0; x < pixels.width; x++) {
-            const worldX = x + clip.x
-            const worldY = y + clip.y
-            if (worldX >= body.x - 2 && worldX <= body.x + body.width + 2 && worldY >= body.y - 2 && worldY <= body.y + body.height + 2)
-              continue
-            const index = (y * pixels.width + x) * 4
-            // The approved SVG has a soft halo; detect high-contrast stray lines beyond it.
-            stableBackdrop++
-            if ([0, 1, 2].some(channel => Math.abs(pixels.data[index + channel] - baseline.data[index + channel]) > 39))
-              stripes++
-          }
-        }
-        records.push({ theme, progress, stripes, stableBackdrop, ...(await state(logo)), scroll: await page.evaluate(() => scrollY) })
-        assert.ok(stableBackdrop >= 100, 'Live spill check measures stable background beyond the actual body')
-        assert.equal(stripes, 0, `No visible stripes beyond the rendered body during actual ${theme} scrolling at ${progress}`)
+    await slot.evaluate((element) => {
+      const bounds = element.getBoundingClientRect()
+      element.style.transform = 'translate(0.375px, 0.625px)'
+      element.style.width = `${bounds.width + 0.5}px`
+      element.style.height = `${bounds.height + 0.25}px`
+      window.dispatchEvent(new Event('resize'))
+    })
+    await page.waitForFunction(() => {
+      const anchor = document.querySelector('.header-logo-slot').getBoundingClientRect()
+      const visual = document.querySelector('[data-header-logo]').getBoundingClientRect()
+      return ['left', 'top', 'width', 'height'].every(key => Number.isInteger(visual[key]) && visual[key] === Math.round(anchor[key]))
+    })
+  }
+  finally {
+    await slot.evaluate((element, original) => {
+      original === null ? element.removeAttribute('style') : element.setAttribute('style', original)
+      window.dispatchEvent(new Event('resize'))
+    }, original)
+  }
+}
+
+function borderContrast({ data, width, height }, bounds, clip) {
+  const left = bounds.x - clip.x
+  const top = bounds.y - clip.y
+  const right = left + bounds.width
+  const bottom = top + bounds.height
+  function mean(position, start, end, vertical) {
+    let total = 0
+    for (let value = start; value <= end; value++) {
+      const x = Math.max(0, Math.min(width - 1, vertical ? Math.round(position) : value))
+      const y = Math.max(0, Math.min(height - 1, vertical ? value : Math.round(position)))
+      total += data[(y * width + x) * 4]
+    }
+    return total / (end - start + 1)
+  }
+  const x1 = Math.ceil(left + 8)
+  const x2 = Math.floor(right - 8)
+  const y1 = Math.ceil(top + 8)
+  const y2 = Math.floor(bottom - 8)
+  const edges = []
+  for (const offset of [-1, 0, 1]) {
+    edges.push(['top', mean(top + offset, x1, x2, false) - mean(top - 4, x1, x2, false)])
+    edges.push(['bottom', mean(bottom - 1 + offset, x1, x2, false) - mean(bottom + 3, x1, x2, false)])
+    edges.push(['left', mean(left + offset, y1, y2, true) - mean(left - 4, y1, y2, true)])
+    edges.push(['right', mean(right - 1 + offset, y1, y2, true) - mean(right + 3, y1, y2, true)])
+  }
+  return edges.reduce((worst, edge) => Math.abs(edge[1]) > Math.abs(worst[1]) ? edge : worst, ['none', 0])
+}
+
+async function captureRegisteredLogo(page, bounds, dpr) {
+  const full = await page.screenshot({ scale: 'device' })
+  const pixels = await pngPixels(full)
+  let top = Infinity
+  let bottom = -Infinity
+  let count = 0
+  for (let y = 0; y < pixels.height; y++) {
+    for (let x = Math.ceil(4 * dpr); x < Math.floor(8 * dpr); x++) {
+      const index = (y * pixels.width + x) * 4
+      if (pixels.data[index] > 250 && pixels.data[index + 1] < 3 && pixels.data[index + 2] > 250) {
+        top = Math.min(top, y)
+        bottom = Math.max(bottom, y)
+        count++
       }
     }
   }
-  finally {
-    await page.locator('#logo-backdrop-freeze').evaluateAll(elements => elements.forEach(element => element.remove()))
+  assert.ok(count >= 4 * dpr && bottom - top + 1 <= Math.ceil(4 * dpr) + 1, 'Every live frame has one unambiguous fixed registration marker')
+  // Firefox reads scrollY before taking its document snapshot; register the actual viewport origin.
+  const shift = (top + bottom + 1) / 2 - 202 * dpr
+  const physical = { x: bounds.x * dpr, y: bounds.y * dpr + shift, width: bounds.width * dpr, height: bounds.height * dpr }
+  const clip = { x: Math.max(0, Math.floor(physical.x) - 6), y: Math.max(0, Math.floor(physical.y) - 6) }
+  clip.width = Math.min(pixels.width, Math.ceil(physical.x + physical.width) + 6) - clip.x
+  clip.height = Math.min(pixels.height, Math.ceil(physical.y + physical.height) + 6) - clip.y
+  const png = await pngRegion(full, { left: clip.x, top: clip.y, width: clip.width, height: clip.height })
+  return { full, png, shift, physical, clip }
+}
+
+async function assertLogoPaintGuard(page, visual) {
+  const style = await page.addStyleTag({ content: 'body::after{display:none!important}html,body{transition:none!important}' })
+  const original = await visual.evaluate(element => ({ theme: document.documentElement.dataset.theme, style: element.getAttribute('style'), time: element.querySelector('svg').getCurrentTime() }))
+  const bounds = await visual.boundingBox()
+  const dpr = await page.evaluate(() => devicePixelRatio)
+  const physical = { x: bounds.x * dpr, y: bounds.y * dpr, width: bounds.width * dpr, height: bounds.height * dpr }
+  const clip = { x: Math.max(0, Math.floor(physical.x) - 6), y: Math.max(0, Math.floor(physical.y) - 6), width: Math.ceil(physical.width) + 13, height: Math.ceil(physical.height) + 13 }
+  async function capture() {
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))
+    const full = await page.screenshot({ scale: 'device' })
+    const pixels = await pngPixels(full)
+    clip.width = Math.min(pixels.width, Math.ceil(physical.x + physical.width) + 6) - clip.x
+    clip.height = Math.min(pixels.height, Math.ceil(physical.y + physical.height) + 6) - clip.y
+    return pngRegion(full, { left: clip.x, top: clip.y, width: clip.width, height: clip.height })
+  }
+  try {
+    const mask = await visual.evaluate((element) => {
+      const computed = getComputedStyle(element)
+      return { image: computed.maskImage, size: computed.maskSize, position: computed.maskPosition, repeat: computed.maskRepeat }
+    })
+    assert.match(mask.image, /linear-gradient/, 'The logo has a transparent paint guard')
+    assert.equal(mask.size, 'calc(100% - 4px) calc(100% - 4px)', 'Only the spare two-pixel artwork frame is transparent')
+    assert.equal(mask.position, '50% 50%')
+    assert.equal(mask.repeat, 'no-repeat')
+    for (const theme of ['light', 'dark']) {
+      await page.evaluate(theme => document.documentElement.dataset.theme = theme, theme)
+      for (const time of [0, 0.8, 1, 1.2, 2]) {
+        await visual.locator('svg').evaluate((svg, time) => svg.setCurrentTime(time), time)
+        const guarded = await capture()
+        await visual.evaluate(element => element.style.maskImage = 'none')
+        const unguarded = await capture()
+        await visual.evaluate(element => element.style.removeProperty('mask-image'))
+        const delta = await imageDifference(guarded, unguarded)
+        const before = await pngPixels(unguarded)
+        const after = await pngPixels(guarded)
+        let interiorMaximum = 0
+        let opaqueMaximum = 0
+        for (let y = 0; y < before.height; y++) {
+          for (let x = 0; x < before.width; x++) {
+            const index = (y * before.width + x) * 4
+            const difference = Math.max(...[0, 1, 2].map(channel => Math.abs(before.data[index + channel] - after.data[index + channel])))
+            const localX = x + clip.x + 0.5 - physical.x
+            const localY = y + clip.y + 0.5 - physical.y
+            if (localX >= 2 * dpr && localX < physical.width - 2 * dpr && localY >= 2 * dpr && localY < physical.height - 2 * dpr)
+              interiorMaximum = Math.max(interiorMaximum, difference)
+            if (before.data[index] === (theme === 'light' ? 1 : 230))
+              opaqueMaximum = Math.max(opaqueMaximum, difference)
+          }
+        }
+        const preserved = interiorMaximum <= 3 && opaqueMaximum <= 1 && delta.mean < 0.01
+        if (!preserved) {
+          await writeFile(`${artifacts}/guard-preservation-before.png`, unguarded)
+          await writeFile(`${artifacts}/guard-preservation-after.png`, guarded)
+        }
+        assert.ok(preserved, `Guard removes filter paint only within its transparent frame on ${theme} at ${time}s (interior ${interiorMaximum}/255, opaque body ${opaqueMaximum}/255, mean ${delta.mean.toFixed(5)})`)
+      }
+    }
+    const baseline = await capture()
+    await visual.evaluate((element) => {
+      const border = document.createElement('span')
+      border.id = 'logo-internal-seam-probe'
+      border.style.cssText = 'position:absolute;inset:0;border:1px solid rgb(231 231 231 / 12%);pointer-events:none'
+      element.append(border)
+    })
+    const guarded = await capture()
+    const internalDelta = await imageDifference(baseline, guarded)
+    assert.ok(internalDelta.maximum <= 1 && internalDelta.mean < 0.01, 'The alpha-zero frame blocks internal filter or animation edge paint')
+    await visual.evaluate(element => element.style.visibility = 'hidden')
+    const backdrop = await pngPixels(await capture())
     await visual.evaluate(element => element.style.removeProperty('visibility'))
-    await writeFile(`${artifacts}/${label}-scroll.json`, JSON.stringify(records, null, 2))
+    const actual = await pngPixels(guarded)
+    let measured = 0
+    for (let y = 0; y < actual.height; y++) {
+      for (let x = 0; x < actual.width; x++) {
+        const localX = x + clip.x + 0.5 - physical.x
+        const localY = y + clip.y + 0.5 - physical.y
+        if (localX < 0 || localX >= physical.width || localY < 0 || localY >= physical.height || (localX >= dpr && localX < physical.width - dpr && localY >= dpr && localY < physical.height - dpr))
+          continue
+        const index = (y * actual.width + x) * 4
+        for (const channel of [0, 1, 2])
+          assert.ok(Math.abs(actual.data[index + channel] - backdrop.data[index + channel]) <= 1, 'The outer logo frame equals the real backdrop, including underlying imprints')
+        measured++
+      }
+    }
+    assert.ok(measured >= bounds.width + bounds.height, 'Measure the full transparent frame around the logo')
+    await visual.evaluate(element => element.style.maskImage = 'none')
+    assert.ok((await imageDifference(baseline, await capture())).maximum > 5, 'The internal paint probe must be visible without the guard')
+    await visual.evaluate(element => element.style.removeProperty('mask-image'))
+    await page.locator('#logo-internal-seam-probe').evaluate(element => element.remove())
+    await visual.evaluate((element) => {
+      const bounds = element.getBoundingClientRect()
+      const border = document.createElement('span')
+      border.id = 'logo-external-seam-probe'
+      border.style.cssText = `position:fixed;left:${bounds.left}px;top:${bounds.bottom}px;width:${bounds.width}px;height:1px;background:rgb(231 231 231 / 12%);z-index:2147483647;pointer-events:none`
+      document.body.append(border)
+    })
+    const external = await capture()
+    assert.ok(Math.abs(borderContrast(await pngPixels(external), physical, clip)[1]) > 5, 'The detector must reject a real faint one-pixel seam outside the guarded logo')
+  }
+  finally {
+    await page.locator('#logo-internal-seam-probe, #logo-external-seam-probe').evaluateAll(elements => elements.forEach(element => element.remove()))
+    await visual.evaluate((element, original) => {
+      document.documentElement.dataset.theme = original.theme
+      original.style === null ? element.removeAttribute('style') : element.setAttribute('style', original.style)
+      element.querySelector('svg').setCurrentTime(original.time)
+    }, original)
     await style.evaluate(element => element.remove())
+  }
+}
+
+async function assertLiveScroll(page, label) {
+  const visual = page.locator('[data-header-logo]').first()
+  const slot = page.locator('.header-logo-slot').first()
+  const original = await slot.getAttribute('style')
+  const records = []
+  let phase = 'fractional anchor'
+  try {
+    await page.evaluate(() => {
+      const marker = document.createElement('span')
+      marker.id = 'logo-registration-probe'
+      marker.style.cssText = 'position:fixed;left:4px;top:200px;width:4px;height:4px;background:#ff00fe;z-index:2147483647;pointer-events:none'
+      document.body.append(marker)
+    })
+    await slot.evaluate((element) => {
+      const bounds = element.getBoundingClientRect()
+      element.style.transform = 'translate(0.375px, 0.625px)'
+      element.style.width = `${bounds.width + 0.5}px`
+      element.style.height = `${bounds.height + 0.25}px`
+      window.dispatchEvent(new Event('resize'))
+    })
+    await page.mouse.move(600, 400)
+    phase = 'native wheel calibration'
+    await page.evaluate(() => {
+      window.__headerLogoWheelDelta = null
+      addEventListener('wheel', event => window.__headerLogoWheelDelta = event.deltaY, { once: true, capture: true, passive: true })
+    })
+    await page.mouse.wheel(0, 100)
+    await page.waitForFunction(() => window.__headerLogoWheelDelta > 0 && !document.documentElement.classList.contains('lenis-smooth'))
+    const wheelScale = 100 / await page.evaluate(() => window.__headerLogoWheelDelta)
+    assert.ok(Number.isFinite(wheelScale) && wheelScale > 0, 'Measure the actual native event rather than assuming automation delta units')
+    phase = 'native approach to loop seam'
+    await page.mouse.wheel(0, wheelScale * await page.evaluate(() => (document.documentElement.scrollHeight - innerHeight) * 0.99 - scrollY))
+    await page.waitForFunction(() => {
+      const progress = scrollY / (document.documentElement.scrollHeight - innerHeight)
+      const time = document.querySelector('[data-header-logo] svg').getCurrentTime()
+      return !document.documentElement.classList.contains('lenis-smooth') && progress > 0.97 && progress < 1 && Math.abs(time - progress * 2) < 0.015
+    })
+    phase = 'native loop crossing'
+    await page.mouse.wheel(0, wheelScale * await page.evaluate(() => (document.documentElement.scrollHeight - innerHeight) * 0.03))
+    await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-smooth') && scrollY / (document.documentElement.scrollHeight - innerHeight) < 0.05 && document.documentElement.dataset.theme === 'dark')
+    phase = 'native approach to Team'
+    await page.mouse.wheel(0, wheelScale * await page.evaluate(() => (document.documentElement.scrollHeight - innerHeight) * 0.29 - scrollY))
+    await page.waitForFunction(() => {
+      const progress = scrollY / (document.documentElement.scrollHeight - innerHeight)
+      const time = document.querySelector('[data-header-logo] svg').getCurrentTime()
+      return !document.documentElement.classList.contains('lenis-smooth') && Math.abs(progress - 0.29) < 0.02 && Math.abs(time - progress * 2) < 0.015
+    })
+    phase = 'live frames'
+    for (let frame = 0; frame < 34; frame++) {
+      await page.mouse.wheel(0, 100 * wheelScale)
+      const sample = await visual.evaluate(element => ({
+        bounds: element.getBoundingClientRect().toJSON(),
+        y: scrollY,
+        time: element.querySelector('svg').getCurrentTime(),
+        moving: document.documentElement.classList.contains('lenis-smooth'),
+        noise: getComputedStyle(document.body, '::after').display,
+        noiseOpacity: getComputedStyle(document.body, '::after').opacity,
+        theme: document.documentElement.dataset.theme,
+        dpr: devicePixelRatio,
+      }))
+      const bounds = sample.bounds
+      assert.ok(['x', 'y', 'width', 'height'].every(key => Number.isInteger(bounds[key])), 'Fractional anchors must not produce fractional logo surfaces during scrolling')
+      assert.notEqual(sample.noise, 'none', 'Animated noise must remain visible during the stripe regression')
+      assert.equal(sample.noiseOpacity, '0.15')
+      assert.equal(sample.theme, 'dark')
+      const { full, png, shift, physical, clip } = await captureRegisteredLogo(page, bounds, sample.dpr)
+      await writeFile(`${artifacts}/${label}-live-${frame}.png`, png)
+      const pixels = await pngPixels(png)
+      const edge = borderContrast(pixels, physical, clip)
+      records.push({ frame, ...sample, wheelScale, captureShift: shift, edge })
+      if (Math.abs(edge[1]) > 5)
+        await writeFile(`${artifacts}/${label}-live-${frame}-full.png`, full)
+      assert.ok(Math.abs(edge[1]) <= 5, `No coherent border seam during real scrolling (${edge[0]} contrast ${edge[1].toFixed(2)}/255, frame ${frame})`)
+      if (frame === 0) {
+        await visual.evaluate((element) => {
+          const bounds = element.getBoundingClientRect()
+          const border = document.createElement('span')
+          border.id = 'logo-live-external-seam-probe'
+          border.style.cssText = `position:fixed;left:${bounds.left}px;top:${bounds.bottom}px;width:${bounds.width}px;height:1px;background:rgb(231 231 231 / 12%);z-index:2147483647;pointer-events:none`
+          document.body.append(border)
+        })
+        try {
+          const probe = await captureRegisteredLogo(page, bounds, sample.dpr)
+          await writeFile(`${artifacts}/${label}-live-detector-sensitivity.png`, probe.png)
+          assert.ok(Math.abs(borderContrast(await pngPixels(probe.png), probe.physical, probe.clip)[1]) > 5, 'Registered live capture must detect a real external faint one-pixel stripe')
+        }
+        finally {
+          await page.locator('#logo-live-external-seam-probe').evaluate(element => element.remove())
+        }
+      }
+    }
+    assert.ok(records.filter(sample => sample.moving).length >= 10, 'Capture frames while native wheel scrolling is active')
+    assert.ok(records.at(-1).y - records[0].y > 2000, 'Native gestures must traverse the dark Team section and continue beyond it')
+    assert.ok(records.at(-1).time - records[0].time > 0.5, 'Live captures must exercise the SVG animation rather than one frozen frame')
+  }
+  catch (error) {
+    const state = await page.evaluate(() => ({ y: scrollY, limit: document.documentElement.scrollHeight - innerHeight, time: document.querySelector('[data-header-logo] svg').getCurrentTime(), theme: document.documentElement.dataset.theme, classes: document.documentElement.className }))
+    await writeFile(`${artifacts}/${label}-error.json`, JSON.stringify({ phase, state, error: error.stack }, null, 2))
+    throw error
+  }
+  finally {
+    await page.evaluate(() => delete window.__headerLogoWheelDelta)
+    await page.locator('#logo-registration-probe, #logo-live-external-seam-probe').evaluateAll(elements => elements.forEach(element => element.remove()))
+    await slot.evaluate((element, original) => {
+      original === null ? element.removeAttribute('style') : element.setAttribute('style', original)
+      window.dispatchEvent(new Event('resize'))
+    }, original)
+    await writeFile(`${artifacts}/${label}-scroll.json`, JSON.stringify(records, null, 2))
   }
 }
 
@@ -428,11 +671,11 @@ async function runLayout(browser, name, mobile) {
       return { position: computed.position, mask: computed.maskImage, x: bounds.x, width: bounds.width, height: bounds.height, rootContain: getComputedStyle(ink.parentElement).contain, scrollAnchor: getComputedStyle(document.body).overflowAnchor }
     })
     assert.equal(inkStyle.position, 'absolute', 'Load current CSS before running logo regressions')
-    assert.match(inkStyle.mask, /radial-gradient/, 'Decorative ink uses the current padded exclusion mask')
-    assert.equal(inkStyle.x, -16)
-    assert.equal(inkStyle.width, options.viewport.width + 32)
-    assert.equal(inkStyle.height, options.viewport.height + 32)
-    assert.match(inkStyle.rootContain, /layout/, 'Padded imprints do not extend the document scroll limit')
+    assert.equal(inkStyle.mask, 'none', 'Imprint ink must not be erased beneath the logo')
+    assert.equal(inkStyle.x, 0)
+    assert.equal(inkStyle.width, options.viewport.width)
+    assert.equal(inkStyle.height, options.viewport.height)
+    assert.match(inkStyle.rootContain, /layout/, 'Imprints do not extend the document scroll limit')
     if (name !== 'webkit')
       assert.equal(inkStyle.scrollAnchor, 'none', 'Native anchoring cannot move Lenis-controlled scroll position')
     const visual = page.locator('[data-header-logo]').first()
@@ -449,24 +692,32 @@ async function runLayout(browser, name, mobile) {
       await assertInversion(page, visual, 'light', visual.locator('img'))
       await assertPageInversion(page, visual)
       await assertLogoPhotoInversion(page, visual)
-      await assertImprintExclusion(page, visual)
+      await assertImprintInversion(page, visual)
+      await assertLogoPaintGuard(page, visual)
       await assertLogoBounds(page, logo)
     })
+    await check(`${label}-fractional-anchor`, page, () => assertIntegerLogoBounds(page))
     if (!mobile) {
-      await check(`${label}-retina-edges`, page, async () => {
-        const retina = await browser.newPage({ ...options, deviceScaleFactor: 2 })
-        try {
-          await retina.goto(baseURL)
-          await ready(retina, 'scroll')
-          await assertLogoBounds(retina, retina.locator('[data-header-logo] svg'))
-        }
-        finally {
-          await retina.close()
-        }
-      })
+      for (const deviceScaleFactor of [1.25, 1.5, 2]) {
+        await check(`${label}-density-${deviceScaleFactor}`, page, async () => {
+          const retina = await browser.newPage({ ...options, viewport: { width: 1438, height: 820 }, deviceScaleFactor })
+          try {
+            await retina.goto(baseURL)
+            await ready(retina, 'scroll')
+            await assertIntegerLogoBounds(retina)
+            await assertLogoPaintGuard(retina, retina.locator('[data-header-logo]'))
+            await assertLogoBounds(retina, retina.locator('[data-header-logo] svg'))
+            await assertLiveScroll(retina, `${label}-density-${deviceScaleFactor}`)
+          }
+          finally {
+            await retina.close()
+          }
+        })
+      }
     }
-    await check(`${label}-actual-scroll-frames`, page, async () => {
-      await assertLiveScroll(page, label, mobile)
+    await check(`${label}-${mobile ? 'scroll-following' : 'live-scroll-frames'}`, page, async () => {
+      if (!mobile)
+        await assertLiveScroll(page, label)
       await scroll(page, 0.5)
       const before = await state(logo)
       await page.waitForTimeout(200)
@@ -620,6 +871,8 @@ for (const [name, engine] of Object.entries(engines)) {
     await browser.close()
   }
 }
-await writeFile(`${artifacts}/results.json`, JSON.stringify({ failures }, null, 2))
-assert.deepEqual(failures, [], 'Every logo regression must pass; see artifacts/header-logo/results.json')
-console.log('All logo checks passed across the requested desktop and touch browser matrix.')
+const resultsPath = `${artifacts}/results${process.env.STAGING_BROWSER ? `-${process.env.STAGING_BROWSER}` : ''}${process.env.STAGING_CHECK ? `-${process.env.STAGING_CHECK.replaceAll(/[^a-z\d.-]/gi, '_')}` : ''}.json`
+await writeFile(resultsPath, JSON.stringify({ checked, failures }, null, 2))
+assert.ok(checked > 0, 'At least one requested logo check must run')
+assert.deepEqual(failures, [], `Every logo regression must pass; see ${resultsPath}`)
+console.log('All requested logo checks passed.')

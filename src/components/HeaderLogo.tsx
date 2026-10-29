@@ -76,16 +76,11 @@ export function HeaderLogo({ mode, className = '', hidden = false }: { mode: 'sc
     const visual = visualRef.current
     if (!anchor || !visual)
       return
-    const imprints = document.querySelector<HTMLElement>('.page-imprints')
     let previous: DOMRect | undefined
     function position() {
-      const bounds = anchor!.getBoundingClientRect()
+      const rect = anchor!.getBoundingClientRect()
+      const bounds = new DOMRect(Math.round(rect.x), Math.round(rect.y), Math.round(rect.width), Math.round(rect.height))
       const { left, top, width, height } = bounds
-      if (!hidden && imprints) {
-        imprints.style.setProperty('--header-logo-x', `${left + width / 2}px`)
-        imprints.style.setProperty('--header-logo-y', `${top + height / 2 + window.scrollY}px`)
-        imprints.style.setProperty('--header-logo-radius', `${width * 0.55}px`)
-      }
       if (previous && left === previous.left && top === previous.top && width === previous.width && height === previous.height)
         return
       previous = bounds

@@ -8,6 +8,10 @@ export async function pngPixels(buffer) {
   return { data, width: info.width, height: info.height }
 }
 
+export async function pngRegion(buffer, bounds) {
+  return sharp(buffer).extract(bounds).png().toBuffer()
+}
+
 export async function imageDifference(first, second) {
   const a = await pngPixels(first)
   const b = await pngPixels(second)
@@ -144,7 +148,7 @@ export async function assertLogoBounds(page, logo) {
   }
 }
 
-export async function assertImprintExclusion(page, visual) {
+export async function assertImprintInversion(page, visual) {
   const style = await page.addStyleTag({ content: 'body::after{display:none!important}html,body{transition:none!important}' })
   const original = await page.evaluate(() => ({
     theme: document.documentElement.dataset.theme,
@@ -164,28 +168,37 @@ export async function assertImprintExclusion(page, visual) {
         }
         layer.style.visibility = 'hidden'
       }, theme)
-      const clean = await pngPixels(await visual.screenshot())
-      const bounds = await visual.boundingBox()
-      const point = { x: Math.floor(bounds.x - 36), y: Math.floor(bounds.y + bounds.height / 2), width: 1, height: 1 }
-      const outsideClean = await pngPixels(await page.screenshot({ clip: point }))
+      const clean = await pngPixels(await visual.screenshot({ scale: 'css' }))
+      await visual.evaluate(element => element.style.mixBlendMode = 'normal')
+      const source = await pngPixels(await visual.screenshot({ scale: 'css' }))
+      await visual.evaluate(element => element.style.removeProperty('mix-blend-mode'))
       await page.locator('.page-imprints').evaluate(layer => layer.style.removeProperty('visibility'))
-      const imprinted = await pngPixels(await visual.screenshot())
-      const outsideInk = await pngPixels(await page.screenshot({ clip: point }))
+      const mask = await page.locator('.page-imprints-ink').evaluate(element => getComputedStyle(element).maskImage)
+      assert.equal(mask, 'none', 'Imprints must continue beneath the logo without an exclusion mask')
+      const bounds = await visual.boundingBox()
+      await visual.evaluate(element => element.style.visibility = 'hidden')
+      const backdrop = await pngPixels(await page.screenshot({ clip: bounds, scale: 'css' }))
+      await visual.evaluate(element => element.style.removeProperty('visibility'))
+      const imprinted = await pngPixels(await visual.screenshot({ scale: 'css' }))
       let bodyPixels = 0
       let changedBody = 0
       for (let i = 0; i < clean.data.length; i += 4) {
-        if (theme === 'dark' ? clean.data[i] > 225 : clean.data[i] < 5) {
+        if (clean.data[i] === (theme === 'dark' ? 230 : 1)) {
           bodyPixels++
-          if ([0, 1, 2].some(channel => Math.abs(clean.data[i + channel] - imprinted.data[i + channel]) > 1))
+          if ([0, 1, 2].every(channel => Math.abs(clean.data[i + channel] - imprinted.data[i + channel]) > 30)) {
             changedBody++
+            for (const channel of [0, 1, 2])
+              assert.ok(Math.abs(imprinted.data[i + channel] - Math.abs(source.data[i + channel] - backdrop.data[i + channel])) <= 1, `Logo body inverts actual ${theme} imprint pixels`)
+          }
         }
       }
       assert.ok(bodyPixels >= 100, `Measure real opaque logo body pixels on ${theme} (${bodyPixels} sampled)`)
-      assert.ok(Math.abs(outsideClean.data[0] - outsideInk.data[0]) > 30, `Decorative ink is actually visible outside the logo on ${theme}`)
-      assert.equal(changedBody, 0, `Decorative imprints cannot erase the actual logo body on ${theme}`)
+      assert.ok(changedBody > bodyPixels * 0.95, `Actual imprint ink must affect the logo on ${theme}, without a halo cutout (${changedBody}/${bodyPixels})`)
     }
   }
   finally {
+    await visual.evaluate(element => element.style.removeProperty('visibility'))
+    await visual.evaluate(element => element.style.removeProperty('mix-blend-mode'))
     await page.evaluate(async (original) => {
       document.documentElement.dataset.theme = original.theme
       const layer = document.querySelector('.page-imprints')
