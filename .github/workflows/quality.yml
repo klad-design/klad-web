@@ -35,6 +35,15 @@ jobs:
       - run: npm install --global pnpm@11.24.0 --force
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
+      - name: Instrument WebKit motion state
+        if: matrix.browser == 'webkit'
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync, writeFileSync } from 'node:fs'
+          const file = 'src/components/SmoothScroll.tsx'
+          const source = readFileSync(file, 'utf8')
+          writeFileSync(file, source.replace('hasLoopedRef.current = false', 'Object.assign(window, { __debugMotion: { gsap, ScrollTrigger, lenisRef } }); hasLoopedRef.current = false'))
+          JS
       - run: pnpm build:staging
       - run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
       - name: Start staging server

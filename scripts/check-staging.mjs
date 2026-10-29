@@ -297,6 +297,20 @@ catch (error) {
   console.error('Browser runtime errors:', errors)
   for (const context of browser.contexts()) {
     for (const page of context.pages()) {
+      console.error('Motion state:', await page.evaluate(() => {
+        const debug = window.__debugMotion
+        if (!debug)
+          return null
+        const lenis = debug.lenisRef.current?.lenis
+        return {
+          ticker: { frame: debug.gsap.ticker.frame, time: debug.gsap.ticker.time, listeners: debug.gsap.ticker._listeners.length },
+          lenis: lenis && { scroll: lenis.scroll, actual: lenis.actualScroll, target: lenis.targetScroll, animated: lenis.animatedScroll, scrolling: lenis.isScrolling, running: lenis.animate.isRunning },
+          triggers: debug.ScrollTrigger.getAll().filter(trigger => trigger.trigger?.matches('h1 .textBlur')).map((trigger) => {
+            const scrub = trigger.getTween()
+            return { start: trigger.start, end: trigger.end, progress: trigger.progress, scroll: trigger.scroll(), animation: trigger.animation.totalProgress(), scrub: scrub && { target: scrub.vars.totalProgress, paused: scrub.paused(), active: scrub.isActive(), progress: scrub.progress(), parent: !!scrub.parent } }
+          }),
+        }
+      }).catch(() => null))
       const state = await page.evaluate(() => ({ url: location.href, y: scrollY, limit: document.documentElement.scrollHeight - innerHeight, classes: document.documentElement.className, fonts: document.fonts.status, headings: [...document.querySelectorAll('h1 .textBlur')].map(element => ({ style: element.style.cssText, value: getComputedStyle(element).getPropertyValue('--value'), top: element.getBoundingClientRect().top, height: element.getBoundingClientRect().height })) })).catch(() => null)
       console.error('Smoke failure state:', state)
       await writeFile(`${artifacts}/failure-state.json`, JSON.stringify(state, null, 2))
