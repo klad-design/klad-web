@@ -450,6 +450,19 @@ async function runLayout(browser, name, mobile) {
       await assertImprintExclusion(page, visual)
       await assertLogoBounds(page, logo)
     })
+    if (!mobile) {
+      await check(`${label}-retina-edges`, page, async () => {
+        const retina = await browser.newPage({ ...options, deviceScaleFactor: 2 })
+        try {
+          await retina.goto(baseURL)
+          await ready(retina, 'scroll')
+          await assertLogoBounds(retina, retina.locator('[data-header-logo] svg'))
+        }
+        finally {
+          await retina.close()
+        }
+      })
+    }
     await check(`${label}-actual-scroll-frames`, page, async () => {
       await assertLiveScroll(page, label, mobile)
       await scroll(page, 0.5)

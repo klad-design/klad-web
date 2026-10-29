@@ -47,6 +47,7 @@ try {
   await serverRendered.close()
 
   const desktop = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 } })
+  await desktop.addInitScript(() => Object.defineProperty(navigator, 'maxTouchPoints', { get: () => 1 }))
   const page = await desktop.newPage()
   page.on('pageerror', (error) => {
     if (!isCanceledRoutePrefetch(page, error))
@@ -111,17 +112,31 @@ try {
     await page.clock.runFor(100)
   }
   await page.clock.runFor(400)
-  await selected(page, 'Linux Mint')
+  await selected(page, 'Chainviz')
   await page.locator('main').dispatchEvent('wheel', { deltaY: -1, deltaMode: 2 })
   await page.clock.runFor(400)
-  await selected(page, 'Stars+Honey')
+  await selected(page, 'Shareio')
   await page.locator('main').dispatchEvent('wheel', { deltaY: -4, deltaMode: 1 })
   await page.clock.runFor(400)
-  await selected(page, 'Circus')
+  await selected(page, 'Linux Mint')
   await page.locator('main').dispatchEvent('wheel', { deltaY: -100 })
   await page.clock.runFor(400)
+  await selected(page, 'Stars+Honey')
+  for (let tick = 0; tick < 90; tick++) {
+    await page.locator('main').dispatchEvent('wheel', { deltaX: -[8, 12, 10, 9, 15][tick % 5] })
+    await page.clock.runFor(16)
+  }
+  await page.clock.runFor(400)
   await selected(page, 'Datalane')
+  for (let tick = 0; tick < 90; tick++) {
+    await page.locator('main').dispatchEvent('wheel', { deltaY: [8, 12, 10, 9, 15][tick % 5] })
+    await page.clock.runFor(16)
+  }
+  await page.clock.runFor(400)
+  await selected(page, 'Chainviz')
   await page.clock.resume()
+  await page.getByRole('button', { name: 'Datalane', exact: true }).click()
+  await selected(page, 'Datalane')
 
   for (const delay of [30, 60]) {
     await page.evaluate(async (delay) => {
@@ -247,7 +262,9 @@ try {
     await page.goto('/work')
     await selected(page, 'Datalane')
     const client = type === chromium ? await context.newCDPSession(page) : null
-    async function swipe(x, y = 0, cancel = false) {
+    async function swipe(x, y = 0, cancel = false, settle = true) {
+      if (!client && !settle)
+        await page.waitForTimeout(120)
       const cover = page.locator('.case-anim-target a')
       const box = await cover.boundingBox()
       const start = { x: box.x + box.width / 2 - x / 2, y: box.y + 100 }
@@ -276,7 +293,8 @@ try {
         if (!cancel && Math.abs(x) >= 10 && Math.abs(x) > Math.abs(y) * 1.2)
           await cover.dispatchEvent('click', { detail: 1 })
       }
-      await page.waitForTimeout(650)
+      if (settle)
+        await page.waitForTimeout(650)
       assert.equal(new URL(page.url()).pathname, '/work', 'Swiping must not open the case')
     }
     await swipe(140)
@@ -293,6 +311,22 @@ try {
     await page.getByRole('link', { name: 'Close', exact: true }).filter({ visible: true }).first().click()
     await selected(page, 'Datalane')
     await swipe(-140, 0, true)
+    await selected(page, 'Datalane')
+    const rapidCases = page.evaluate(() => new Promise((resolve) => {
+      const titles = new Set()
+      const observer = new MutationObserver(() => titles.add(document.querySelector('h1')?.textContent))
+      observer.observe(document.querySelector('h1'), { subtree: true, childList: true, characterData: true })
+      setTimeout(() => {
+        observer.disconnect()
+        resolve([...titles].filter(title => title && !title.includes('Datalane')))
+      }, 4000)
+    }))
+    for (let index = 0; index < 5; index++)
+      await swipe(-140, 0, false, false)
+    await selected(page, 'Chainviz')
+    assert.ok((await rapidCases).length >= 3, 'Back-to-back swipes must keep displaying new projects during the input burst')
+    for (let index = 0; index < 5; index++)
+      await swipe(140, 0, false, false)
     await selected(page, 'Datalane')
     const initialY = await page.evaluate(() => scrollY)
     for (const name of ['Circus', 'Stars+Honey', 'Linux Mint', 'Shareio', 'Chainviz']) {

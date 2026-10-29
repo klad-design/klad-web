@@ -8,7 +8,8 @@
 }
 
 [data-header-logo] {
-  clip-path: inset(0);
+  /* Keep the SVG filter's raster edge out of the blended artwork. */
+  clip-path: inset(1px);
   contain: paint;
 }
 

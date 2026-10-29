@@ -83,7 +83,7 @@ export async function assertPageInversion(page, logo) {
 
 export async function assertLogoBounds(page, logo) {
   const visual = page.locator('[data-header-logo]').first()
-  assert.equal(await visual.evaluate(element => getComputedStyle(element).clipPath), 'inset(0px)')
+  assert.equal(await visual.evaluate(element => getComputedStyle(element).clipPath), 'inset(1px)')
   const style = await page.addStyleTag({ content: 'body::after{display:none!important}html,body{transition:none!important}' })
   const theme = await page.evaluate(() => document.documentElement.dataset.theme)
   const time = await logo.evaluate(svg => svg.getCurrentTime())
@@ -96,7 +96,7 @@ export async function assertLogoBounds(page, logo) {
     for (const currentTheme of ['light', 'dark']) {
       await page.evaluate(theme => document.documentElement.dataset.theme = theme, currentTheme)
       await visual.evaluate(element => element.style.visibility = 'hidden')
-      const baseline = (await page.screenshot({ clip })).toString('base64')
+      const baseline = (await page.screenshot({ clip, scale: 'css' })).toString('base64')
       await visual.evaluate(element => element.style.removeProperty('visibility'))
       const progress = viewport.width < 768 ? [0, 0.4, 0.48, 0.5, 0.52, 0.6, 1] : [0, 0.1, 0.25, ...Array.from({ length: 25 }, (_, i) => 0.4 + i / 120), 0.75, 1]
       for (const value of progress) {
@@ -104,7 +104,7 @@ export async function assertLogoBounds(page, logo) {
           svg.setCurrentTime(value * 2)
           await new Promise(resolve => requestAnimationFrame(resolve))
         }, value)
-        const png = await page.screenshot({ clip })
+        const png = await page.screenshot({ clip, scale: 'css' })
         const spill = await page.evaluate(async ({ baseline, actual, clip, bounds }) => {
           const canvas = document.createElement('canvas')
           canvas.width = clip.width
@@ -123,7 +123,7 @@ export async function assertLogoBounds(page, logo) {
             for (let x = 0; x < clip.width; x++) {
               const worldX = x + clip.x
               const worldY = y + clip.y
-              if (worldX >= bounds.x - 1 && worldX <= bounds.x + bounds.width + 1 && worldY >= bounds.y - 1 && worldY <= bounds.y + bounds.height + 1)
+              if (worldX >= bounds.x + 1 && worldX < bounds.x + bounds.width - 1 && worldY >= bounds.y + 1 && worldY < bounds.y + bounds.height - 1)
                 continue
               const index = (y * clip.width + x) * 4
               if ([0, 1, 2].some(channel => Math.abs(pixels[0][index + channel] - pixels[1][index + channel]) > 1))
@@ -261,7 +261,7 @@ export async function assertInversion(page, element, source = 'light') {
     document.body.append(box)
     await Promise.all([background.decode(), image.decode()])
   }, { filter, source })
-  const png = await page.screenshot({ clip: { x: 0, y: 0, width: 120, height: 20 } })
+  const png = await page.screenshot({ clip: { x: 0, y: 0, width: 120, height: 20 }, scale: 'css' })
   const colors = await page.evaluate(async (source) => {
     document.querySelector('#inversion-probe').remove()
     const image = new Image()

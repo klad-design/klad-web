@@ -103,7 +103,9 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
   const menuRef = useRef<HTMLDivElement>(null)
   const swipeStart = useRef<{ x: number, y: number, axis: 'x' | 'y' | null } | null>(null)
   const suppressClick = useRef(false)
-  const wheel = useRef({ delta: 0, lastDelta: 0, lastEvent: 0, lastSwitch: -360, locked: false })
+  const wheel = useRef({ delta: 0, direction: 0, lastEvent: 0, lastSwitch: -200 })
+  const selection = useRef(getCaseIndex(initialCase))
+  const fadeOut = useRef<gsap.core.Tween | null>(null)
   const transitionSource = useRef<'select' | 'swipe' | 'wheel'>('select')
   const [activeIndex, setActiveIndex] = useState(() => getCaseIndex(initialCase))
   const [selectedIndex, setSelectedIndex] = useState(() => getCaseIndex(initialCase))
@@ -113,6 +115,9 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
     function restoreSelection() {
       const project = new URLSearchParams(window.location.search).get('case')
       const index = getCaseIndex(project)
+      fadeOut.current?.kill()
+      fadeOut.current = null
+      selection.current = index
       setActiveIndex(index)
       setSelectedIndex(index)
     }
@@ -229,28 +234,34 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
 
   const handleCaseChange = contextSafe((index: number, source: 'select' | 'swipe' | 'wheel' = 'select') => {
     index = Math.max(0, Math.min(cases.length - 1, index))
-    if (index === selectedIndex)
+    if (index === selection.current)
       return
 
+    selection.current = index
     transitionSource.current = source
     setSelectedIndex(index)
     const url = new URL(window.location.href)
     url.searchParams.set('case', cases[index].link.split('/').pop()!)
     window.history.replaceState(null, '', url)
 
-    gsap.killTweensOf('.case-anim-target')
-
     if (index === activeIndex) {
+      fadeOut.current?.kill()
+      fadeOut.current = null
+      gsap.killTweensOf('.case-anim-target')
       gsap.to('.case-anim-target', { opacity: 1, duration: reducedMotion ? 0 : 0.5 })
       return
     }
 
-    gsap.to('.case-anim-target', {
+    if (fadeOut.current?.isActive())
+      return
+    gsap.killTweensOf('.case-anim-target')
+    fadeOut.current = gsap.to('.case-anim-target', {
       opacity: 0,
       duration: reducedMotion ? 0 : source === 'wheel' ? 0.14 : source === 'swipe' ? 0.2 : 0.1,
       ease: source === 'wheel' ? 'power2.in' : 'power1.out',
       onComplete: () => {
-        setActiveIndex(index)
+        fadeOut.current = null
+        setActiveIndex(selection.current)
       },
     })
   })
@@ -260,50 +271,53 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
     const desktop = window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)')
 
     function onKeyDown(event: KeyboardEvent) {
-      if (!desktop.matches || navigator.maxTouchPoints || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+      if (!desktop.matches || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
         || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')
         || (event.target instanceof HTMLElement && event.target.closest('header, input, textarea, select, [contenteditable], [role="dialog"]'))) {
         return
       }
       event.preventDefault()
       if (!event.repeat) {
-        const index = selectedIndex + (event.key === 'ArrowDown' ? 1 : -1)
+        const index = selection.current + (event.key === 'ArrowDown' ? 1 : -1)
         handleCaseChange(index)
         menuRef.current?.querySelectorAll('button')[index]?.focus({ preventScroll: true })
       }
     }
 
     function onWheel(event: WheelEvent) {
-      if (!desktop.matches || navigator.maxTouchPoints || event.ctrlKey || event.metaKey || event.shiftKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX))
+      if (!desktop.matches || event.ctrlKey || event.metaKey || event.shiftKey)
+        return
+      const horizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY)
+      const movement = horizontal ? event.deltaX : event.deltaY
+      if (!movement)
         return
       const now = performance.now()
       const gesture = wheel.current
-      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1)
+      const delta = movement * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1)
       const idle = now - gesture.lastEvent
-      const reversed = Math.sign(delta) !== Math.sign(gesture.delta)
-      // shortcut: wheel has no gesture boundaries, tune tick/momentum thresholds if device feedback warrants it.
-      const wheelTick = idle > 40 && Math.abs(delta) >= 60 && Math.abs(delta) >= Math.abs(gesture.lastDelta) && now - gesture.lastSwitch >= 360
-      if (idle > 160 || reversed || wheelTick) {
+      const reversed = Math.sign(delta) !== gesture.direction
+      if (idle > 160 || reversed) {
         gesture.delta = 0
-        gesture.locked = false
+        gesture.lastSwitch = -200
       }
       gesture.lastEvent = now
-      gesture.lastDelta = delta
+      gesture.direction = Math.sign(delta)
       const bottom = document.documentElement.scrollHeight - window.innerHeight
-      if ((event.deltaY > 0 && window.scrollY < bottom - 2) || (event.deltaY < 0 && window.scrollY > 2)) {
+      if (!horizontal && ((delta > 0 && window.scrollY < bottom - 2) || (delta < 0 && window.scrollY > 2))) {
         gesture.delta = 0
         return
       }
       event.preventDefault()
       event.stopPropagation()
-      if (gesture.locked)
+      // Count fresh movement after the fade instead of accumulating its inertial tail.
+      if (now - gesture.lastSwitch < 200)
         return
       gesture.delta += delta
       if (Math.abs(gesture.delta) < 60)
         return
-      gesture.locked = true
       gesture.lastSwitch = now
-      handleCaseChange(selectedIndex + Math.sign(gesture.delta), 'wheel')
+      handleCaseChange(selection.current + Math.sign(gesture.delta), 'wheel')
+      gesture.delta = 0
     }
 
     window.addEventListener('keydown', onKeyDown)
@@ -312,7 +326,7 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
       window.removeEventListener('keydown', onKeyDown)
       main?.removeEventListener('wheel', onWheel, { capture: true })
     }
-  }, [handleCaseChange, selectedIndex])
+  }, [handleCaseChange])
 
   return (
     <main ref={containerRef} className="pt-[97px] pb-2.5 md:pt-[150px] lg:pt-0 lg:min-h-svh">
@@ -371,7 +385,7 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
               const x = event.changedTouches[0].clientX - start.x
               const threshold = Math.min(110, Math.max(75, event.currentTarget.clientWidth * 0.25))
               if (Math.abs(x) >= threshold)
-                handleCaseChange(selectedIndex + (x < 0 ? 1 : -1), 'swipe')
+                handleCaseChange(selection.current + (x < 0 ? 1 : -1), 'swipe')
             }}
             onClick={(event) => {
               if (suppressClick.current && event.detail !== 0)
