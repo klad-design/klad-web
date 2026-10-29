@@ -30,7 +30,8 @@ export function CaseStudy({ slug, closeHref, children }: { slug: string, closeHr
   }, [slug])
 
   useGSAP((context) => {
-    if (reducedMotion)
+    // The live preference is available before the hydration snapshot updates.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches)
       return
     gsap.registerPlugin(ScrollTrigger)
     // Let the router restore scroll before once-only reveals measure the new case.
