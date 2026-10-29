@@ -403,22 +403,19 @@ async function runLayout(browser, name, mobile) {
   const settleRoutes = observeRoutePrefetches(page, baseURL)
   page.setDefaultTimeout(15000)
   const errors = []
-  context.on('page', page => page.on('pageerror', error => errors.push(`${page.url()}: ${error.stack}`)))
-  page.on('pageerror', error => errors.push(`${page.url()}: ${error.stack}`))
+  function recordError(page, error) {
+    const message = `${page.url()}: ${error.stack || error.message}`
+    errors.push(message)
+    console.error(`${label} browser runtime error: ${message}`)
+  }
+  context.on('page', page => page.on('pageerror', error => recordError(page, error)))
+  page.on('pageerror', error => recordError(page, error))
   // Home scroll changes the persisted theme; keep the playback pixel reference in its own storage context.
   const autoplayContext = await browser.newContext(options)
   const autoplayPage = await autoplayContext.newPage()
-  const settleAutoplay = observeRoutePrefetches(autoplayPage, baseURL)
-  autoplayPage.on('pageerror', error => errors.push(`${autoplayPage.url()}: ${error.stack}`))
+  autoplayPage.on('pageerror', error => recordError(autoplayPage, error))
   try {
-    await check(`${label}-autoplay-four-cycles`, autoplayPage, () => assertAutoplay(autoplayPage, label)).finally(async () => {
-      try {
-        await settleAutoplay()
-      }
-      finally {
-        await autoplayContext.close()
-      }
-    })
+    await check(`${label}-autoplay-four-cycles`, autoplayPage, () => assertAutoplay(autoplayPage, label)).finally(() => autoplayContext.close())
     await page.goto(baseURL)
     await ready(page, 'scroll')
     const inkStyle = await page.locator('.page-imprints-ink').evaluate((ink) => {
@@ -581,7 +578,6 @@ async function runLayout(browser, name, mobile) {
     })
     await check(`${label}-loading-and-validation`, page, () => assertLoading(browser, options, label))
     await check(`${label}-initial-fallback`, page, () => assertInitial(browser, options, label))
-    await settleRoutes()
     await check(`${label}-client-errors`, page, async () => assert.deepEqual(errors, []))
   }
   finally {

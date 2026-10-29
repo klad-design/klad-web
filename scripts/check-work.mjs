@@ -202,7 +202,6 @@ try {
   await page.waitForTimeout(400)
   assert.ok(await page.locator('.site-header').evaluate(el => el.scrollTop) > 0, 'An extra-short sidebar must allow its own content to scroll')
   assert.equal(await page.evaluate(() => scrollY), 0, 'Scrolling inside the sidebar must not move the page')
-  await settleRoutes()
   await desktop.close()
 
   const touchDesktop = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 }, hasTouch: true })

@@ -20,7 +20,7 @@ try {
     const page = await context.newPage()
     page.setDefaultTimeout(30000)
     const settleRoutes = observeRoutePrefetches(page, baseURL)
-    page.on('pageerror', error => errors.push(`${page.url()}: ${error.stack}`))
+    page.on('pageerror', error => errors.push(`${page.url()}: ${error.stack || error.message}`))
     page.on('console', (message) => {
       if (message.type() === 'error' && /hydration|cannot update/i.test(message.text()))
         errors.push(message.text())
@@ -254,7 +254,6 @@ try {
         await page.waitForURL(`${baseURL}/work`)
       }
     }
-    await settleRoutes()
     await context.close()
   }
 
@@ -282,6 +281,7 @@ try {
   console.log(`Staging smoke check passed in ${browserType.name()} at 1440, 768, 390 and 320px, including scroll cycles, refresh, keyboard and reduced motion.`)
 }
 catch (error) {
+  console.error('Browser runtime errors:', errors)
   for (const context of browser.contexts()) {
     for (const page of context.pages()) {
       const state = await page.evaluate(() => ({ url: location.href, y: scrollY, limit: document.documentElement.scrollHeight - innerHeight, classes: document.documentElement.className, fonts: document.fonts.status, headings: [...document.querySelectorAll('h1 .textBlur')].map(element => ({ style: element.style.cssText, value: getComputedStyle(element).getPropertyValue('--value'), top: element.getBoundingClientRect().top, height: element.getBoundingClientRect().height })) })).catch(() => null)

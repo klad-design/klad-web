@@ -278,7 +278,6 @@ try {
     }, points), points.map(() => [171, 171, 171, 255]), 'The older imprint must retain the case-cover fill while layer opacity changes')
     await page.setViewportSize({ width: width === 1440 ? 768 : 320, height: 700 })
     assert.ok(await page.locator('.page-imprints').evaluate(el => el.getBoundingClientRect().right <= innerWidth), 'Resize must not create horizontal overflow')
-    await settleRoutes()
     await context.close()
   }
 

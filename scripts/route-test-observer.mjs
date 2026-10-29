@@ -17,6 +17,13 @@ export function observeRoutePrefetches(page, baseURL) {
   }
   page.on('requestfinished', finish)
   page.on('requestfailed', finish)
+  page.on('response', (response) => {
+    if (response.request().isNavigationRequest() && response.frame() === page.mainFrame()) {
+      // shortcut: these are full HTML navigations; use commit tracking if tests add redirects or no-content responses.
+      requests.clear()
+      activity = Date.now()
+    }
+  })
   return async () => {
     const deadline = Date.now() + 30000
     activity = Date.now()
