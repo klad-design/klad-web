@@ -8,6 +8,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
+import { useMediaQuery } from '@/components/useMediaQuery'
 import { useReducedMotion } from '@/components/useReducedMotion'
 
 const cases = [
@@ -109,6 +110,7 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
   const transitionSource = useRef<'select' | 'swipe' | 'wheel' | 'key'>('select')
   const [activeIndex, setActiveIndex] = useState(() => getCaseIndex(initialCase))
   const reducedMotion = useReducedMotion()
+  const desktop = useMediaQuery('(min-width: 768px)')
 
   useGSAP(() => {
     function restoreSelection() {
@@ -167,46 +169,42 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
   }, [])
 
   useGSAP(() => {
-    const mm = gsap.matchMedia()
+    if (desktop && cursorRef.current && cursorAreaRef.current && !reducedMotion) {
+      const area = cursorAreaRef.current
+      const xTo = gsap.quickTo(cursorRef.current, 'x', { ease: 'power3' })
+      const yTo = gsap.quickTo(cursorRef.current, 'y', { ease: 'power3' })
 
-    mm.add('(min-width: 768px)', () => {
-      if (cursorRef.current && cursorAreaRef.current && !reducedMotion) {
-        const area = cursorAreaRef.current
-        const xTo = gsap.quickTo(cursorRef.current, 'x', { ease: 'power3' })
-        const yTo = gsap.quickTo(cursorRef.current, 'y', { ease: 'power3' })
+      function onMove(e: MouseEvent) {
+        if (!cursorRef.current || !cursorAreaRef.current)
+          return
 
-        function onMove(e: MouseEvent) {
-          if (!cursorRef.current || !cursorAreaRef.current)
-            return
+        const cursorRect = cursorRef.current.getBoundingClientRect()
+        const areaRect = cursorAreaRef.current.getBoundingClientRect()
+        const relX = e.pageX - areaRect.left
+        const relY = e.pageY - areaRect.top
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+        const x = relX - cursorRect.width / 2
+        const y = relY - cursorRect.height / 2 - scrollTop
 
-          const cursorRect = cursorRef.current.getBoundingClientRect()
-          const areaRect = cursorAreaRef.current.getBoundingClientRect()
-          const relX = e.pageX - areaRect.left
-          const relY = e.pageY - areaRect.top
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-          const x = relX - cursorRect.width / 2
-          const y = relY - cursorRect.height / 2 - scrollTop
+        gsap.to(cursorRef.current, { opacity: 1 })
 
-          gsap.to(cursorRef.current, { opacity: 1 })
-
-          xTo(x)
-          yTo(y)
-        }
-
-        function onLeave() {
-          gsap.to(cursorRef.current, { opacity: 0 })
-        }
-
-        area.addEventListener('mousemove', onMove)
-        area.addEventListener('mouseleave', onLeave)
-
-        return () => {
-          area.removeEventListener('mousemove', onMove)
-          area.removeEventListener('mouseleave', onLeave)
-        }
+        xTo(x)
+        yTo(y)
       }
-    })
-  }, { scope: containerRef, dependencies: [reducedMotion], revertOnUpdate: true })
+
+      function onLeave() {
+        gsap.to(cursorRef.current, { opacity: 0 })
+      }
+
+      area.addEventListener('mousemove', onMove)
+      area.addEventListener('mouseleave', onLeave)
+
+      return () => {
+        area.removeEventListener('mousemove', onMove)
+        area.removeEventListener('mouseleave', onLeave)
+      }
+    }
+  }, { scope: containerRef, dependencies: [reducedMotion, desktop], revertOnUpdate: true })
 
   const { contextSafe } = useGSAP(() => {
     const fromGesture = transitionSource.current !== 'select'

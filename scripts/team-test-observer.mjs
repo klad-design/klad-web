@@ -23,10 +23,18 @@ export async function observeTeam(context) {
     window.__teamImages = []
     window.__teamDecodeActive = 0
     window.__teamDecodePeak = 0
+    window.__teamResidentPeak = 0
+    window.__teamSourcePeak = 0
     window.__teamBitmapCalls = 0
     window.__portraitDraws = 0
     window.__portraitFrames = []
     window.__portraitWidths = []
+
+    function residency() {
+      const images = window.__teamImages.filter(image => !image.cleared && !image.failed)
+      window.__teamSourcePeak = Math.max(window.__teamSourcePeak, images.length)
+      window.__teamResidentPeak = Math.max(window.__teamResidentPeak, images.filter(image => image.decoded).length)
+    }
 
     function identify(url) {
       const match = url?.match(source)
@@ -54,6 +62,7 @@ export async function observeTeam(context) {
         if (info) {
           identities.set(this, info)
           window.__teamImages.push(info)
+          residency()
         }
       },
     })
@@ -74,6 +83,7 @@ export async function observeTeam(context) {
         ready.add(this)
         info.decoded = true
         window.__teamDecoded.add(info.url)
+        residency()
       }
       catch (error) {
         info.failed = true

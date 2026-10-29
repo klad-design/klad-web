@@ -112,14 +112,14 @@ export function Services() {
       <div ref={wordsRef} className="-rotate-2 w-fit flex text-h1 md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase">
         <div className="service w-fit flex gap-[0.3em] pl-[0.3em] will-change-transform">
           {titles.map((service, index) => (
-            <div key={service + index} className="blur-xs hover:blur-none transition-all duration-500 cursor-pointer">
+            <div key={service + index} className="blur-xs hover:blur-none transition-[filter] duration-500 cursor-pointer">
               {service}
             </div>
           ))}
         </div>
         <div className="service w-fit flex gap-[0.3em] pl-[0.3em] will-change-transform" aria-hidden inert>
           {titles.map((service, index) => (
-            <div key={service + index} className="blur-xs hover:blur-none transition-all duration-500 cursor-pointer">
+            <div key={service + index} className="blur-xs hover:blur-none transition-[filter] duration-500 cursor-pointer">
               {service}
             </div>
           ))}

@@ -59,13 +59,25 @@ async function paints(page, reset = false) {
   }, reset)
 }
 
+async function waitForFrames(page, frames) {
+  await page.waitForFunction(frames => frames.every(frame => window.__teamImages.some(image => image.frame === frame && image.decoded && !image.cleared && !image.failed)), frames)
+}
+
+async function verifyResidency(page) {
+  const state = await page.evaluate(() => ({ sources: window.__teamSourcePeak, decoded: window.__teamResidentPeak }))
+  assert.ok(state.decoded <= 45, `Retain at most 45 decoded portrait sources: ${JSON.stringify(state)}`)
+  assert.ok(state.sources <= 49, `Retained portraits plus in-flight sources must stay bounded: ${JSON.stringify(state)}`)
+  await waitForFrames(page, seedFrames)
+}
+
 async function waitForPose(page, frame, seek = null) {
   try {
     await page.waitForFunction((frame) => {
-      const ready = [Math.floor(frame), Math.ceil(frame)].every(index => [...window.__teamDecoded].some(url => url.endsWith(`/${index}.avif`)))
+      const pair = [Math.floor(frame), Math.ceil(frame)]
+      const ready = pair.every(index => window.__teamImages.some(image => image.frame === index && image.decoded && !image.cleared && !image.failed))
       // Cold-frame scenarios deliberately hold the neighboring decode.
       if (!ready)
-        return true
+        return window.__teamHoldNonSeeds || (window.__teamHold61 && pair.includes(61))
       const draws = window.__teamPaints.filter(paint => paint.draws.length).at(-1)?.draws || []
       return draws.length > 0 && Math.abs(draws.reduce((sum, draw) => sum + draw.frame * draw.alpha, 0) - frame) < 0.2
     }, frame)
@@ -203,10 +215,11 @@ try {
   await cold.page.waitForTimeout(200)
   assert.equal((await paints(cold.page)).length, hiddenPaints, 'A stationary hidden Team must not keep painting')
   await cold.page.evaluate(() => window.__teamSetVisibility('visible'))
-  await cold.page.waitForFunction(() => window.__teamDecoded.size === 122)
+  await waitForFrames(cold.page, [24, 25])
   await waitForPose(cold.page, 24.5)
   assert.ok(Math.abs((await paints(cold.page)).at(-1).frame - 24.5) < 0.2, 'Refinement frames must settle at the current target instead of replaying the missed swipe')
   verifyPaints(await paints(cold.page))
+  await verifyResidency(cold.page)
   await cold.context.close()
 
   const phone = await visit(
@@ -220,23 +233,34 @@ try {
   assert.equal(await page.evaluate(() => window.__teamBitmapCalls), 0, 'Photographic frames must preserve the native HTML image resampling path')
   const range = await mobileRange(page)
   await page.evaluate(y => scrollTo(0, y), range.start - 500)
-  await page.waitForFunction(() => window.__teamDecoded.size === 121, null, { timeout: 30000 })
-  assert.equal(phone.requests.size, 122, 'Approaching Team must prepare every source frame')
+  await waitForFrames(page, [0, 1, 2])
+  assert.ok(phone.requests.size < 122, 'Approaching Team must prepare a bounded neighborhood rather than the entire sequence')
   assert.ok(phone.peakRequests() <= 6, 'Portrait preparation must bound concurrent requests')
   assert.ok(await page.evaluate(() => window.__teamDecodePeak <= 4), 'Portrait preparation must keep at most four decode operations in flight')
   assert.ok(await page.locator('#team canvas').evaluate(el => el.width === Math.round(el.clientWidth * Math.min(devicePixelRatio, 2))), 'Phone canvas must render at full 2x resolution on high-density screens')
 
   await paints(page, true)
   await seek(page, range, 60.5)
+  await page.waitForFunction(() => window.__teamImages.some(image => image.frame === 61 && image.nativeDecoded && image.decoding && !image.cleared))
   assert.ok((await paints(page)).at(-1).draws.every(draw => draw.frame !== 61), 'An image that is loaded but not decoded must stay off canvas')
   const beforeRelease = await seek(page, range, 70.5)
   assert.ok(Math.abs(beforeRelease.at(-1).frame - 70.5) < 0.2)
-  await page.evaluate(() => window.__teamRelease61())
-  await page.waitForFunction(() => window.__teamDecoded.size === 122)
+  await page.evaluate(() => {
+    window.__teamHold61 = false
+    window.__teamRelease61()
+  })
+  await waitForFrames(page, [70, 71])
   await waitForPose(page, 70.5)
   assert.ok(Math.abs((await paints(page)).at(-1).frame - 70.5) < 0.2, 'Late decode completion must preserve the current playhead')
   verifyPaints(await paints(page))
 
+  const prepared70 = await page.evaluate(() => window.__teamImages.filter(image => image.frame === 70).length)
+  await seek(page, range, 15)
+  await page.waitForFunction(() => window.__teamImages.filter(image => image.frame === 70).every(image => image.cleared))
+  const reloaded = await seek(page, range, 70.5)
+  assert.ok(Math.abs(reloaded.at(-1).frame - 70.5) < 0.2, 'An evicted pose must reload and blend at the current target')
+  assert.ok(await page.evaluate(before => window.__teamImages.filter(image => image.frame === 70).length > before, prepared70), 'Returning to an evicted pose must prepare a new source')
+  await verifyResidency(page)
   await seek(page, range, 15)
   await paints(page, true)
   const motion = await page.evaluate(async ({ start, end }) => {
@@ -342,6 +366,7 @@ try {
     throw error
   }
   assert.equal(await page.evaluate(() => scrollY), normalY, 'Refreshing Team must preserve the normal target scroll position')
+  await verifyResidency(page)
 
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.waitForTimeout(500)
@@ -363,38 +388,40 @@ try {
   assert.equal((await paints(fallback.page)).at(-1).draws[0].width, 1080, 'The fallback portrait must decode and paint successfully')
   const fallbackRange = await mobileRange(fallback.page)
   await fallback.page.evaluate(y => scrollTo(0, y), fallbackRange.start)
-  await fallback.page.waitForFunction(() => window.__teamDecoded.size === 122, null, { timeout: 30000 })
-  assert.ok(fallback.requests.has(`${baseURL}/images/team/61.avif`), 'A persistently failed later mobile frame must also fall back')
   const recovered = await seek(fallback.page, fallbackRange, 60.5)
+  assert.ok(fallback.requests.has(`${baseURL}/images/team/61.avif`), 'A persistently failed later mobile frame must also fall back')
   assert.ok(Math.abs(recovered.at(-1).frame - 60.5) < 0.2, 'Playback must recover through the failed frame')
   verifyPaints(recovered)
+  await verifyResidency(fallback.page)
   await fallback.context.close()
 
   for (const hasTouch of [true, false]) {
     const wide = await visit({ viewport: { width: 1024, height: 900 }, hasTouch, deviceScaleFactor: 3 })
     await wide.page.locator('#team canvas').scrollIntoViewIfNeeded()
-    await wide.page.waitForFunction(() => window.__teamDecoded.size === 122, null, { timeout: 30000 })
+    await waitForFrames(wide.page, seedFrames)
+    assert.ok(wide.requests.size < 122, 'Large layouts must not eagerly prepare the entire sequence')
     assert.ok([...wide.requests].every(url => url.includes('/images/team/')), 'Tablets and desktops must use original-resolution portraits')
     assert.equal((await paints(wide.page)).at(-1).draws[0].width, 1080, 'Large portrait layouts must preserve original source detail')
     assert.equal(await wide.page.evaluate(() => window.__teamBitmapCalls), 0, 'Desktop portraits must preserve native HTML image resampling')
     assert.ok(await wide.page.locator('#team canvas').evaluate(el => el.width === Math.round(el.clientWidth * Math.min(devicePixelRatio, 2))))
     verifyPaints(await paints(wide.page))
+    await verifyResidency(wide.page)
     await wide.context.close()
   }
 
   let releaseRequest
   const lifecycle = await visit(
-    { viewport: { width: 1024, height: 900 }, hasTouch: true },
+    { viewport: { width: 390, height: 844 }, hasTouch: true },
     async (context) => {
       await context.addInitScript(() => window.__teamHold61 = true)
-      await context.route(/\/images\/team\/117\.avif$/, async (route) => {
+      await context.route(/\/images\/(?:team-mobile\/v5|team)\/67\.avif$/, async (route) => {
         await new Promise(resolve => releaseRequest = resolve)
         await route.continue().catch(() => {})
       })
     },
   )
-  await lifecycle.page.locator('#team').scrollIntoViewIfNeeded()
-  await lifecycle.page.waitForFunction(() => window.__teamDecoded.size === 120 && window.__teamImages.some(image => image.frame === 117 && image.decoding), null, { timeout: 30000 })
+  await seek(lifecycle.page, await mobileRange(lifecycle.page), 60.5)
+  await lifecycle.page.waitForFunction(() => window.__teamImages.some(image => image.frame === 67 && image.decoding && !image.cleared), null, { timeout: 30000 })
   assert.ok(await lifecycle.page.evaluate(() => window.__teamImages.some(image => image.frame === 61 && image.nativeDecoded && image.decoding)), 'Lifecycle check must hold a native-decoded image before publishing it')
   await lifecycle.page.locator('a[href="/process"]').first().evaluate(link => link.click())
   await lifecycle.page.waitForURL('**/process')
@@ -414,7 +441,7 @@ try {
   assert.equal(await lifecycle.page.evaluate(() => window.__teamImages.length), unmountedImages, 'Unmount must clear pending and retained sources without advancing the queue')
   await lifecycle.context.close()
   assert.deepEqual(errors, [], 'Team scenarios must not raise browser errors')
-  console.log(`Team checks passed in ${type.name()}: native image identity and geometry, cold swipes, bounded/hidden loading, decoded-only draws, transparent interpolation, ordered playback, late frames, unclipped shoulders, image fallback, rotation, reduced motion, touch tablets, source cancellation and late decode cleanup on unmount.`)
+  console.log(`Team checks passed in ${type.name()}: native image identity and geometry, cold swipes, bounded residency, eviction and reload, hidden loading, decoded-only draws, transparent interpolation, ordered playback, late frames, unclipped shoulders, image fallback, rotation, reduced motion, touch tablets, source cancellation and late decode cleanup on unmount.`)
 }
 finally {
   await browser.close()

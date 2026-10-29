@@ -141,8 +141,7 @@ body:has([data-header-logo]) [data-header-logo-initial] {
     min-height: 100vh;
   }
 
-  body::after {
-    content: '';
+  [data-page-noise] {
     position: absolute;
     top: 0;
     left: 0;
@@ -154,6 +153,10 @@ body:has([data-header-logo]) [data-header-logo-initial] {
     z-index: 30;
   }
 
+  [data-page-noise][data-active] {
+    position: fixed;
+  }
+
   [data-case-page] img,
   [data-case-page] video {
     position: relative;
@@ -163,7 +166,7 @@ body:has([data-header-logo]) [data-header-logo-initial] {
 
   a, button {
     font-family: var(--font-helvetica), sans-serif;
-    transition: all .15s linear;
+    transition: opacity .15s linear;
     cursor: pointer;
   }
 }
@@ -269,7 +272,7 @@ body:has([data-header-logo]) [data-header-logo-initial] {
 
   .button::before,
   .button::after {
-    @apply inline-flex items-center absolute inset-0 content-[attr(aria-label)] transition-all duration-150 opacity-0 transform-gpu;
+    @apply inline-flex items-center absolute inset-0 content-[attr(aria-label)] transition-opacity duration-150 opacity-0 transform-gpu;
   }
 
   .button::before {

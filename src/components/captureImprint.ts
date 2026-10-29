@@ -41,6 +41,8 @@ export async function captureImprint(root: HTMLElement) {
   context.fillStyle = '#000'
   context.globalAlpha = 0.5
   const images: Promise<void>[] = []
+  // Keep image rasterization out of the navigation event and its microtasks.
+  const afterPaint = new Promise<void>(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)))
   root.querySelectorAll('img, video, canvas, svg').forEach((media) => {
     const rect = media.getBoundingClientRect()
     if (!visible(media) || !inViewport(rect))
@@ -99,10 +101,13 @@ export async function captureImprint(root: HTMLElement) {
     }
 
     if (artwork) {
+      const left = Math.max(0, Math.floor(rect.left))
+      const top = Math.max(0, Math.floor(rect.top))
       const ink = document.createElement('canvas')
-      ink.width = canvas.width
-      ink.height = canvas.height
+      ink.width = Math.min(canvas.width, Math.ceil(rect.right)) - left
+      ink.height = Math.min(canvas.height, Math.ceil(rect.bottom)) - top
       const inkContext = ink.getContext('2d')!
+      inkContext.translate(-left, -top)
       // Freeze clipping before navigation can remove or scroll the outgoing page.
       clipToParents(media, inkContext)
       inkContext.beginPath()
@@ -111,7 +116,8 @@ export async function captureImprint(root: HTMLElement) {
       const fit = styleFor(media).objectFit
       const image = artwork
       const decoded = image instanceof HTMLImageElement ? image.decode() : Promise.resolve()
-      images.push(decoded.then(() => {
+      images.push(decoded.then(async () => {
+        await afterPaint
         let width = rect.width
         let height = rect.height
         if (fit === 'cover' || fit === 'contain') {
@@ -126,7 +132,7 @@ export async function captureImprint(root: HTMLElement) {
         context.save()
         context.globalAlpha = 1
         context.globalCompositeOperation = 'destination-over'
-        context.drawImage(ink, 0, 0)
+        context.drawImage(ink, left, top)
         context.restore()
       }).catch(() => {
         // Unavailable artwork must never interrupt navigation or session history.

@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { HeaderLogo } from '@/components/HeaderLogo'
 import { Button } from '@/components/ui/Button'
+import { useMediaQuery } from '@/components/useMediaQuery'
 import { useReducedMotion } from '@/components/useReducedMotion'
 
 const cities = [
@@ -44,6 +45,7 @@ function HeaderContent({ pathname }: { pathname: string }) {
 
   const smoother = useLenis()
   const reducedMotion = useReducedMotion()
+  const desktop = useMediaQuery('(min-width: 768px)')
 
   // Menu items animation
   const { contextSafe } = useGSAP({ scope: menuRef })
@@ -68,19 +70,13 @@ function HeaderContent({ pathname }: { pathname: string }) {
   useEffect(() => {
     isOpenMenu ? smoother?.stop() : smoother?.start()
 
-    const mm = gsap.matchMedia()
-
-    mm.add('(min-width: 768px)', () => {
-      if (isOpenMenu) {
-        setIsOpenMenu(false)
-      }
-    })
+    if (desktop && isOpenMenu)
+      setIsOpenMenu(false)
 
     return () => {
-      mm.revert()
       smoother?.start()
     }
-  }, [isOpenMenu, smoother])
+  }, [isOpenMenu, smoother, desktop])
 
   useEffect(() => {
     function closeMenu() {

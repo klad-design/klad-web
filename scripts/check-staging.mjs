@@ -60,6 +60,12 @@ try {
     assert.equal(await headingValue(), 0, `Heading must start without scroll trails at ${width}px`)
     await page.evaluate(() => window.scrollTo(0, 80))
     await page.waitForFunction(() => Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value')) < -1)
+    assert.ok(await page.locator('[data-page-noise]').evaluate((noise) => {
+      const style = getComputedStyle(noise)
+      const bounds = noise.getBoundingClientRect()
+      return style.position === 'fixed' && Math.abs(Number.parseFloat(style.backgroundPositionY) + scrollY % 150) < 0.01
+        && bounds.top === 0 && bounds.left === 0 && bounds.width === innerWidth && bounds.height === innerHeight
+    }), 'Grain must cover only the viewport while preserving its document-relative tile phase')
     const refreshingBlur = await page.evaluate(async (refresh) => {
       window.scrollTo(0, 0)
       if (!refresh)

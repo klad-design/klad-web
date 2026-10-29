@@ -56,7 +56,7 @@ async function recordVisibleCases(page) {
 async function noise(page, overMedia) {
   await page.waitForFunction(overMedia => document.documentElement.dataset.theme === (overMedia ? 'light' : 'dark'), overMedia)
   const overlay = await page.evaluate(() => {
-    const style = getComputedStyle(document.body, '::after')
+    const style = getComputedStyle(document.querySelector('[data-page-noise]'))
     return { display: style.display, opacity: style.opacity, zIndex: Number(style.zIndex) }
   })
   assert.notEqual(overlay.display, 'none', 'Noise must remain on the page background and text')

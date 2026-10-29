@@ -18,6 +18,7 @@
     "test:audit-fixes": "node scripts/check-audit-fixes.mjs",
     "test:cases": "node scripts/check-cases.mjs",
     "test:services": "node scripts/check-services.mjs",
+    "test:performance": "node scripts/check-performance.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },

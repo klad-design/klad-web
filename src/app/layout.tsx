@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { CursorGhost } from '@/components/CursorGhost'
 import { Header } from '@/components/Header'
 import { PageImprints } from '@/components/PageImprints'
+import { PageNoise } from '@/components/PageNoise'
 import { SmoothScroll } from '@/components/SmoothScroll'
 
 import '@/styles/globals.css'
@@ -64,6 +65,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className="bg-gray dark:bg-black transition-colors duration-200" suppressHydrationWarning>
       <body className="bg-gray dark:bg-black dark:text-gray transition-colors duration-200 selection:bg-[#ADADAD]/60">
+        <PageNoise />
         <svg width="0" height="0" aria-hidden="true" focusable="false" className="absolute">
           <defs>
             {/* Difference blending uses 231 against the brand backgrounds 1 and 230. */}

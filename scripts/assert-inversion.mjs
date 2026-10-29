@@ -27,7 +27,7 @@ export async function imageDifference(first, second) {
 }
 
 export async function assertPageInversion(page, logo) {
-  const style = await page.addStyleTag({ content: 'body::after{display:none!important}html,body{transition:none!important}' })
+  const style = await page.addStyleTag({ content: '[data-page-noise]{display:none!important}html,body{transition:none!important}' })
   const original = await page.evaluate(() => {
     const cursor = document.querySelector('[data-cursor-ghost]')
     return { theme: document.documentElement.dataset.theme, hidden: cursor.hidden, opacity: cursor.firstElementChild.style.opacity, transform: cursor.firstElementChild.style.transform }
@@ -88,7 +88,7 @@ export async function assertPageInversion(page, logo) {
 export async function assertLogoBounds(page, logo) {
   const visual = page.locator('[data-header-logo]').first()
   assert.equal(await visual.evaluate(element => getComputedStyle(element).clipPath), 'inset(0px)')
-  const style = await page.addStyleTag({ content: 'body::after{display:none!important}html,body{transition:none!important}' })
+  const style = await page.addStyleTag({ content: '[data-page-noise]{display:none!important}html,body{transition:none!important}' })
   const theme = await page.evaluate(() => document.documentElement.dataset.theme)
   const time = await logo.evaluate(svg => svg.getCurrentTime())
   const bounds = await visual.boundingBox()
@@ -149,7 +149,7 @@ export async function assertLogoBounds(page, logo) {
 }
 
 export async function assertImprintInversion(page, visual) {
-  const style = await page.addStyleTag({ content: 'body::after{display:none!important}html,body{transition:none!important}' })
+  const style = await page.addStyleTag({ content: '[data-page-noise]{display:none!important}html,body{transition:none!important}' })
   const original = await page.evaluate(() => ({
     theme: document.documentElement.dataset.theme,
     layer: document.querySelector('.page-imprints').getAttribute('style'),

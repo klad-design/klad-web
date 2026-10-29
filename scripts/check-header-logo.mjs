@@ -7,6 +7,8 @@ import { chromium, firefox, webkit } from 'playwright'
 import { assertImprintInversion, assertInversion, assertLogoBounds, assertLogoPhotoInversion, assertPageInversion, imageDifference, pngPixels, pngRegion } from './assert-inversion.mjs'
 import { isCanceledRoutePrefetch, replaceDocument } from './document-test-navigation.mjs'
 
+import './check-logo-interpolation.mjs'
+
 const frozenLogo = await readFile('public/images/logo-still.svg', 'utf8')
 const motionLogo = await readFile('public/images/logo-scroll-motion.svg', 'utf8')
 assert.doesNotMatch(frozenLogo, /<animate(?:Transform)?\b/)
@@ -226,7 +228,7 @@ async function captureRegisteredLogo(page, bounds, dpr) {
 }
 
 async function assertLogoPaintGuard(page, visual) {
-  const style = await page.addStyleTag({ content: 'body::after{display:none!important}html,body{transition:none!important}' })
+  const style = await page.addStyleTag({ content: '[data-page-noise]{display:none!important}html,body{transition:none!important}' })
   const original = await visual.evaluate(element => ({ theme: document.documentElement.dataset.theme, style: element.getAttribute('style'), time: element.querySelector('svg').getCurrentTime() }))
   const bounds = await visual.boundingBox()
   const dpr = await page.evaluate(() => devicePixelRatio)
@@ -390,8 +392,8 @@ async function assertLiveScroll(page, label) {
         y: scrollY,
         time: element.querySelector('svg').getCurrentTime(),
         moving: document.documentElement.classList.contains('lenis-smooth'),
-        noise: getComputedStyle(document.body, '::after').display,
-        noiseOpacity: getComputedStyle(document.body, '::after').opacity,
+        noise: getComputedStyle(document.querySelector('[data-page-noise]')).display,
+        noiseOpacity: getComputedStyle(document.querySelector('[data-page-noise]')).opacity,
         theme: document.documentElement.dataset.theme,
         dpr: devicePixelRatio,
       }))
@@ -472,7 +474,7 @@ async function assertAutoplay(page, label) {
   await ready(page, 'autoplay')
   const visual = page.locator('[data-header-logo]').first()
   const logo = visual.locator('svg')
-  const style = await page.addStyleTag({ content: 'body::after{display:none!important}html,body{transition:none!important}' })
+  const style = await page.addStyleTag({ content: '[data-page-noise]{display:none!important}html,body{transition:none!important}' })
   const firstCycle = await page.evaluate(() => {
     window.__headerLogoAudit.sample()
     return window.__headerLogoAudit.samples.at(-1).cycle + 1
@@ -510,7 +512,8 @@ async function assertAutoplay(page, label) {
       assert.ok(active.some(sample => sample.scale < 0.5 && Math.abs(sample.lettering[3] - rest.lettering[3]) > Math.abs(rest.lettering[3]) * 0.5), `Cycle ${cycle}: lettering actually animates with the body`)
       assert.ok(idle.length > 0, `Cycle ${cycle}: idle interval exists`)
       for (const sample of idle) {
-        assert.deepEqual(sample.body, rest.body, `Cycle ${cycle}: identical body endpoint throughout rest`)
+        // Firefox can vary a recomputed SVG bbox below 0.001 CSSpx; resting pixels remain exact below.
+        assert.ok(sample.body.every((value, coordinate) => Math.abs(value - rest.body[coordinate]) <= 0.01), `Cycle ${cycle}: body endpoint stays fixed throughout rest`)
         assert.deepEqual(sample.lettering, rest.lettering, `Cycle ${cycle}: identical lettering endpoint throughout rest`)
       }
       assert.ok(samples.filter(sample => sample.cycle === cycle).every(sample => sample.paused && sample.time <= 2), `Cycle ${cycle}: native SMIL remains paused within the two-second animation`)
@@ -536,7 +539,7 @@ async function assertFallbackPixels(page, locator, theme, label) {
   await page.evaluate(() => {
     const style = document.createElement('style')
     style.id = 'fallback-probe-style'
-    style.textContent = 'body::after{display:none!important}html,body{transition:none!important}'
+    style.textContent = '[data-page-noise]{display:none!important}html,body{transition:none!important}'
     document.head.append(style)
   })
   try {
@@ -691,7 +694,8 @@ async function runLayout(browser, name, mobile) {
       assert.equal(await page.locator('[data-header-logo-initial]').isVisible(), false)
       const start = await logo.locator('#logo-outline').getAttribute('d')
       const frozen = await page.evaluate(source => new DOMParser().parseFromString(source, 'image/svg+xml').querySelector('#logo-outline').getAttribute('d'), frozenLogo)
-      assert.equal(start, frozen, 'Static and inline logos share approved geometry')
+      const geometry = path => path.match(/[a-z]|[-+]?(?:\d*\.)?\d+(?:e[-+]?\d+)?/gi).map(token => /^[a-z]$/i.test(token) ? token : Number(token))
+      assert.deepEqual(geometry(start), geometry(frozen), 'Static and inline logos share approved geometry')
       await assertSharedArtwork(page, logo)
       assert.equal(await visual.evaluate(element => getComputedStyle(element).filter), 'none', 'Animated ink must not use an outer color-filter surface')
       await assertInversion(page, visual, 'light', visual.locator('img'))

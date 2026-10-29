@@ -12,6 +12,10 @@ The production header logo follows homepage scroll, plays one cycle every 12 sec
 
 The hero uses the original Figma vector (node `817:24844`) as `public/images/world.svg`, preserving its 1410 × 928 viewBox and the existing scroll trails. Reused country geometry and SVGO optimization reduced the export from 3,144,204 to 756,657 bytes (76% smaller; 232,351 bytes gzipped). The SVG contains no embedded raster images. Its download is larger than the baseline Next.js PNG delivery (170KB desktop / 38KB mobile), but remains sharp when enlarged.
 
+Theme changes invert each assembled map rather than filtering all four SVG layers separately. Links and button copies transition opacity, and service titles transition their hover blur; inherited theme colors follow the document transition. The animated grain paints a viewport-sized layer with its original document-relative tile phase, scale, opacity and stacking order. Without JavaScript it keeps the original full-document placement.
+
+The logo prepares linear path keyframes once and shares identical poses across outline copies. Native SMIL still drives its transforms and opacity, and the same SVG seek controller updates both, preserving fractional poses and the two-second loop. Responsive component subscriptions use native media-query cleanup instead of accumulating GSAP MatchMedia subscriptions on navigation.
+
 Mobile navigation preserves the page snapshot even while the menu hides it from assistive technology. Imprint blur extends beyond the snapshot edges so it stays soft when scrolling upward through the About page's infinite loop.
 
 ## Development
@@ -59,6 +63,7 @@ pnpm test:work
 pnpm test:imprints
 pnpm test:cases
 pnpm test:services
+pnpm test:performance
 ```
 
 Browser checks expect the running production staging server at `http://127.0.0.1:3100`. Set `STAGING_URL` to check another preview. Install the browsers with `pnpm exec playwright install chromium firefox webkit` (add `--with-deps` on Linux).
@@ -66,6 +71,8 @@ Browser checks expect the running production staging server at `http://127.0.0.1
 Select an engine with `STAGING_BROWSER=chromium`, `STAGING_BROWSER=firefox` or `STAGING_BROWSER=webkit`. The smoke check includes two complete homepage scroll cycles, native scroll restoration on reload and Back, and heading blur matching the restored position.
 
 `test:audit-fixes` covers mobile Close → Menu → Back scroll unlocking, server-rendered video posters, and one main landmark per page. `test:team` checks the v5 sequence's decoded frame identity, dimensions, interpolation, ordered playback, bounded loading, fallback, rotation and cleanup.
+
+`test:performance` records the first and repeated theme switches separately, plus logo seeking, in every browser. A two-second hang guard accommodates different CI hardware; it is not a smoothness target. In Chromium, the check also repeats the main navigation loop after warming routes and checks that forced garbage collection releases DOM nodes and event listeners. Its JSON measurements live in ignored `artifacts/performance/`. Team retains the existing preview poses plus twelve neighboring frames on either side of the playhead instead of decoding the whole sequence; the Team checks verify bounded residency, eviction and reloading without changing source detail or interpolation. Scroll-trigger refreshes preserve that neighborhood while playheads temporarily reset.
 
 `.github/workflows/quality.yml` runs on pushes and pull requests to `staging` and `main`. Chromium and Firefox run on Ubuntu 24.04; WebKit runs on macOS 15 to cover Safari’s platform. Each job installs the frozen lockfile, runs lint and the staging build, installs its browser with system dependencies, and runs the checks above plus the cursor check against a `STAGING=1` production server on port 3100. Each browser suite has its own step and five-minute limit; the logo suite runs layouts sequentially and allows fifteen minutes for the macOS runner. Chromium also checks the unlisted Outpost draft. Failed jobs retain screenshots and the server log for seven days. Require all three `Quality (browser)` checks in branch protection to enforce the merge gate; a successful Vercel deployment alone does not establish that these checks passed. Action versions follow the official [checkout](https://github.com/actions/checkout/tree/v7.0.1), [setup-node](https://github.com/actions/setup-node/tree/v7.1.0) and [upload-artifact](https://github.com/actions/upload-artifact/tree/v7.0.2) documentation.
 
@@ -82,6 +89,8 @@ On desktops with a mouse or trackpad, Up/Down arrows select the previous/next pr
 The Branding / Experience / Product reel moves each blurred strip with a 3D transform. Scroll velocity gently increases its speed, and it eases back to its normal speed when scrolling stops. Reduced motion keeps the titles still. `pnpm test:services` checks mobile timing, recovery after scrolling, synchronized repetition and reduced motion in all three browser engines. The responsive suite also runs this check in CI.
 
 Page imprints retain only the two previous viewports: the newest at 50% opacity and the older at 30%, both blurred by 4px. New imprints dissolve from clear ink over 800ms; reduced-motion mode shows the settled layers immediately. Work keeps the imprints faint, and individual case pages hide them. The two layers survive reloads within the same tab. `test:imprints` checks the layer limit, dissolve, case-page exclusion, SVG capture, homepage loops, history navigation, and storage fallback in Chromium, Firefox or WebKit.
+
+Imprint capture freezes outgoing geometry before navigation, then rasterizes media after a paint using buffers cropped to the visible media. PNG persistence encodes only the new layer asynchronously and reuses the older encoding; stale saves cannot overwrite newer navigation history.
 
 ## Video assets
 

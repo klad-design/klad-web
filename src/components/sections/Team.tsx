@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
+import { useMediaQuery } from '@/components/useMediaQuery'
 import { useReducedMotion } from '@/components/useReducedMotion'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -309,17 +310,20 @@ export function Team() {
   const directionRef = useRef(1)
   const drawnFrameRef = useRef(-1)
   const canvasModeRef = useRef({ mobile: false, interpolate: false })
+  const prepareFramesRef = useRef<(index: number) => void>(() => {})
 
   const [activeMemberIndex, setActiveMemberIndex] = useState(0)
 
   const smoother = useLenis()
   const reducedMotion = useReducedMotion()
+  const desktop = useMediaQuery('(min-width: 768px)')
 
   const loadImageOnCanvas = useCallback((index: number) => {
     const previousFrame = drawnFrameRef.current < 0 ? frameRef.current : drawnFrameRef.current
     if (index !== previousFrame)
       directionRef.current = Math.sign(index - previousFrame)
     frameRef.current = index
+    prepareFramesRef.current(index)
     const canvas = canvasRef.current
     const context = canvas?.getContext('2d')
     const images = imagesRef.current
@@ -373,110 +377,98 @@ export function Team() {
 
   // Mobile scroll
   useGSAP(() => {
-    if (reducedMotion)
+    if (reducedMotion || desktop !== false)
       return
 
-    const mm = gsap.matchMedia()
-
-    mm.add('(max-width: 767px)', () => {
-      const playhead = { frame: 0 }
-      gsap.to(playhead, {
-        frame: lastFrame,
-        ease: 'none',
-        onUpdate: () => loadImageOnCanvas(playhead.frame),
-        scrollTrigger: {
-          trigger: modelsRef.current,
-          endTrigger: '.memberDescriptionEnd',
-          start: `top +=${mobileGap}px`,
-          end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
-          invalidateOnRefresh: true,
-          pinSpacing: false,
-          pin: true,
-          scrub: mobileScrub,
-        },
-      })
-
-      team.forEach((_, index) => {
-        if (index < team.length - 1) {
-          const trigger = `.memberDescription:nth-child(${index + 1})`
-          const tl = gsap.timeline({ defaults: { ease: 'none' } })
-
-          tl.to(trigger, {
-            '--value': 75,
-            'opacity': 0.05,
-            'ease': 'none',
-          }, 0)
-
-          ScrollTrigger.create({
-            trigger,
-            animation: tl,
-            start: () => `top ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
-            end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
-            invalidateOnRefresh: true,
-            scrub: mobileScrub,
-          })
-        }
-      })
+    const playhead = { frame: 0 }
+    gsap.to(playhead, {
+      frame: lastFrame,
+      ease: 'none',
+      onUpdate: () => loadImageOnCanvas(playhead.frame),
+      scrollTrigger: {
+        trigger: modelsRef.current,
+        endTrigger: '.memberDescriptionEnd',
+        start: `top +=${mobileGap}px`,
+        end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
+        invalidateOnRefresh: true,
+        pinSpacing: false,
+        pin: true,
+        scrub: mobileScrub,
+      },
     })
 
-    return () => mm.revert()
-  }, { scope: sectionRef, dependencies: [reducedMotion], revertOnUpdate: true })
+    team.forEach((_, index) => {
+      if (index < team.length - 1) {
+        const trigger = `.memberDescription:nth-child(${index + 1})`
+        const tl = gsap.timeline({ defaults: { ease: 'none' } })
+
+        tl.to(trigger, {
+          '--value': 75,
+          'opacity': 0.05,
+          'ease': 'none',
+        }, 0)
+
+        ScrollTrigger.create({
+          trigger,
+          animation: tl,
+          start: () => `top ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
+          end: () => `bottom ${(modelsRef.current?.clientHeight || 0) + mobileGap}px`,
+          invalidateOnRefresh: true,
+          scrub: mobileScrub,
+        })
+      }
+    })
+  }, { scope: sectionRef, dependencies: [reducedMotion, desktop], revertOnUpdate: true })
 
   // Desktop scroll
   useGSAP(() => {
-    if (reducedMotion)
+    if (reducedMotion || !desktop)
       return
 
-    const mm = gsap.matchMedia()
+    const teamSection = sectionRef.current
+    const teamContent = contentRef.current
+    const teamDescription = descriptionsRef.current
 
-    mm.add('(min-width: 768px)', () => {
-      const teamSection = sectionRef.current
-      const teamContent = contentRef.current
-      const teamDescription = descriptionsRef.current
+    if (!teamSection || !teamContent || !teamDescription || !smoother)
+      return
 
-      if (!teamSection || !teamContent || !teamDescription || !smoother)
-        return
+    const itemWidth = () => teamDescription.firstElementChild?.getBoundingClientRect().width || 0
+    const endPosition = () => itemWidth() * (team.length - 1)
+    const descriptions = Array.from(teamDescription.children).slice(0, -1) as HTMLElement[]
 
-      const itemWidth = () => teamDescription.firstElementChild?.getBoundingClientRect().width || 0
-      const endPosition = () => itemWidth() * (team.length - 1)
-      const descriptions = Array.from(teamDescription.children).slice(0, -1) as HTMLElement[]
-
-      const animation = gsap.to(teamDescription, {
-        x: () => -endPosition(),
-        ease: 'none',
-        onUpdate() {
-          const progress = this.progress()
-          setActiveMemberIndex(Math.min(Math.floor(progress * team.length), team.length - 1))
-          loadImageOnCanvas(progress * lastFrame)
-          descriptions.forEach((description, index) => {
-            const fade = Math.min(1, Math.max(0, progress * (team.length - 1) - index))
-            description.style.opacity = String(1 - fade * 0.95)
-            description.style.setProperty('--value', String(fade * 75))
-          })
-        },
-      })
-
-      ScrollTrigger.create({
-        id: 'global',
-        refreshPriority: 1,
-        trigger: teamSection,
-        start: `bottom bottom`,
-        end: () => `+=${endPosition()}px bottom`,
-        invalidateOnRefresh: true,
-        pin: true,
-        scrub: 1,
-        animation,
-        onRefresh: self => animation.progress(self.progress),
-      })
-
-      return () => descriptions.forEach((description) => {
-        description.style.removeProperty('opacity')
-        description.style.removeProperty('--value')
-      })
+    const animation = gsap.to(teamDescription, {
+      x: () => -endPosition(),
+      ease: 'none',
+      onUpdate() {
+        const progress = this.progress()
+        setActiveMemberIndex(Math.min(Math.floor(progress * team.length), team.length - 1))
+        loadImageOnCanvas(progress * lastFrame)
+        descriptions.forEach((description, index) => {
+          const fade = Math.min(1, Math.max(0, progress * (team.length - 1) - index))
+          description.style.opacity = String(1 - fade * 0.95)
+          description.style.setProperty('--value', String(fade * 75))
+        })
+      },
     })
 
-    return () => mm.revert()
-  }, { dependencies: [smoother, reducedMotion], scope: sectionRef, revertOnUpdate: true })
+    ScrollTrigger.create({
+      id: 'global',
+      refreshPriority: 1,
+      trigger: teamSection,
+      start: `bottom bottom`,
+      end: () => `+=${endPosition()}px bottom`,
+      invalidateOnRefresh: true,
+      pin: true,
+      scrub: 1,
+      animation,
+      onRefresh: self => animation.progress(self.progress),
+    })
+
+    return () => descriptions.forEach((description) => {
+      description.style.removeProperty('opacity')
+      description.style.removeProperty('--value')
+    })
+  }, { dependencies: [smoother, reducedMotion, desktop], scope: sectionRef, revertOnUpdate: true })
 
   // Scroll to member handler
   useEffect(() => {
@@ -536,6 +528,10 @@ export function Team() {
     const pendingImages = new Set<HTMLImageElement>()
     const mobileFrames = window.innerWidth < 768
     const images: HTMLImageElement[] = []
+    let wanted = new Set([0])
+    let center = -1
+    let sequenceReady = false
+    let refreshing = false
     imagesRef.current = images
     drawnFrameRef.current = -1
 
@@ -580,8 +576,14 @@ export function Team() {
             image.src = ''
             return
           }
-          images[index] = image
-          loadImageOnCanvas(frameRef.current)
+          if (wanted.has(index)) {
+            images[index] = image
+            loadImageOnCanvas(frameRef.current)
+          }
+          else {
+            image.src = ''
+            requested.delete(index)
+          }
         }).catch(() => {
           // Keep a prepared portrait visible if a frame cannot load.
         }).finally(() => {
@@ -597,6 +599,42 @@ export function Team() {
       pending.push(index)
     }
 
+    const prepareWindow = (frame: number) => {
+      if (disposed || refreshing || !sequenceReady || center === Math.floor(frame))
+        return
+      center = Math.floor(frame)
+      wanted = new Set(previewFrames)
+      for (let index = Math.max(0, center - 12); index <= Math.min(lastFrame, center + 12); index++)
+        wanted.add(index)
+      images.forEach((image, index) => {
+        if (image && !wanted.has(index)) {
+          image.src = ''
+          delete images[index]
+          requested.delete(index)
+        }
+      })
+      for (let index = pending.length - 1; index >= 0; index--) {
+        if (!wanted.has(pending[index])) {
+          requested.delete(pending[index])
+          pending.splice(index, 1)
+        }
+      }
+      wanted.forEach(loadFrame)
+      prepareFrames()
+    }
+    prepareFramesRef.current = prepareWindow
+
+    // Refresh temporarily resets playheads; keep their prepared neighborhood until it settles.
+    const beginRefresh = () => {
+      refreshing = true
+    }
+    const endRefresh = () => {
+      refreshing = false
+      prepareWindow(frameRef.current)
+    }
+    ScrollTrigger.addEventListener('refreshInit', beginRefresh)
+    ScrollTrigger.addEventListener('refresh', endRefresh)
+
     frameRef.current = 0
     directionRef.current = 1
     loadFrame(0)
@@ -605,9 +643,9 @@ export function Team() {
     const loadSequence = () => {
       if (disposed || reducedMotion)
         return
-      for (let index = 1; index <= lastFrame; index++)
-        loadFrame(index)
-      prepareFrames()
+      sequenceReady = true
+      center = -1
+      prepareWindow(frameRef.current)
     }
     const observer = new IntersectionObserver(([entry]) => {
       if (!entry.isIntersecting || reducedMotion)
@@ -626,6 +664,7 @@ export function Team() {
     document.fonts.ready.then(() => {
       if (disposed || reducedMotion)
         return
+      wanted = new Set(previewFrames)
       previewFrames.forEach(loadFrame)
       prepareFrames()
       if (modelsRef.current)
@@ -670,6 +709,7 @@ export function Team() {
 
     return () => {
       disposed = true
+      prepareFramesRef.current = () => {}
       pendingImages.forEach(image => image.src = '')
       for (const image of images) {
         if (image)
@@ -682,6 +722,8 @@ export function Team() {
       window.removeEventListener('load', preloadWhenIdle)
       observer.disconnect()
       resize.disconnect()
+      ScrollTrigger.removeEventListener('refreshInit', beginRefresh)
+      ScrollTrigger.removeEventListener('refresh', endRefresh)
       document.removeEventListener('visibilitychange', restore)
       window.removeEventListener('pageshow', restore)
     }

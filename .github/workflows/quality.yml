@@ -57,6 +57,9 @@ jobs:
       - name: Audit regressions
         timeout-minutes: 5
         run: pnpm test:audit-fixes
+      - name: Performance and navigation retention
+        timeout-minutes: 5
+        run: pnpm test:performance
       - name: Homepage and navigation
         timeout-minutes: 5
         run: pnpm test:staging

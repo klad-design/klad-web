@@ -338,7 +338,7 @@ try {
     return top > 170 && top < 190 && document.documentElement.dataset.theme === 'dark'
   })
   await loopPage.waitForTimeout(300)
-  const withoutNoise = await loopPage.addStyleTag({ content: 'body::after { display: none !important; }' })
+  const withoutNoise = await loopPage.addStyleTag({ content: '[data-page-noise] { display: none !important; }' })
   for (const index of [0, 1]) {
     await loopPage.locator('.page-imprints canvas').evaluateAll((canvases, index) => {
       canvases.forEach((canvas, layer) => {

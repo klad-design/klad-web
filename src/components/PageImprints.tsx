@@ -9,6 +9,21 @@ import { useReducedMotion } from '@/components/useReducedMotion'
 
 const storageKey = 'klad-page-imprints-v4'
 
+function encode(canvas: HTMLCanvasElement) {
+  return new Promise<string>((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error('Imprint encoding failed'))
+        return
+      }
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = () => reject(reader.error)
+      reader.readAsDataURL(blob)
+    })
+  })
+}
+
 export function PageImprints() {
   const pathname = usePathname()
   const layerRef = useRef<HTMLDivElement>(null)
@@ -16,6 +31,7 @@ export function PageImprints() {
   const pendingRef = useRef<ReturnType<typeof captureImprint> | null>(null)
   const pendingHashRef = useRef('')
   const mergeRef = useRef(Promise.resolve())
+  const encodedRef = useRef<Promise<string>[]>([])
   const pathRef = useRef(pathname)
   const reducedMotion = useReducedMotion()
 
@@ -50,6 +66,7 @@ export function PageImprints() {
             canvas.width = image.width
             canvas.height = image.height
             canvas.getContext('2d')?.drawImage(image, 0, 0)
+            encodedRef.current[index] = Promise.resolve(src)
           }
           catch {
             // A damaged stored image must not interrupt navigation.
@@ -120,12 +137,14 @@ export function PageImprints() {
         const context = canvas.getContext('2d')
         if (context) {
           context.drawImage(snapshot, 0, 0)
-          try {
-            sessionStorage.setItem(storageKey, JSON.stringify(canvasesRef.current.filter(canvas => canvas.width).map(canvas => canvas.toDataURL())))
-          }
-          catch {
+          const saved = [encode(canvas), ...encodedRef.current.slice(0, 1)]
+          encodedRef.current = saved
+          void Promise.all(saved).then((sources) => {
+            if (encodedRef.current === saved && canvas.isConnected)
+              sessionStorage.setItem(storageKey, JSON.stringify(sources))
+          }).catch(() => {
             // A full or unavailable store must never interrupt navigation.
-          }
+          })
           if (pathRef.current === pathname && !pathname.startsWith('/work/') && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             canvas.animate([
               { opacity: 1, filter: 'blur(0px)' },

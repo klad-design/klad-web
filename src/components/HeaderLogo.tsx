@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
+import { prepareLogoMotion } from '@/components/prepareLogoMotion'
 import { useReducedMotion } from '@/components/useReducedMotion'
 
 export function HeaderLogo({ mode, className = '', hidden = false }: { mode: 'scroll' | 'autoplay' | 'static', className?: string, hidden?: boolean }) {
@@ -108,6 +109,7 @@ export function HeaderLogo({ mode, className = '', hidden = false }: { mode: 'sc
     svgRef.current = svg
     timeRef.current = -1
     svg.pauseAnimations()
+    const restoreSeek = prepareLogoMotion(svg)
     seek(0)
     let frame = 0
     let timer = 0
@@ -157,6 +159,7 @@ export function HeaderLogo({ mode, className = '', hidden = false }: { mode: 'sc
       observer.disconnect()
       window.removeEventListener('resize', syncScroll)
       document.removeEventListener('visibilitychange', visibility)
+      restoreSeek()
       svgRef.current = null
     }
   }, [markup, active, mode, hidden, smoother])
