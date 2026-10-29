@@ -95,6 +95,8 @@ export function SmoothScroll({ children }: SmoothScrollProps) {
         start: () => initialHero && !hasLoopedRef.current ? 0 : 'center center',
         end: 'bottom top',
         scrub: 1,
+        // Refresh pauses an unfinished scrub; resume toward the new scroll position.
+        onRefresh: self => self.getTween()?.resetTo('totalProgress', self.progress, tl.totalProgress()),
       })
     })
   }, { dependencies: [pathname, reducedMotion], revertOnUpdate: true })

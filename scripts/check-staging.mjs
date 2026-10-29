@@ -56,7 +56,18 @@ try {
     assert.equal(await headingValue(), 0, `Heading must start without scroll trails at ${width}px`)
     await page.evaluate(() => window.scrollTo(0, 80))
     await page.waitForFunction(() => Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value')) < -1)
-    await page.evaluate(() => window.scrollTo(0, 0))
+    const refreshingBlur = await page.evaluate(async (refresh) => {
+      window.scrollTo(0, 0)
+      if (!refresh)
+        return null
+      await new Promise(requestAnimationFrame)
+      const value = Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value'))
+      // Exercise GSAP's global refresh while the return scrub is still running.
+      window.dispatchEvent(new Event('load'))
+      return value
+    }, width === 768)
+    if (width === 768)
+      assert.ok(refreshingBlur < 0, 'The refresh regression must interrupt an unfinished heading transition')
     await page.waitForFunction(() => scrollY === 0 && Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value')) === 0)
     assert.equal(await headingValue(), 0, 'Returning to the top must reset heading trails')
 
