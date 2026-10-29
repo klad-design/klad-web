@@ -42,7 +42,7 @@ async function mobileRange(page) {
   await page.evaluate(() => scrollTo(0, 0))
   await page.waitForTimeout(500)
   return page.locator('.models').evaluate(el => ({
-    start: el.getBoundingClientRect().top + scrollY - 30,
+    start: (el.closest('.pin-spacer') || el).getBoundingClientRect().top + scrollY - 30,
     end: document.querySelector('.memberDescriptionEnd').getBoundingClientRect().bottom + scrollY - el.clientHeight - 30,
   }))
 }
