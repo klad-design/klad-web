@@ -31,6 +31,30 @@ async function assertScrollUnlocked(page) {
 }
 
 try {
+  const cachePage = await browser.newPage()
+  await cachePage.setContent('<div style="height:15000px"><div id="trigger">Trigger</div></div>')
+  await cachePage.addScriptTag({ path: 'node_modules/gsap/dist/gsap.js' })
+  await cachePage.addScriptTag({ path: 'node_modules/gsap/dist/ScrollTrigger.js' })
+  const restoredY = await cachePage.evaluate(() => {
+    const { ScrollTrigger } = window
+    let y = 0
+    Object.defineProperty(window, 'pageYOffset', { get: () => y, configurable: true })
+    window.scrollTo = (_x, top) => {
+      y = top
+    }
+    const trigger = ScrollTrigger.create({ trigger: '#trigger', start: 'top 80%' })
+    y = 7501
+    document.dispatchEvent(new Event('scroll'))
+    ScrollTrigger.getScrollFunc(window)()
+    trigger.kill()
+    y = 0
+    document.dispatchEvent(new Event('scroll'))
+    ScrollTrigger.refresh()
+    return y
+  })
+  assert.equal(restoredY, 0, 'Refreshing after one route scroll event must reread the current position')
+  await cachePage.close()
+
   const frame = {}
   const probePage = Object.assign(new EventEmitter(), { url: () => baseURL, mainFrame: () => frame })
   const origin = new URL(baseURL)

@@ -28,10 +28,25 @@ const rasterFixtures = await Promise.all(['png', 'avif'].map(async format => ({
 })))
 
 async function navigate(page, name, path) {
-  if (await page.getByRole('button', { name: 'Menu', exact: true }).isVisible())
+  if (await page.getByRole('button', { name: 'Menu', exact: true }).isVisible()) {
     await page.getByRole('button', { name: 'Menu', exact: true }).click()
+    await page.getByRole('dialog').waitFor()
+    await page.waitForFunction(() => [...document.querySelectorAll('[role="dialog"] .menuItem')].every(element => Number(getComputedStyle(element).opacity) > 0.98))
+  }
   await page.getByRole('link', { name, exact: true }).click()
-  await page.waitForURL(`**${path}`)
+  try {
+    await page.waitForURL(`**${path}`)
+  }
+  catch (error) {
+    console.error('Imprint navigation failure:', { name, path, url: page.url(), viewport: page.viewportSize(), state: await page.evaluate(() => ({
+      ready: document.readyState,
+      heading: document.querySelector('main h1')?.textContent,
+      dialog: !!document.querySelector('[role="dialog"]'),
+      classes: document.documentElement.className,
+    })) })
+    await page.screenshot({ path: `${artifacts}/navigation-failure-${page.viewportSize()?.width}.png` }).catch(() => {})
+    throw error
+  }
   await page.waitForTimeout(200)
   await page.waitForFunction(() => [...document.querySelectorAll('.page-imprints canvas')].every(canvas => canvas.getAnimations().length === 0))
 }

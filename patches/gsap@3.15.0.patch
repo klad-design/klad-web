@@ -1,0 +1,26 @@
+diff --git a/ScrollTrigger.js b/ScrollTrigger.js
+index 6a738383cd39d225d140fbd18520639fd2e7e523..f21f4a126daf4bc294d46195e611f4a5fe4cc37f 100644
+--- a/ScrollTrigger.js
++++ b/ScrollTrigger.js
+@@ -420,7 +420,7 @@ _revertRecorded = function _revertRecorded(media) {
+ },
+     _recordScrollPositions = function _recordScrollPositions() {
+   return _scrollers.forEach(function (obj) {
+-    return _isFunction(obj) && ++obj.cacheID && (obj.rec = obj());
++    return _isFunction(obj) && (obj.cacheID = -1, obj.rec = obj());
+   });
+ },
+     // record the current scroll position. Also force the clearing of the cache because some browsers take a little while to dispatch the "scroll" event and the user may have changed the scroll position and then called ScrollTrigger.refresh() right away
+diff --git a/dist/ScrollTrigger.js b/dist/ScrollTrigger.js
+index 2042737a35713091a39cf1bd818aa7f62dd590d4..4bca9dc9ad027413de4d7191a32cff32c572b2c8 100644
+--- a/dist/ScrollTrigger.js
++++ b/dist/ScrollTrigger.js
+@@ -1110,7 +1110,7 @@
+   },
+       _recordScrollPositions = function _recordScrollPositions() {
+     return _scrollers.forEach(function (obj) {
+-      return _isFunction(obj) && ++obj.cacheID && (obj.rec = obj());
++      return _isFunction(obj) && (obj.cacheID = -1, obj.rec = obj());
+     });
+   },
+       _revertAll = function _revertAll(kill, media) {
