@@ -103,7 +103,7 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
   const menuRef = useRef<HTMLDivElement>(null)
   const swipeStart = useRef<{ x: number, y: number, axis: 'x' | 'y' | null } | null>(null)
   const suppressClick = useRef(false)
-  const wheel = useRef({ delta: 0, lastEvent: 0, lastSwitch: -800, locked: false })
+  const wheel = useRef({ delta: 0, lastDelta: 0, lastEvent: 0, lastSwitch: -360, locked: false })
   const transitionSource = useRef<'select' | 'swipe' | 'wheel'>('select')
   const [activeIndex, setActiveIndex] = useState(() => getCaseIndex(initialCase))
   const [selectedIndex, setSelectedIndex] = useState(() => getCaseIndex(initialCase))
@@ -278,26 +278,28 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
         return
       const now = performance.now()
       const gesture = wheel.current
-      // ponytail: wheel has no gesture-end event; use a 200ms idle gap and tune from device feedback.
-      if (now - gesture.lastEvent > 200) {
+      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1)
+      const idle = now - gesture.lastEvent
+      const reversed = Math.sign(delta) !== Math.sign(gesture.delta)
+      // shortcut: wheel has no gesture boundaries, tune tick/momentum thresholds if device feedback warrants it.
+      const wheelTick = idle > 40 && Math.abs(delta) >= 60 && Math.abs(delta) >= Math.abs(gesture.lastDelta) && now - gesture.lastSwitch >= 360
+      if (idle > 160 || reversed || wheelTick) {
         gesture.delta = 0
         gesture.locked = false
       }
       gesture.lastEvent = now
+      gesture.lastDelta = delta
       const bottom = document.documentElement.scrollHeight - window.innerHeight
       if ((event.deltaY > 0 && window.scrollY < bottom - 2) || (event.deltaY < 0 && window.scrollY > 2)) {
-        gesture.locked = true
+        gesture.delta = 0
         return
       }
       event.preventDefault()
       event.stopPropagation()
-      if (gesture.locked || now - gesture.lastSwitch < 800)
+      if (gesture.locked)
         return
-      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1)
-      if (Math.sign(delta) !== Math.sign(gesture.delta))
-        gesture.delta = 0
       gesture.delta += delta
-      if (Math.abs(gesture.delta) < 120)
+      if (Math.abs(gesture.delta) < 60)
         return
       gesture.locked = true
       gesture.lastSwitch = now

@@ -17,6 +17,7 @@
     "test:team": "node scripts/check-team.mjs",
     "test:audit-fixes": "node scripts/check-audit-fixes.mjs",
     "test:cases": "node scripts/check-cases.mjs",
+    "test:services": "node scripts/check-services.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },

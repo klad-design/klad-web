@@ -77,7 +77,7 @@ export function CaseStudy({ slug, closeHref, children }: { slug: string, closeHr
 
   return (
     <>
-      <div ref={closeRef} className="case-close" hidden={footerVisible}>
+      <div ref={closeRef} className="case-close inverted-ui" hidden={footerVisible}>
         <Button as="a" href={closeHref} label="Close" />
       </div>
       <main ref={contentRef} className="case-study pb-10">

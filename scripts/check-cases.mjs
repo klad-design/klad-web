@@ -4,6 +4,7 @@ import process from 'node:process'
 
 import { chromium, firefox, webkit } from 'playwright'
 
+import { assertInversion } from './assert-inversion.mjs'
 import { isCanceledRoutePrefetch, replaceDocument } from './document-test-navigation.mjs'
 
 const type = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
@@ -70,6 +71,9 @@ try {
     assert.equal(await page.locator('.page-imprints').isVisible(), false)
 
     const close = page.locator('.case-close')
+    await assertInversion(page, close, 'cursor')
+    const closeStyle = await close.evaluate(el => ({ padding: getComputedStyle(el).padding, background: getComputedStyle(el).backgroundColor, position: getComputedStyle(el).position }))
+    assert.deepEqual(closeStyle, { padding: '0px', background: 'rgba(0, 0, 0, 0)', position: width < 768 ? 'absolute' : 'fixed' })
     const controlTops = await page.locator('.case-close a > span, main > header > div:first-child a > span').evaluateAll(elements => elements.map(el => el.getBoundingClientRect().top))
     assert.ok(Math.max(...controlTops) - Math.min(...controlTops) < 1, `Close, Previous and Next must align at the top: ${controlTops}`)
     const before = await close.boundingBox()
@@ -83,7 +87,10 @@ try {
     await scrollReveal(page, section, 0.6)
     assert.equal(await image.evaluate(el => getComputedStyle(el).filter), 'blur(0px)')
     const after = await close.boundingBox()
-    assert.ok(Math.abs(before.y - after.y) < 1 && Math.abs(before.x - after.x) < 1, 'Close must remain fixed while the case scrolls')
+    if (width < 768)
+      assert.ok(after.y + after.height < 0, 'Mobile Close must scroll away with the case header')
+    else
+      assert.ok(Math.abs(before.y - after.y) < 1 && Math.abs(before.x - after.x) < 1, 'Desktop Close must remain fixed while the case scrolls')
     await page.screenshot({ path: `${artifacts}/reveal-clear-${width}.png` })
     const textSection = page.locator('[data-case-reveal]:not(:has(img, video))').nth(1)
     await scrollReveal(page, textSection, 0.8)
@@ -149,7 +156,7 @@ try {
   assert.notEqual(colors.text, colors.body, 'Case text must stay readable without JavaScript')
   await withoutJavaScript.close()
   assert.deepEqual(errors, [])
-  console.log(`${type.name()}: smooth case entrance, aligned fixed/footer Close and focus handoff, progressive sharpening, all case routes, history, reduced motion and no-JavaScript rendering passed`)
+  console.log(`${type.name()}: case entrance, inverted desktop/mobile Close and footer focus handoff, progressive sharpening, routes, history, reduced motion and no-JavaScript rendering passed`)
 }
 finally {
   await browser.close()

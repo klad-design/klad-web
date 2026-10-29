@@ -69,7 +69,7 @@ try {
   await page.mouse.wheel(0, 40)
   await page.waitForTimeout(250)
   await selected(page, 'Datalane')
-  // Keep one sustained gesture even when CI takes over 200ms between commands.
+  // Keep gesture timing deterministic across browser engines.
   await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000))
   const fade = page.evaluate(async () => {
     let outgoing = false
@@ -86,23 +86,42 @@ try {
     }
     return { outgoing, incoming }
   })
-  await page.mouse.wheel(0, 140)
+  await page.mouse.wheel(0, 100)
   await page.clock.runFor(16)
   await page.waitForFunction(() => document.querySelector('button[aria-pressed="true"]')?.getAttribute('aria-label') === 'Circus')
-  await page.mouse.wheel(0, -300)
-  for (let i = 0; i < 12; i++) {
-    await page.evaluate(() => {
-      document.querySelector('main').dispatchEvent(new WheelEvent('wheel', { deltaY: 80, bubbles: true, cancelable: true }))
-    })
-    await page.clock.runFor(100)
+  for (const delta of [80, 60, 45, 30, 20, 12, 6, 3, 1]) {
+    await page.locator('main').dispatchEvent('wheel', { deltaY: delta })
+    await page.clock.runFor(32)
   }
   await page.clock.resume()
   assert.deepEqual(await fade, { outgoing: true, incoming: true }, 'Wheel selection must fade the outgoing and incoming project')
   await selected(page, 'Circus')
   assert.equal(await page.evaluate(() => scrollY), 0, 'Wheel selection must not move the page when content fits')
-  await page.waitForTimeout(250)
-  await page.mouse.wheel(0, -140)
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000))
+  await page.mouse.wheel(0, -100)
+  await page.clock.runFor(400)
   await selected(page, 'Datalane')
+  await page.mouse.wheel(0, 100)
+  await page.clock.runFor(16)
+  await page.mouse.wheel(0, -100)
+  await page.clock.runFor(400)
+  await selected(page, 'Datalane')
+  for (let tick = 0; tick < 9; tick++) {
+    await page.locator('main').dispatchEvent('wheel', { deltaY: 100 })
+    await page.clock.runFor(100)
+  }
+  await page.clock.runFor(400)
+  await selected(page, 'Linux Mint')
+  await page.locator('main').dispatchEvent('wheel', { deltaY: -1, deltaMode: 2 })
+  await page.clock.runFor(400)
+  await selected(page, 'Stars+Honey')
+  await page.locator('main').dispatchEvent('wheel', { deltaY: -4, deltaMode: 1 })
+  await page.clock.runFor(400)
+  await selected(page, 'Circus')
+  await page.locator('main').dispatchEvent('wheel', { deltaY: -100 })
+  await page.clock.runFor(400)
+  await selected(page, 'Datalane')
+  await page.clock.resume()
 
   for (const delay of [30, 60]) {
     await page.evaluate(async (delay) => {

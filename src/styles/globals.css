@@ -209,14 +209,18 @@ body:has([data-header-logo]) [data-header-logo-initial] {
 
   .case-close {
     display: flex;
-    position: fixed;
-    top: 2px;
-    right: 2px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
     z-index: 40;
-    padding: 8px;
     line-height: 1;
     color: var(--color-gray);
-    background: rgb(0 0 0 / 75%);
+  }
+
+  @media (min-width: 768px) {
+    .case-close {
+      position: fixed;
+    }
   }
 
   .case-study > header > div:first-child {

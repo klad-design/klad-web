@@ -92,38 +92,32 @@ export function Services() {
       duration: 20,
       ease: 'linear',
       repeat: -1,
+      force3D: true,
     })
 
-    const velocity = { value: 1 }
-
-    const quickSpeed = gsap.quickTo(velocity, 'value', {
-      onUpdate: () => {
-        tween.timeScale(1 + velocity.value)
-      },
-    })
+    const quickSpeed = gsap.quickTo(tween, 'timeScale', { duration: 0.6, ease: 'power2.out' })
 
     Observer.create({
       target: window,
-      type: 'wheel,scroll,touch',
+      type: 'scroll',
       onChangeY: (self) => {
-        const v = gsap.utils.clamp(-5, 5, self.velocityY * 0.003)
-
-        quickSpeed(Math.abs(v))
+        quickSpeed(1 + gsap.utils.clamp(0, 2, Math.abs(self.velocityY) * 0.001))
       },
+      onStop: () => quickSpeed(1),
     })
   }, { scope: wordsRef, dependencies: [reducedMotion], revertOnUpdate: true })
 
   return (
     <section className="-mt-6 md:-mt-14 lg:-mt-20">
       <div ref={wordsRef} className="-rotate-2 w-fit flex text-h1 md:text-[100px] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase">
-        <div className="service w-fit flex gap-[0.3em] pl-[0.3em]">
+        <div className="service w-fit flex gap-[0.3em] pl-[0.3em] will-change-transform">
           {titles.map((service, index) => (
             <div key={service + index} className="blur-xs hover:blur-none transition-all duration-500 cursor-pointer">
               {service}
             </div>
           ))}
         </div>
-        <div className="service w-fit flex gap-[0.3em] pl-[0.3em]" aria-hidden inert>
+        <div className="service w-fit flex gap-[0.3em] pl-[0.3em] will-change-transform" aria-hidden inert>
           {titles.map((service, index) => (
             <div key={service + index} className="blur-xs hover:blur-none transition-all duration-500 cursor-pointer">
               {service}
