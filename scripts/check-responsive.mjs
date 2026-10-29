@@ -115,14 +115,16 @@ try {
   await team.waitForTimeout(1000)
   assert.ok(Math.abs((await team.locator('.models').boundingBox()).height - 357) < 2, 'Rotating back must restore the portrait size')
   await team.evaluate(() => scrollTo(0, 0))
-  await team.waitForTimeout(500)
+  await team.waitForFunction(() => scrollY === 0 && window.__portraitFrames.at(-1) === 0, null, { timeout: 5000 })
   // Give draw-count assertions consistent RAF steps on loaded runners.
   await team.clock.pauseAt(await team.evaluate(() => Date.now() + 1000))
   await team.clock.runFor(500)
   const range = await team.locator('.models').evaluate(el => ({
-    start: el.getBoundingClientRect().top + scrollY - 30,
+    start: (el.closest('.pin-spacer') || el).getBoundingClientRect().top + scrollY - 30,
+    visualStart: el.getBoundingClientRect().top + scrollY - 30,
     end: document.querySelector('.memberDescriptionEnd').getBoundingClientRect().bottom + scrollY - el.clientHeight - 30,
   }))
+  console.log(`${type.name()} portrait reset range: ${JSON.stringify(range)}`)
   assert.deepEqual(await team.evaluate(() => ({ y: scrollY, frame: window.__portraitFrames.at(-1) })), { y: 0, frame: 0 }, 'The portrait must reset to its first frame before testing a sudden scroll')
   await team.evaluate(() => {
     window.__portraitFrames = []
