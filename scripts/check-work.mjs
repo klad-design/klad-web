@@ -46,7 +46,7 @@ try {
   }
   await serverRendered.close()
 
-  const desktop = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 } })
+  const desktop = await browser.newContext({ baseURL, viewport: { width: 1438, height: 820 } })
   await desktop.addInitScript(() => Object.defineProperty(navigator, 'maxTouchPoints', { get: () => 1 }))
   const page = await desktop.newPage()
   page.on('pageerror', (error) => {
@@ -57,6 +57,7 @@ try {
   await page.goto('/work')
   await selected(page, 'Datalane')
   await noise(page, true)
+  assert.equal(await page.evaluate(() => document.documentElement.scrollHeight), 820, 'The menu must not add phantom scroll space at the recorded viewport')
   for (const [key, name] of [['ArrowUp', 'Datalane'], ['ArrowDown', 'Circus'], ['ArrowUp', 'Datalane'], ['Shift+ArrowDown', 'Datalane']]) {
     await page.keyboard.press(key)
     await selected(page, name)
@@ -67,6 +68,11 @@ try {
   await selected(page, 'Datalane')
   const cover = await page.getByRole('link', { name: 'View Datalane case study' }).boundingBox()
   await page.mouse.move(cover.x + cover.width / 2, cover.y + cover.height / 2)
+  for (const [delta, name] of [[100, 'Circus'], [-100, 'Datalane'], [100, 'Circus'], [-100, 'Datalane']]) {
+    await page.mouse.wheel(0, delta)
+    await selected(page, name)
+    assert.equal(await page.evaluate(() => scrollY), 0, 'Alternating gestures must change cases without scrolling a layout gap')
+  }
   await page.mouse.wheel(0, 40)
   await page.waitForTimeout(250)
   await selected(page, 'Datalane')
@@ -214,6 +220,7 @@ try {
       await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-smooth'))
       assert.ok(await page.evaluate(() => scrollY) > 0, 'Wheel must scroll overflowing project content before switching cases')
       await selected(page, 'Stars+Honey')
+      assert.equal(await page.getByRole('button', { name: 'Stars+Honey', exact: true }).evaluate(el => el.parentElement.getBoundingClientRect().top), 10, 'CSS sticky must keep the case menu visible in short windows')
     }
     const headerBefore = await page.locator('.site-header').boundingBox()
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight))

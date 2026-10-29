@@ -61,7 +61,8 @@ export function HeaderLogo({ mode, className = '', hidden = false }: { mode: 'sc
           use.replaceWith(path)
         })
         if (!controller.signal.aborted)
-          setMarkup(new XMLSerializer().serializeToString(svg))
+          // Calibrate the ink directly; an outer SVG color filter can paint a seam in Firefox.
+          setMarkup(new XMLSerializer().serializeToString(svg).replaceAll('#E6E6E6', '#E7E7E7').replaceAll('#010101', '#000000'))
       }
       catch {
         // Keep the independently rendered static logo on network or decoding failures.
@@ -174,9 +175,9 @@ export function HeaderLogo({ mode, className = '', hidden = false }: { mode: 'sc
           data-logo-mode={mode}
           data-animated={(active && !!markup) || undefined}
           aria-hidden="true"
-          className={`inverted-ui pointer-events-none fixed left-0 top-0 z-40 ${hidden ? 'invisible' : ''}`}
+          className={`mix-blend-difference pointer-events-none fixed left-0 top-0 z-40 ${hidden ? 'invisible' : ''}`}
         >
-          <Image className={`absolute inset-0 block size-full ${active && markup ? 'invisible' : ''}`} src="/images/logo-still.svg" alt="" width={60} height={60} loading="eager" />
+          <Image className={`absolute inset-0 block size-full [filter:url(#brand-inversion)] ${active && markup ? 'invisible' : ''}`} src="/images/logo-still.svg" alt="" width={60} height={60} loading="eager" />
           {active && markup && <span ref={artworkRef} className="absolute inset-0" dangerouslySetInnerHTML={{ __html: markup }} />}
         </span>,
         anchor.ownerDocument.body,

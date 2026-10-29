@@ -2,7 +2,6 @@
 
 import { useGSAP } from '@gsap/react'
 import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
@@ -163,20 +162,9 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
   }, [])
 
   useGSAP(() => {
-    gsap.registerPlugin(ScrollTrigger)
-
     const mm = gsap.matchMedia()
 
     mm.add('(min-width: 768px)', () => {
-      if (menuRef.current) {
-        ScrollTrigger.create({
-          trigger: menuRef.current,
-          start: `top +=${menuRef.current.offsetTop}px`,
-          pin: true,
-          scrub: 1,
-        })
-      }
-
       if (cursorRef.current && cursorAreaRef.current && !reducedMotion) {
         const area = cursorAreaRef.current
         const xTo = gsap.quickTo(cursorRef.current, 'x', { ease: 'power3' })
@@ -216,8 +204,8 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
   }, { scope: containerRef, dependencies: [reducedMotion], revertOnUpdate: true })
 
   const { contextSafe } = useGSAP(() => {
-    const fromWheel = transitionSource.current === 'wheel'
-    gsap.fromTo('.case-anim-target', { opacity: 0 }, { opacity: 1, duration: reducedMotion ? 0 : fromWheel ? 0.22 : 0.5, ease: fromWheel ? 'power2.out' : 'power1.out' })
+    const fromGesture = transitionSource.current !== 'select'
+    gsap.fromTo('.case-anim-target', { opacity: 0 }, { opacity: 1, duration: reducedMotion ? 0 : fromGesture ? 0.12 : 0.5, ease: fromGesture ? 'power2.out' : 'power1.out' })
   }, { scope: containerRef, dependencies: [activeIndex, reducedMotion], revertOnUpdate: true })
 
   useGSAP(() => {
@@ -248,7 +236,7 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
       fadeOut.current?.kill()
       fadeOut.current = null
       gsap.killTweensOf('.case-anim-target')
-      gsap.to('.case-anim-target', { opacity: 1, duration: reducedMotion ? 0 : 0.5 })
+      gsap.to('.case-anim-target', { opacity: 1, duration: reducedMotion ? 0 : source === 'select' ? 0.5 : 0.12 })
       return
     }
 
@@ -257,7 +245,7 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
     gsap.killTweensOf('.case-anim-target')
     fadeOut.current = gsap.to('.case-anim-target', {
       opacity: 0,
-      duration: reducedMotion ? 0 : source === 'wheel' ? 0.14 : source === 'swipe' ? 0.2 : 0.1,
+      duration: reducedMotion ? 0 : source === 'select' ? 0.1 : 0.08,
       ease: source === 'wheel' ? 'power2.in' : 'power1.out',
       onComplete: () => {
         fadeOut.current = null
@@ -335,7 +323,7 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
         <div className="col-span-full md:col-span-1 md:row-start-2 md:row-end-4 lg:row-end-3">
           <div
             ref={menuRef}
-            className="overflow-x-auto overflow-y-hidden scroll-px-2.5 py-1 -my-1 md:overflow-visible md:py-0 md:my-0 flex gap-4 -mx-2.5 px-2.5 md:mx-0 md:px-0 md:items-start md:gap-[3px] md:flex-col"
+            className="overflow-x-auto overflow-y-hidden scroll-px-2.5 py-1 -my-1 md:overflow-visible md:py-0 md:my-0 flex gap-4 -mx-2.5 px-2.5 md:mx-0 md:px-0 md:items-start md:gap-[3px] md:flex-col md:sticky md:top-[100px] lg:top-2.5"
           >
             {cases.map(({ title }, index) => (
               <Button

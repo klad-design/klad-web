@@ -83,7 +83,7 @@ export async function assertPageInversion(page, logo) {
 
 export async function assertLogoBounds(page, logo) {
   const visual = page.locator('[data-header-logo]').first()
-  assert.equal(await visual.evaluate(element => getComputedStyle(element).clipPath), 'inset(1px)')
+  assert.equal(await visual.evaluate(element => getComputedStyle(element).clipPath), 'inset(0px)')
   const style = await page.addStyleTag({ content: 'body::after{display:none!important}html,body{transition:none!important}' })
   const theme = await page.evaluate(() => document.documentElement.dataset.theme)
   const time = await logo.evaluate(svg => svg.getCurrentTime())
@@ -241,8 +241,8 @@ export async function assertLogoPhotoInversion(page, visual) {
   }
 }
 
-export async function assertInversion(page, element, source = 'light') {
-  const filter = await element.evaluate(element => getComputedStyle(element).filter)
+export async function assertInversion(page, element, source = 'light', filteredElement = element) {
+  const filter = await filteredElement.evaluate(element => getComputedStyle(element).filter)
   assert.equal(await element.evaluate(element => getComputedStyle(element).mixBlendMode), 'difference')
   await page.evaluate(async ({ filter, source }) => {
     const colors = ['#E6E6E6', source === 'cursor' ? '#E6E6E6' : '#010101']

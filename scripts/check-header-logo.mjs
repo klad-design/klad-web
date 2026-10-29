@@ -83,7 +83,8 @@ async function navigate(page, name, path) {
 }
 
 async function assertSharedArtwork(page, logo) {
-  const markup = await logo.evaluate(svg => svg.outerHTML)
+  // Compare approved geometry with matching source ink; page probes verify calibrated output.
+  const markup = (await logo.evaluate(svg => svg.outerHTML)).replaceAll('#E7E7E7', '#E6E6E6').replaceAll('#000000', '#010101')
   await page.evaluate(async (markup) => {
     const box = document.createElement('div')
     box.id = 'artwork-probe'
@@ -444,7 +445,8 @@ async function runLayout(browser, name, mobile) {
       const frozen = await page.evaluate(source => new DOMParser().parseFromString(source, 'image/svg+xml').querySelector('#logo-outline').getAttribute('d'), frozenLogo)
       assert.equal(start, frozen, 'Static and inline logos share approved geometry')
       await assertSharedArtwork(page, logo)
-      await assertInversion(page, visual)
+      assert.equal(await visual.evaluate(element => getComputedStyle(element).filter), 'none', 'Animated ink must not use an outer color-filter surface')
+      await assertInversion(page, visual, 'light', visual.locator('img'))
       await assertPageInversion(page, visual)
       await assertLogoPhotoInversion(page, visual)
       await assertImprintExclusion(page, visual)
@@ -509,7 +511,7 @@ async function runLayout(browser, name, mobile) {
         assert.equal(await menuLogo.locator('img').getAttribute('src'), '/images/logo-still.svg')
         assert.equal(await menuLogo.locator('svg').count(), 0, 'Menu remains static')
         assert.equal(await visual.isVisible(), false, 'Main logo cannot show through the menu')
-        await assertInversion(page, menuLogo)
+        await assertInversion(page, menuLogo, 'light', menuLogo.locator('img'))
         await page.waitForFunction(() => [...document.querySelectorAll('[role="dialog"] .menuItem')].every(element => Number(getComputedStyle(element).opacity) > 0.98))
         const afterMenu = await page.evaluate(() => scrollY)
         await writeFile(`${artifacts}/${label}-menu-scroll.json`, JSON.stringify({ beforeMenu, afterMenu }, null, 2))
