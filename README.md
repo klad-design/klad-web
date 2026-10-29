@@ -2,7 +2,7 @@
 
 Next.js website for Klad Syndicate. Use pnpm; `pnpm-lock.yaml` is the dependency lockfile.
 
-Local case-motion preview uses the shared staging server on port 3100: cases use normal route navigation and a staggered entrance inspired by https://www.michael.fm/kanon: visible content fades from 8px blur and a 24px downward offset over 1.1 seconds, with 100ms between groups. Navigation stays stationary; Close aligns with Previous/Next and remains fixed until the footer's Previous / Close / Next controls enter view. Images, videos and text progressively sharpen from 6px blur to clear between 95% and 65% of the viewport height, capped at the page's scroll limit. Reduced motion keeps everything immediately clear. Run `pnpm test:cases` to verify these behaviors in Chromium, Firefox or WebKit.
+Local case-motion preview uses the shared staging server on port 3100: cases use normal route navigation and a staggered entrance inspired by https://www.michael.fm/kanon: visible content fades from 8px blur and a 24px downward offset over 1.1 seconds, with 100ms between groups. Close aligns with Previous/Next and uses the logo/cursor's content inversion without a background or padding. On desktop it remains fixed until the footer's Previous / Close / Next controls enter view; on mobile it scrolls away with the header. Images, videos and text progressively sharpen from 6px blur to clear between 95% and 65% of the viewport height, capped at the page's scroll limit. Reduced motion keeps everything immediately clear. Run `pnpm test:cases` to verify these behaviors in Chromium, Firefox or WebKit.
 
 Page imprints render images in grayscale while retaining their alpha and detail, except Work case covers, which become solid `#ABABAB` rectangles. Individual case studies neither display nor create imprints; Close, case switching and browser history preserve the existing eligible layers. Work still creates imprints. The imprint layers supply 50%/30% opacity and 4px blur, with no extra opacity reduction. Team portrait frames load from the existing local AVIFs so their canvas can also be captured safely. Videos and unreadable external images retain their existing fallback.
 
@@ -56,6 +56,7 @@ pnpm test:responsive
 pnpm test:work
 pnpm test:imprints
 pnpm test:cases
+pnpm test:services
 ```
 
 Browser checks expect the running production staging server at `http://127.0.0.1:3100`. Set `STAGING_URL` to check another preview. Install the browsers with `pnpm exec playwright install chromium firefox webkit` (add `--with-deps` on Linux).
@@ -74,7 +75,9 @@ Visual acceptance preserves the 10px desktop text, grain, blur treatment, intent
 
 Cover swipes lock to their initial direction and require a deliberate horizontal movement before changing projects. Partial swipes do not open a case. The right navigation remains fixed in short desktop windows, with its own scrolling when its contents cannot fit.
 
-On desktops without touch support, Up/Down arrows select the previous/next project. Wheel input over the Work content changes one project per deliberate gesture, with a movement threshold and an 800ms minimum interval. Wheel transitions use a 140ms fade out and a 220ms fade in with easing; reduced-motion mode switches immediately. In short windows, wheel input first scrolls the content; start a new gesture at the top or bottom to change projects. Direct `?case=` links render the selected project on the server, including when JavaScript is disabled.
+On desktops without touch support, Up/Down arrows select the previous/next project. Wheel input over the Work content uses a small movement threshold, accepts direction changes immediately, and separates repeated wheel ticks from decaying touchpad momentum. Wheel transitions use a 140ms fade out and a 220ms fade in with easing; reduced-motion mode switches immediately. In short windows, wheel input first scrolls the content and can continue into project selection at the top or bottom. Direct `?case=` links render the selected project on the server, including when JavaScript is disabled.
+
+The Branding / Experience / Product reel moves each blurred strip with a 3D transform. Scroll velocity gently increases its speed, and it eases back to its normal speed when scrolling stops. Reduced motion keeps the titles still. `pnpm test:services` checks mobile timing, recovery after scrolling, synchronized repetition and reduced motion in all three browser engines. The responsive suite also runs this check in CI.
 
 Page imprints retain only the two previous viewports: the newest at 50% opacity and the older at 30%, both blurred by 4px. New imprints dissolve from clear ink over 800ms; reduced-motion mode shows the settled layers immediately. Work keeps the imprints faint, and individual case pages hide them. The two layers survive reloads within the same tab. `test:imprints` checks the layer limit, dissolve, case-page exclusion, SVG capture, homepage loops, history navigation, and storage fallback in Chromium, Firefox or WebKit.
 

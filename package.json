@@ -9,7 +9,7 @@
     "build:staging": "STAGING=1 next build",
     "start": "next start",
     "test:staging": "node scripts/check-staging.mjs",
-    "test:responsive": "node scripts/check-responsive.mjs",
+    "test:responsive": "node scripts/check-responsive.mjs && node scripts/check-services.mjs",
     "test:work": "node scripts/check-work.mjs",
     "test:outpost": "node scripts/check-outpost.mjs",
     "test:imprints": "node scripts/check-imprints.mjs",
