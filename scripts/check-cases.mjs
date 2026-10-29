@@ -32,21 +32,31 @@ try {
     const recording = page.evaluate(() => new Promise((resolve) => {
       const transitions = new Set()
       const samples = []
-      const end = performance.now() + 2100
+      const deadline = performance.now() + 10000
+      let end
+      function capture() {
+        const title = document.querySelector('.case-study > header > div:nth-child(2)')
+        if (!title)
+          return
+        end ??= performance.now() + 2100
+        const style = getComputedStyle(title)
+        samples.push({ opacity: Number(style.opacity), blur: style.filter === 'none' ? 0 : Number.parseFloat(style.filter.slice(5)), y: new DOMMatrix(style.transform).f })
+      }
+      const observer = new MutationObserver(capture)
+      observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['style'] })
       function sample() {
         for (const animation of document.getAnimations()) {
           if (animation.effect?.pseudoElement?.includes('view-transition'))
             transitions.add(animation.effect.pseudoElement)
         }
-        const title = document.querySelector('.case-study > header > div:nth-child(2)')
-        if (title) {
-          const style = getComputedStyle(title)
-          samples.push({ opacity: Number(style.opacity), blur: style.filter === 'none' ? 0 : Number.parseFloat(style.filter.slice(5)), y: new DOMMatrix(style.transform).f })
-        }
-        if (performance.now() < end)
+        capture()
+        if (performance.now() < (end ?? deadline)) {
           requestAnimationFrame(sample)
-        else
+        }
+        else {
+          observer.disconnect()
           resolve({ transitions: [...transitions], samples })
+        }
       }
       sample()
     }))
