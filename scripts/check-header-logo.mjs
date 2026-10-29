@@ -5,7 +5,7 @@ import process from 'node:process'
 import { chromium, firefox, webkit } from 'playwright'
 
 import { assertImprintExclusion, assertInversion, assertLogoBounds, assertLogoPhotoInversion, assertPageInversion, imageDifference, pngPixels } from './assert-inversion.mjs'
-import { observeRoutePrefetches } from './route-test-observer.mjs'
+import { isCanceledRoutePrefetch, replaceDocument } from './document-test-navigation.mjs'
 
 const frozenLogo = await readFile('public/images/logo-still.svg', 'utf8')
 const motionLogo = await readFile('public/images/logo-scroll-motion.svg', 'utf8')
@@ -400,10 +400,13 @@ async function runLayout(browser, name, mobile) {
   const options = { viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 900 }, hasTouch: mobile, ...(name === 'firefox' ? {} : { isMobile: mobile }), reducedMotion: 'no-preference' }
   const context = await browser.newContext(options)
   const page = await context.newPage()
-  const settleRoutes = observeRoutePrefetches(page, baseURL)
   page.setDefaultTimeout(15000)
   const errors = []
   function recordError(page, error) {
+    if (isCanceledRoutePrefetch(page, error)) {
+      console.log(`${label}: outgoing route prefetch canceled during document replacement`)
+      return
+    }
     const message = `${page.url()}: ${error.stack || error.message}`
     errors.push(message)
     console.error(`${label} browser runtime error: ${message}`)
@@ -416,7 +419,7 @@ async function runLayout(browser, name, mobile) {
   autoplayPage.on('pageerror', error => recordError(autoplayPage, error))
   try {
     await check(`${label}-autoplay-four-cycles`, autoplayPage, () => assertAutoplay(autoplayPage, label)).finally(() => autoplayContext.close())
-    await page.goto(baseURL)
+    await replaceDocument(page, () => page.goto(baseURL))
     await ready(page, 'scroll')
     const inkStyle = await page.locator('.page-imprints-ink').evaluate((ink) => {
       const bounds = ink.getBoundingClientRect()
@@ -511,7 +514,6 @@ async function runLayout(browser, name, mobile) {
       const original = await page.evaluate(() => scrollY)
       await navigate(page, 'Pricing', '/pricing')
       await ready(page, 'autoplay')
-      await settleRoutes()
       await page.goBack()
       await page.waitForURL(`${baseURL}/`)
       await ready(page, 'scroll')
@@ -533,13 +535,11 @@ async function runLayout(browser, name, mobile) {
       await navigate(page, 'Process', '/process')
       await ready(page, 'autoplay')
       assert.equal(await page.locator('[data-header-logo] svg').count(), 1, 'Secondary route changes leave one animation')
-      await settleRoutes()
-      await page.goto(`${baseURL}/work/datalane`)
+      await replaceDocument(page, () => page.goto(`${baseURL}/work/datalane`))
       await page.waitForTimeout(250)
       assert.equal(await page.locator('[data-header-logo]').count(), 0, 'Case pages clean up the portal')
       assert.equal(await page.locator('[data-header-logo-initial]').isVisible(), false, 'Case pages never display initial artwork')
-      await settleRoutes()
-      await page.goto(`${baseURL}/#team`)
+      await replaceDocument(page, () => page.goto(`${baseURL}/#team`))
       await ready(page, 'scroll')
       await page.waitForFunction(() => scrollY > 100)
       await ready(page, 'scroll')
@@ -548,8 +548,7 @@ async function runLayout(browser, name, mobile) {
     })
     if (!mobile) {
       await check(`${label}-home-loop`, page, async () => {
-        await settleRoutes()
-        await page.goto(baseURL)
+        await replaceDocument(page, () => page.goto(baseURL))
         await ready(page, 'scroll')
         await scroll(page, 0.99)
         await page.mouse.move(600, 400)
@@ -562,8 +561,7 @@ async function runLayout(browser, name, mobile) {
     }
     await check(`${label}-reduced-motion`, page, async () => {
       for (const path of ['/', '/pricing']) {
-        await settleRoutes()
-        await page.goto(`${baseURL}${path}`)
+        await replaceDocument(page, () => page.goto(`${baseURL}${path}`))
         await ready(page, path === '/' ? 'scroll' : 'autoplay')
         for (let iteration = 0; iteration < 2; iteration++) {
           await page.emulateMedia({ reducedMotion: 'reduce' })

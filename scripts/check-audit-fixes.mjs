@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
+import { EventEmitter } from 'node:events'
 import process from 'node:process'
 
 import { chromium, firefox, webkit } from 'playwright'
+
+import { isCanceledRoutePrefetch, replaceDocument } from './document-test-navigation.mjs'
 
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
 const browserType = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
@@ -28,6 +31,31 @@ async function assertScrollUnlocked(page) {
 }
 
 try {
+  const frame = {}
+  const probePage = Object.assign(new EventEmitter(), { url: () => baseURL, mainFrame: () => frame })
+  const origin = new URL(baseURL)
+  const cancellation = { name: `Fetch API cannot load ${origin.protocol.slice(0, -1)}`, message: `/${origin.host}/work?_rsc=probe due to access control checks.` }
+  assert.equal(isCanceledRoutePrefetch(probePage, cancellation), false, 'Active-page errors must never be suppressed')
+  assert.equal(await replaceDocument(probePage, async () => {
+    assert.equal(isCanceledRoutePrefetch(probePage, cancellation), true)
+    assert.equal(isCanceledRoutePrefetch(probePage, { ...cancellation, name: 'TypeError' }), false, 'Real JavaScript errors remain fatal during teardown')
+    assert.equal(isCanceledRoutePrefetch(probePage, { ...cancellation, message: cancellation.message.replace(origin.host, 'external.invalid') }), false)
+    assert.equal(isCanceledRoutePrefetch(probePage, { ...cancellation, message: cancellation.message.replace('_rsc=probe', 'asset=probe') }), false)
+    assert.equal(isCanceledRoutePrefetch(probePage, { ...cancellation, message: cancellation.message.replace('_rsc=probe', 'not_rsc=probe') }), false)
+    assert.equal(isCanceledRoutePrefetch(probePage, { ...cancellation, message: cancellation.message.replace('_rsc=probe', 'value=_rsc=probe') }), false)
+    assert.equal(isCanceledRoutePrefetch(probePage, { ...cancellation, message: '/[invalid due to access control checks.' }), false)
+    probePage.emit('framenavigated', {})
+    assert.equal(isCanceledRoutePrefetch(probePage, cancellation), true, 'Subframes do not end the outgoing main-document window')
+    probePage.emit('framenavigated', frame)
+    assert.equal(isCanceledRoutePrefetch(probePage, cancellation), false, 'New-document errors remain fatal before load completes')
+    return 42
+  }), 42)
+  assert.equal(isCanceledRoutePrefetch(probePage, cancellation), false)
+  await assert.rejects(replaceDocument(probePage, async () => {
+    throw new Error('Navigation failed')
+  }), /Navigation failed/)
+  assert.equal(isCanceledRoutePrefetch(probePage, cancellation), false, 'Failed navigation must release its teardown guard')
+
   const mobile = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, hasTouch: true })
   const page = await mobile.newPage()
   page.on('pageerror', error => errors.push(error.message))

@@ -4,7 +4,7 @@ import process from 'node:process'
 
 import { chromium, firefox, webkit } from 'playwright'
 
-import { observeRoutePrefetches } from './route-test-observer.mjs'
+import { isCanceledRoutePrefetch, replaceDocument } from './document-test-navigation.mjs'
 
 const type = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
@@ -48,8 +48,10 @@ try {
 
   const desktop = await browser.newContext({ baseURL, viewport: { width: 1440, height: 900 } })
   const page = await desktop.newPage()
-  const settleRoutes = observeRoutePrefetches(page, baseURL)
-  page.on('pageerror', error => errors.push(error.message))
+  page.on('pageerror', (error) => {
+    if (!isCanceledRoutePrefetch(page, error))
+      errors.push(error.message)
+  })
   await page.goto('/work')
   await selected(page, 'Datalane')
   await noise(page, true)
@@ -124,8 +126,7 @@ try {
   await page.waitForURL('**/work/chainviz')
   await page.goBack()
   await selected(page, 'Chainviz')
-  await settleRoutes()
-  await page.reload()
+  await replaceDocument(page, () => page.reload())
   await selected(page, 'Chainviz')
   await page.getByRole('link', { name: 'Work', exact: true }).click()
   await selected(page, 'Datalane')

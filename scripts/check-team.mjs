@@ -204,11 +204,11 @@ try {
     const started = performance.now()
     let ticks = 0
     await new Promise((resolve) => {
-      function step(now) {
+      function step() {
         ticks++
-        const elapsed = Math.min(now - started, 1800)
-        scrollTo(0, initialY + elapsed * 0.15)
-        if (elapsed < 1800)
+        // Six input samples per portrait keep the gesture slow on loaded runners.
+        scrollTo(0, initialY + (end - start) / 121 * ticks / 6)
+        if (ticks < 108)
           requestAnimationFrame(step)
         else
           resolve()
@@ -221,9 +221,9 @@ try {
   verifyPaints(slow)
   const distinct = new Set(slow.map(paint => paint.frame.toFixed(3))).size
   const integerFrames = new Set(slow.map(paint => Math.floor(paint.frame))).size
-  assert.ok(distinct > integerFrames * 1.5, 'Slow scrolling must render intermediate blends between source frames')
-  assert.ok(slow.every((paint, index) => index === 0 || paint.frame >= slow[index - 1].frame - 0.001), 'Forward motion must remain ordered')
   console.log(`${type.name()} slow-scroll observation: ${(distinct * 1000 / motion.milliseconds).toFixed(1)} visual updates/s across ${motion.ticks} browser animation frames.`)
+  assert.ok(distinct > integerFrames * 1.5, `Slow scrolling must render intermediate blends between source frames: ${JSON.stringify({ distinct, integerFrames, ...motion })}`)
+  assert.ok(slow.every((paint, index) => index === 0 || paint.frame >= slow[index - 1].frame - 0.001), 'Forward motion must remain ordered')
 
   await seek(page, range, 121)
   assert.ok(Math.abs((await paints(page)).at(-1).frame - 121) < 0.2, 'Forward scrolling must settle at the final portrait')

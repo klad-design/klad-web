@@ -4,7 +4,7 @@ import process from 'node:process'
 
 import { chromium, firefox, webkit } from 'playwright'
 
-import { observeRoutePrefetches } from './route-test-observer.mjs'
+import { isCanceledRoutePrefetch, replaceDocument } from './document-test-navigation.mjs'
 
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
 const browserType = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
@@ -19,14 +19,16 @@ try {
     const context = await browser.newContext({ baseURL, viewport: { width, height: 900 }, hasTouch: width < 1024 })
     const page = await context.newPage()
     page.setDefaultTimeout(30000)
-    const settleRoutes = observeRoutePrefetches(page, baseURL)
-    page.on('pageerror', error => errors.push(`${page.url()}: ${error.stack || error.message}`))
+    page.on('pageerror', (error) => {
+      if (!isCanceledRoutePrefetch(page, error))
+        errors.push(`${page.url()}: ${error.stack || error.message}`)
+    })
     page.on('console', (message) => {
       if (message.type() === 'error' && /hydration|cannot update/i.test(message.text()))
         errors.push(message.text())
     })
     console.log(`${browserType.name()}: ${width}px home`)
-    const response = await page.goto(`${baseURL}/`)
+    const response = await replaceDocument(page, () => page.goto(`${baseURL}/`))
     assert.equal(response.status(), 200)
     assert.match(response.headers()['x-robots-tag'] || '', /noindex/, 'Use a staging build for this check')
     await page.waitForTimeout(600)
@@ -68,7 +70,7 @@ try {
           sessionStorage.setItem('smoke-before-reload', JSON.stringify(state()))
           addEventListener('pagehide', () => sessionStorage.setItem('smoke-pagehide', JSON.stringify(state())), { once: true })
         })
-        await page.reload()
+        await replaceDocument(page, () => page.reload())
         await page.waitForFunction(() => document.fonts.status === 'loaded')
         await page.waitForFunction(() => document.querySelector('[data-logo-mode="scroll"] svg'))
         try {
@@ -195,8 +197,7 @@ try {
     }
 
     console.log(`${browserType.name()}: ${width}px portfolio and navigation`)
-    await settleRoutes()
-    await page.goto(`${baseURL}/work`)
+    await replaceDocument(page, () => page.goto(`${baseURL}/work`))
     await page.waitForFunction(() => document.fonts.status === 'loaded')
     await page.waitForTimeout(600)
     assert.equal(await page.getByRole('button', { name: 'Datalane' }).count(), 1)
@@ -225,14 +226,11 @@ try {
       assert.equal(await page.getByRole('dialog').count(), 0)
     }
 
-    // Let link prefetches finish before replacing the document in WebKit.
-    await settleRoutes()
-    await page.goto(`${baseURL}/process`)
+    await replaceDocument(page, () => page.goto(`${baseURL}/process`))
     assert.equal(await page.locator('[aria-hidden] a:not([inert] a)').count(), 0, 'Decorative links must be inert')
     assert.ok(!(await page.locator('meta[property="og:image"]').getAttribute('content')).includes('localhost'))
 
-    await settleRoutes()
-    await page.goto(`${baseURL}/work/stars-honey`)
+    await replaceDocument(page, () => page.goto(`${baseURL}/work/stars-honey`))
     await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
     assert.ok(await page.locator('video[src]').count() <= 1, 'Offscreen videos should not all load at once')
     const video = page.locator('video').first()

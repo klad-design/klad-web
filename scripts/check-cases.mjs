@@ -4,7 +4,7 @@ import process from 'node:process'
 
 import { chromium, firefox, webkit } from 'playwright'
 
-import { observeRoutePrefetches } from './route-test-observer.mjs'
+import { isCanceledRoutePrefetch, replaceDocument } from './document-test-navigation.mjs'
 
 const type = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
@@ -111,11 +111,12 @@ try {
 
   const reduced = await browser.newContext({ baseURL, reducedMotion: 'reduce' })
   const page = await reduced.newPage()
-  const settleReducedRoutes = observeRoutePrefetches(page, baseURL)
-  page.on('pageerror', error => errors.push(error.message))
+  page.on('pageerror', (error) => {
+    if (!isCanceledRoutePrefetch(page, error))
+      errors.push(error.message)
+  })
   for (const slug of ['datalane', 'circus', 'stars-honey', 'linux-mint', 'shareio', 'chainviz']) {
-    await settleReducedRoutes()
-    const response = await page.goto(`/work/${slug}`)
+    const response = await replaceDocument(page, () => page.goto(`/work/${slug}`))
     assert.equal(response.status(), 200, `${slug}: published case must remain available`)
     assert.equal(await page.getByRole('main').count(), 1)
     assert.equal(await page.locator('.case-close a').count(), 1)

@@ -6,7 +6,7 @@ import process from 'node:process'
 
 import { chromium, firefox, webkit } from 'playwright'
 
-import { observeRoutePrefetches } from './route-test-observer.mjs'
+import { isCanceledRoutePrefetch, replaceDocument } from './document-test-navigation.mjs'
 
 const baseURL = process.env.STAGING_URL || 'http://127.0.0.1:3100'
 const type = { chromium, firefox, webkit }[process.env.STAGING_BROWSER || 'chromium']
@@ -85,8 +85,10 @@ try {
     for (const { format, body } of rasterFixtures)
       await context.route(`**/imprint-test.${format}`, route => route.fulfill({ contentType: `image/${format}`, body }))
     const page = await context.newPage()
-    const settleRoutes = observeRoutePrefetches(page, baseURL)
-    page.on('pageerror', error => errors.push(error.message))
+    page.on('pageerror', (error) => {
+      if (!isCanceledRoutePrefetch(page, error))
+        errors.push(error.message)
+    })
     await page.addInitScript(src => sessionStorage.setItem('klad-page-imprints-v3', JSON.stringify([src])), `data:image/png;base64,${rasterFixtures[0].body.toString('base64')}`)
     await page.goto('/pricing')
     await page.evaluate(() => document.fonts.ready)
@@ -190,8 +192,7 @@ try {
     assert.equal((await pixels(page, 404))[3], 0, 'The newest layer must not contain ink from older pages')
     assert.ok((await pixels(page, 404, 1))[3] > 80, 'The previous imprint must move to the older layer')
     assert.ok((await pixels(page, 504))[3] > 80, 'The newest viewport must join the history')
-    await settleRoutes()
-    await page.reload()
+    await replaceDocument(page, () => page.reload())
     await page.waitForFunction(() => document.querySelector('.page-imprints canvas').width > 0)
     await page.waitForFunction(() => document.querySelectorAll('.page-imprints canvas')[1].width > 0)
     assert.ok((await pixels(page, 404, 1))[3] > 80, 'Both session layers must survive a reload')
@@ -224,8 +225,7 @@ try {
     await page.waitForURL('**/work/datalane')
     await page.waitForTimeout(200)
     assert.deepEqual(await imprintLayers(page), beforeCase, 'Returning to the previous case must preserve existing layers')
-    await settleRoutes()
-    await page.reload()
+    await replaceDocument(page, () => page.reload())
     await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
     await page.waitForFunction(() => document.querySelector('.page-imprints canvas').getContext('2d').getImageData(innerWidth - 5, 704, 1, 1).data[3] > 80)
     await page.waitForFunction(() => document.querySelectorAll('.page-imprints canvas')[1].width > 0)
