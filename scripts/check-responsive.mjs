@@ -23,6 +23,31 @@ async function visit(context, route, setup) {
   return page
 }
 
+async function scrollWithClockPaused(page, target) {
+  let timeout
+  try {
+    await Promise.race([
+      page.evaluate(target => new Promise((resolve) => {
+        const onScroll = () => {
+          if (Math.abs(scrollY - target) > 1)
+            return
+          document.removeEventListener('scroll', onScroll)
+          resolve()
+        }
+        document.addEventListener('scroll', onScroll)
+        scrollTo(0, target)
+      }), target),
+      new Promise((_, reject) => {
+        // The page clock is paused; bound native event delivery with the Node clock.
+        timeout = setTimeout(() => reject(new Error(`Native scroll did not reach ${target}px`)), 5000)
+      }),
+    ])
+  }
+  finally {
+    clearTimeout(timeout)
+  }
+}
+
 try {
   for (const input of ['mouse', 'hybrid', 'touch']) {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, hasTouch: input === 'touch' })
@@ -98,11 +123,12 @@ try {
     start: el.getBoundingClientRect().top + scrollY - 30,
     end: document.querySelector('.memberDescriptionEnd').getBoundingClientRect().bottom + scrollY - el.clientHeight - 30,
   }))
+  assert.deepEqual(await team.evaluate(() => ({ y: scrollY, frame: window.__portraitFrames.at(-1) })), { y: 0, frame: 0 }, 'The portrait must reset to its first frame before testing a sudden scroll')
   await team.evaluate(() => {
     window.__portraitFrames = []
     window.__portraitWidths = []
   })
-  await team.evaluate(y => scrollTo(0, y), (range.start + range.end) / 2)
+  await scrollWithClockPaused(team, (range.start + range.end) / 2)
   await team.clock.runFor(800)
   const forward = await team.evaluate(() => window.__portraitFrames)
   assert.ok(new Set(forward).size > 4, 'A sudden scroll must play intermediate frames instead of jumping straight to the target')
@@ -111,7 +137,7 @@ try {
   await team.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
   assert.equal(await team.evaluate(() => window.__portraitFrames.at(-1)), forward.at(-1), 'Returning to the tab must preserve the current portrait')
   await team.evaluate(() => window.__portraitFrames = [])
-  await team.evaluate(y => scrollTo(0, y), range.start)
+  await scrollWithClockPaused(team, range.start)
   await team.clock.runFor(800)
   const reversed = await team.evaluate(() => window.__portraitFrames)
   assert.ok(new Set(reversed).size > 4 && reversed.every((frame, index) => index === 0 || frame <= reversed[index - 1]), 'Reverse playback must also play intermediate frames in order')
