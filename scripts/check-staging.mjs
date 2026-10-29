@@ -31,6 +31,8 @@ try {
     const response = await replaceDocument(page, () => page.goto(`${baseURL}/`))
     assert.equal(response.status(), 200)
     assert.match(response.headers()['x-robots-tag'] || '', /noindex/, 'Use a staging build for this check')
+    await page.waitForFunction(() => document.fonts.status === 'loaded' && document.querySelector('[data-logo-mode="scroll"] svg'))
+    // ScrollTrigger's startup window bypasses scrub interpolation.
     await page.waitForTimeout(600)
     assert.equal(await page.locator('[aria-label="[object Object]"]').count(), 0)
     assert.equal(await page.locator('#team').count(), 1)
@@ -53,6 +55,8 @@ try {
       }, { value: null, stable: 0 })
       return headingValue()
     }
+    await settledScroll()
+    await settledHeadingValue()
     assert.equal(await headingValue(), 0, `Heading must start without scroll trails at ${width}px`)
     await page.evaluate(() => window.scrollTo(0, 80))
     await page.waitForFunction(() => Number(document.querySelector('h1 .textBlur').style.getPropertyValue('--value')) < -1)
