@@ -230,25 +230,35 @@ export async function assertLogoPhotoInversion(page, visual) {
     await image.decode()
   })
   try {
+    const bounds = await visual.boundingBox()
+    await visual.evaluate(element => element.style.visibility = 'hidden')
+    const backdrop = await pngPixels(await page.screenshot({ clip: bounds, scale: 'css' }))
+    await visual.evaluate(element => element.style.removeProperty('visibility'))
+    for (const [channel, value] of [245, 130, 45].entries())
+      assert.ok(Math.abs(backdrop.data[channel] - value) <= 1, 'The photo probe paints the actual colored backdrop')
     await visual.evaluate(element => element.style.mixBlendMode = 'normal')
-    const source = await pngPixels(await visual.screenshot())
+    const source = await pngPixels(await visual.screenshot({ scale: 'css' }))
     await visual.evaluate(element => element.style.removeProperty('mix-blend-mode'))
-    const inverted = await pngPixels(await visual.screenshot())
+    const inverted = await pngPixels(await visual.screenshot({ scale: 'css' }))
     let body = 0
     let ink = 0
     for (let i = 0; i < source.data.length; i += 4) {
       if (source.data[i] === 231 && source.data[i + 1] === 231 && source.data[i + 2] === 231) {
         body++
-        assert.deepEqual([...inverted.data.subarray(i, i + 3)], [14, 101, 186], 'Actual logo body inverts the underlying image')
       }
-      if (source.data[i] < 30 && source.data[i + 1] === source.data[i] && source.data[i + 2] === source.data[i]) {
+      else if (source.data[i] < 30 && source.data[i + 1] === source.data[i] && source.data[i + 2] === source.data[i]) {
         ink++
-        assert.deepEqual([...inverted.data.subarray(i, i + 3)], [245, 130, 45].map(value => Math.abs(value - source.data[i])), 'Actual logo lettering inverts the underlying image')
       }
+      else {
+        continue
+      }
+      for (const channel of [0, 1, 2])
+        assert.ok(Math.abs(inverted.data[i + channel] - Math.abs(source.data[i + channel] - backdrop.data[i + channel])) <= 1, 'Actual logo body and lettering invert the measured image within one color level')
     }
     assert.ok(body >= 100 && ink > 10, `Photo check covers actual body and lettering pixels (body ${body}, ink ${ink})`)
   }
   finally {
+    await visual.evaluate(element => element.style.removeProperty('visibility'))
     await visual.evaluate(element => element.style.removeProperty('mix-blend-mode'))
     await page.locator('#logo-photo-probe').evaluate(element => element.remove())
   }

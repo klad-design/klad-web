@@ -38,12 +38,16 @@ async function ready(page, mode) {
     const svg = visual?.querySelector('svg')
     const limit = document.documentElement.scrollHeight - innerHeight
     const expected = limit > 0 ? scrollY / limit * 2 : 0
+    const time = svg?.getCurrentTime()
     const valid = svg?.animationsPaused() && svg.getAttribute('viewBox') === '106 180 748 600' && svg.querySelector('#logo-body')?.getBoundingClientRect().width > 20
-    sample.stable = valid && sample.y === scrollY && sample.limit === limit && Math.abs(svg.getCurrentTime() - expected) < 0.015 ? sample.stable + 1 : 0
+    const stable = valid && sample.y === scrollY && sample.limit === limit && sample.time === time && Math.abs(time - expected) < 0.015
+    if (!stable)
+      sample.stableSince = performance.now()
     sample.y = scrollY
     sample.limit = limit
-    return sample.mode === 'scroll' ? sample.stable >= 4 : valid
-  }, { mode, y: null, limit: null, stable: 0 })
+    sample.time = time
+    return sample.mode === 'scroll' ? stable && performance.now() - sample.stableSince >= 200 : valid
+  }, { mode, y: null, limit: null, time: null, stableSince: 0 })
 }
 
 async function state(logo) {
@@ -74,6 +78,7 @@ async function scroll(page, progress) {
     return svg && Math.abs(svg.getCurrentTime() - scrollY / limit * 2) < 0.015
   }, progress)
   await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-smooth'))
+  await ready(page, 'scroll')
 }
 
 async function navigate(page, name, path) {
