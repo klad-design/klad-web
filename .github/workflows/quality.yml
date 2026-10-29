@@ -63,9 +63,6 @@ jobs:
       - name: Team
         timeout-minutes: 5
         run: pnpm test:team
-      - name: Header logo
-        timeout-minutes: 15
-        run: pnpm test:logo
       - name: Work
         timeout-minutes: 5
         run: pnpm test:work
@@ -85,6 +82,9 @@ jobs:
         if: matrix.browser == 'chromium'
         timeout-minutes: 5
         run: pnpm test:outpost
+      - name: Header logo
+        timeout-minutes: 15
+        run: pnpm test:logo
       - name: Stop staging server
         if: always()
         run: |

@@ -13,8 +13,9 @@ const browser = await type.launch()
 const artifacts = `artifacts/responsive/${type.name()}`
 await mkdir(artifacts, { recursive: true })
 
-async function visit(context, route) {
+async function visit(context, route, setup) {
   const page = await context.newPage()
+  await setup?.(page)
   const response = await page.goto(`${baseURL}${route}`)
   assert.equal(response.status(), 200)
   await page.evaluate(() => document.fonts.ready)
@@ -75,11 +76,11 @@ try {
       portraitRequests.add(request.url())
   })
   await observeTeam(landscape)
-  const team = await visit(landscape, '/')
+  const team = await visit(landscape, '/', page => page.clock.install())
   assert.ok(await team.evaluate(() => window.__portraitDraws > 0), 'The initial mobile portrait must be drawn')
   await team.evaluate(() => scrollTo(0, document.querySelector('.memberDescription').getBoundingClientRect().top + scrollY - 195))
   await team.waitForTimeout(1500)
-  await team.waitForFunction(() => performance.getEntriesByType('resource').filter(entry => /\/images\/team-mobile\/v5\/\d+\.avif/.test(entry.name)).length === 122)
+  await team.waitForFunction(() => window.__teamDecoded.size === 122)
   assert.equal(portraitRequests.size, 122, 'Mobile must prepare the complete lightweight frame sequence near Team')
   const portrait = await team.locator('.models').boundingBox()
   assert.ok(portrait.height <= 151 && portrait.y + portrait.height < 275, 'Landscape portrait must leave at least 100px to read below it')
@@ -90,6 +91,9 @@ try {
   assert.ok(Math.abs((await team.locator('.models').boundingBox()).height - 357) < 2, 'Rotating back must restore the portrait size')
   await team.evaluate(() => scrollTo(0, 0))
   await team.waitForTimeout(500)
+  // Give draw-count assertions consistent RAF steps on loaded runners.
+  await team.clock.pauseAt(await team.evaluate(() => Date.now() + 1000))
+  await team.clock.runFor(500)
   const range = await team.locator('.models').evaluate(el => ({
     start: el.getBoundingClientRect().top + scrollY - 30,
     end: document.querySelector('.memberDescriptionEnd').getBoundingClientRect().bottom + scrollY - el.clientHeight - 30,
@@ -99,7 +103,7 @@ try {
     window.__portraitWidths = []
   })
   await team.evaluate(y => scrollTo(0, y), (range.start + range.end) / 2)
-  await team.waitForTimeout(800)
+  await team.clock.runFor(800)
   const forward = await team.evaluate(() => window.__portraitFrames)
   assert.ok(new Set(forward).size > 4, 'A sudden scroll must play intermediate frames instead of jumping straight to the target')
   assert.ok(forward.every((frame, index) => index === 0 || frame >= forward[index - 1]), 'Forward playback must stay in order')
@@ -108,10 +112,11 @@ try {
   assert.equal(await team.evaluate(() => window.__portraitFrames.at(-1)), forward.at(-1), 'Returning to the tab must preserve the current portrait')
   await team.evaluate(() => window.__portraitFrames = [])
   await team.evaluate(y => scrollTo(0, y), range.start)
-  await team.waitForTimeout(800)
+  await team.clock.runFor(800)
   const reversed = await team.evaluate(() => window.__portraitFrames)
   assert.ok(new Set(reversed).size > 4 && reversed.every((frame, index) => index === 0 || frame <= reversed[index - 1]), 'Reverse playback must also play intermediate frames in order')
   assert.equal(reversed.at(-1), 0, 'Reverse scrolling must settle on the first frame')
+  await team.clock.resume()
   const widths = await team.evaluate(() => window.__portraitWidths)
   assert.ok(Math.max(...widths) - Math.min(...widths) < 0.001 && Math.abs(widths[0] - 1) < 0.001, 'Mobile portraits must retain one full canonical-stage scale while scrolling')
   assert.ok(await team.evaluate(() => window.__teamPaints.every(paint => paint.draws.every(draw => draw.mappingError < 0.00001 && draw.sourceDimensionsValid))), 'Portraits must preserve their canonical placement and source density')
