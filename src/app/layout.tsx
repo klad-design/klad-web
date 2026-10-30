@@ -5,6 +5,7 @@ import process from 'node:process'
 
 import { ThemeProvider } from 'next-themes'
 import Image from 'next/image'
+import Script from 'next/script'
 
 import { CursorGhost } from '@/components/CursorGhost'
 import { Header } from '@/components/Header'
@@ -64,6 +65,17 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className="bg-gray dark:bg-black transition-colors duration-200" suppressHydrationWarning>
+      <head>
+        <Script id="openai-pixel" strategy="beforeInteractive">
+          {`!function(w,d,s,u){if(w.oaiq)return;var q=function(){q.q.push(arguments)};q.q=[];w.oaiq=q;var j=d.createElement(s);j.async=1;j.src=u;var f=d.getElementsByTagName(s)[0];f.parentNode.insertBefore(j,f)}(window,document,"script","https://bzrcdn.openai.com/sdk/oaiq.min.js");oaiq("init",{pixelId:"2F1igqdAReuX4NLvTBfvfv",debug:true});
+document.addEventListener("click", function(event) {
+  var link = event.target instanceof Element ? event.target.closest('a[href^="https://cal.com/"]') : null;
+  if (link) {
+    oaiq("measure", "custom", { type: "custom" }, { custom_event_name: "opens" });
+  }
+}, true);`}
+        </Script>
+      </head>
       <body className="bg-gray dark:bg-black dark:text-gray transition-colors duration-200 selection:bg-[#ADADAD]/60">
         <PageNoise />
         <svg width="0" height="0" aria-hidden="true" focusable="false" className="absolute">
