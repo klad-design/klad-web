@@ -2,6 +2,7 @@ import Image from 'next/image'
 
 import { SectionMedia, SectionText } from '@/app/work/sections'
 import { Button } from '@/components/ui/Button'
+import { CaseVideo } from '@/components/ui/CaseVideo'
 import { TextBlur } from '@/components/ui/TextBlur'
 
 const mediaSizes = '(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)'
@@ -26,50 +27,51 @@ const teamCopy = (
 const sections = [
   { type: 'media', images: [{ src: '/images/outpost/01.avif', width: 3440, height: 2052, alt: 'Outpost campaign with striped 3D forms and the message Your business is now borderless' }] },
   { type: 'media', images: [{ src: '/images/outpost/02.avif', width: 3440, height: 2052, alt: 'Outpost wordmark and striped symbol on charcoal' }] },
-  { type: 'media', images: [{ src: '/images/outpost/03.avif', width: 3440, height: 978, alt: 'Outpost striped brand animation still' }] },
+  { type: 'media', images: [{ src: '/images/outpost/03.avif', video: '02', width: 3440, height: 978, alt: 'Outpost striped brand animation still' }] },
   { type: 'text', align: 'center', paragraphs: [introCopy] },
-  { type: 'media', images: [{ src: '/images/outpost/04.avif', width: 3440, height: 1934, alt: 'Outpost brand motion frame' }] },
+  { type: 'media', images: [{ src: '/images/outpost/04.avif', video: '01', width: 3440, height: 1934, alt: 'Outpost brand motion frame' }] },
   { type: 'media', images: [{ src: '/images/outpost/05-left.avif', width: 1720, height: 1720, alt: 'Stepped diagonal Outpost brand pattern' }, { src: '/images/outpost/05-right.avif', width: 1720, height: 1720, alt: 'Hand writing beside a calculator and dollar bills on pale green' }] },
-  { type: 'media', images: [{ src: '/images/outpost/06.avif', width: 3440, height: 2052, alt: 'Outpost striped pattern in 3D' }] },
+  { type: 'media', images: [{ src: '/images/outpost/06.avif', video: '03', width: 3440, height: 2052, alt: 'Outpost striped pattern in 3D' }] },
   { type: 'text', align: 'right', paragraphs: [teamCopy] },
   { type: 'media', images: [{ src: '/images/outpost/07.avif', width: 3440, height: 2824, alt: 'Outpost world map poster and brand colour palette' }] },
   { type: 'media', images: [{ src: '/images/outpost/08-left.avif', width: 1720, height: 1720, alt: 'Wherever you’re going, we’re already there Outpost poster' }, { src: '/images/outpost/08-right.avif', width: 1720, height: 1720, alt: 'Coloured cables connected to a network switch' }] },
   { type: 'media', images: [{ src: '/images/outpost/09.avif', width: 3440, height: 2052, alt: 'Outpost campaign featuring an athlete on a running track' }] },
   { type: 'text', align: 'center', paragraphs: [introCopy] },
-  { type: 'media', images: [{ src: '/images/outpost/10.avif', width: 3440, height: 1934, alt: 'Outpost brand motion frame' }] },
+  { type: 'media', images: [{ src: '/images/outpost/10.avif', video: '05', width: 3440, height: 1934, alt: 'Outpost brand motion frame' }] },
   { type: 'media', images: [{ src: '/images/outpost/11-left.avif', width: 1720, height: 1720, alt: 'Outpost branded dollar bills on pale blue' }, { src: '/images/outpost/11-right.avif', width: 1720, height: 1720, alt: 'Outpost email signature in a message compose window' }] },
-  { type: 'media', images: [{ src: '/images/outpost/12.avif', width: 3440, height: 2052, alt: 'Outpost website introduction with stepped brand graphics' }] },
+  { type: 'media', images: [{ src: '/images/outpost/12.avif', video: '04', width: 3440, height: 2052, alt: 'Outpost website introduction with stepped brand graphics' }] },
   { type: 'media', images: [{ src: '/images/outpost/13.avif', width: 3440, height: 1936, alt: 'Diagram showing the Outpost embedded Tax of Record model' }] },
-  { type: 'media', images: [{ src: '/images/outpost/14.avif', width: 3440, height: 2052, alt: 'Outpost open box illustration on a striped background' }] },
+  { type: 'media', images: [{ src: '/images/outpost/14.avif', video: '06', width: 3440, height: 2052, alt: 'Outpost open box illustration on a striped background' }] },
   { type: 'text', align: 'right', paragraphs: [teamCopy, perspectiveCopy, shortCopy, shortCopy] },
-  { type: 'media', images: [{ src: '/images/outpost/15.avif', width: 3440, height: 2052, alt: 'Laptop displaying the Outpost website on a pale green armchair' }] },
+  { type: 'media', images: [{ src: '/images/outpost/15.avif', video: '07', width: 3440, height: 2052, alt: 'Laptop displaying the Outpost website on a pale green armchair' }] },
   { type: 'media', images: [{ src: '/images/outpost/16.avif', width: 3440, height: 2052, alt: 'Outpost symbol in a browser tab and the outpost.ai address' }] },
   { type: 'media', images: [{ src: '/images/outpost/17.avif', width: 3440, height: 3590, alt: 'Outpost platform page explaining automatic tax processing and embedded Tax of Record' }] },
   { type: 'media', images: [{ src: '/images/outpost/18.avif', width: 3440, height: 2052, alt: 'Laptop displaying the Outpost tax processing website' }] },
   { type: 'media', images: [{ src: '/images/outpost/19.avif', width: 3440, height: 2052, alt: 'Outpost mobile website layouts and navigation' }] },
   { type: 'media', images: [{ src: '/images/outpost/20.avif', width: 3440, height: 2052, alt: 'Outpost developer platform campaign with striped geometric forms' }] },
-  { type: 'media', images: [{ src: '/images/outpost/21-left.avif', width: 1720, height: 1720, alt: 'Outpost market selector showing Canada and country flags' }, { src: '/images/outpost/21-right.avif', width: 1720, height: 1720, alt: 'Outpost set of pastel 3D brand icons' }] },
+  { type: 'media', images: [{ src: '/images/outpost/21-left.avif', video: '08', width: 1720, height: 1720, alt: 'Outpost market selector showing Canada and country flags' }, { src: '/images/outpost/21-right.avif', width: 1720, height: 1720, alt: 'Outpost set of pastel 3D brand icons' }] },
+  // shortcut: 09.webm is not uploaded yet; replace the UI collage still when it is available.
   { type: 'media', images: [{ src: '/images/outpost/22.avif', width: 3440, height: 2052, alt: 'Collection of Outpost interface components and product screens' }] },
-  { type: 'media', images: [{ src: '/images/outpost/23.avif', width: 3440, height: 2052, alt: 'Black and white connectors on a pale purple background' }] },
+  { type: 'media', images: [{ src: '/images/outpost/23.avif', video: '10', width: 3440, height: 2052, alt: 'Black and white connectors on a pale purple background' }] },
   { type: 'media', images: [{ src: '/images/outpost/24-left.avif', width: 1720, height: 1720, alt: 'Striped Outpost puzzle piece on pale blue' }, { src: '/images/outpost/24-right.avif', width: 1720, height: 1720, alt: 'Person holding a phone displaying the Outpost mobile website' }] },
-  { type: 'media', images: [{ src: '/images/outpost/25.avif', width: 3440, height: 2052, alt: 'Outpost outline icon set on charcoal' }] },
+  { type: 'media', images: [{ src: '/images/outpost/25.avif', video: '18', width: 3440, height: 2052, alt: 'Outpost outline icon set on charcoal' }] },
   { type: 'media', images: [{ src: '/images/outpost/26.avif', width: 3440, height: 2052, alt: 'Outpost team management interface over a world map' }] },
-  { type: 'media', images: [{ src: '/images/outpost/27.avif', width: 3440, height: 2052, alt: 'Outpost product sidebar over a striped brand pattern' }] },
+  { type: 'media', images: [{ src: '/images/outpost/27.avif', video: '11', width: 3440, height: 2052, alt: 'Outpost product sidebar over a striped brand pattern' }] },
   { type: 'media', images: [{ src: '/images/outpost/28.avif', width: 3440, height: 2052, alt: 'Outpost world map showing supported markets' }] },
-  { type: 'media', images: [{ src: '/images/outpost/29.avif', width: 3440, height: 2052, alt: 'Outpost business account dashboard on a pale purple background' }] },
+  { type: 'media', images: [{ src: '/images/outpost/29.avif', video: '12', width: 3440, height: 2052, alt: 'Outpost business account dashboard on a pale purple background' }] },
   { type: 'text', align: 'right', paragraphs: [teamCopy, perspectiveCopy, shortCopy, shortCopy] },
   { type: 'media', images: [{ src: '/images/outpost/30.avif', width: 3440, height: 2052, alt: 'Collection of Outpost website layouts and brand graphics' }] },
   { type: 'media', images: [{ src: '/images/outpost/31.avif', width: 3440, height: 2052, alt: 'Outpost campaign about one integration for every market' }] },
-  { type: 'media', images: [{ src: '/images/outpost/32-left.avif', width: 1720, height: 1720, alt: 'Sell globally, stay compliant Outpost poster' }, { src: '/images/outpost/32-right.avif', width: 1720, height: 1720, alt: 'Outpost T-shirt in branded packaging' }] },
+  { type: 'media', images: [{ src: '/images/outpost/32-left.avif', video: '13', width: 1720, height: 1720, alt: 'Sell globally, stay compliant Outpost poster' }, { src: '/images/outpost/32-right.avif', width: 1720, height: 1720, alt: 'Outpost T-shirt in branded packaging' }] },
   { type: 'media', images: [{ src: '/images/outpost/33.avif', width: 3440, height: 2052, alt: 'Row of sculpted mugs in the Outpost brand colours' }] },
-  { type: 'media', images: [{ src: '/images/outpost/34-left.avif', width: 1720, height: 1720, alt: 'Outpost brand motion frame' }, { src: '/images/outpost/34-right.avif', width: 1720, height: 1720, alt: 'Stacked Outpost mugs on a pale purple surface' }] },
+  { type: 'media', images: [{ src: '/images/outpost/34-left.avif', width: 1720, height: 1720, alt: 'Circular Outpost coffee card with the message Coffee here. Sell everywhere.' }, { src: '/images/outpost/34-right.avif', width: 1720, height: 1720, alt: 'Stacked Outpost mugs with printed branding on their bases' }] },
   { type: 'media', images: [{ src: '/images/outpost/35.avif', width: 3440, height: 2052, alt: 'Person wearing a fleece jacket with the Outpost striped symbol' }] },
-  { type: 'media', images: [{ src: '/images/outpost/36.avif', width: 3440, height: 1934, alt: 'Outpost campaign with the message Never think about audits' }] },
-  { type: 'media', images: [{ src: '/images/outpost/37-left.avif', width: 1720, height: 1720, alt: 'Outpost world map poster with green graphics and a silver spoon' }, { src: '/images/outpost/37-right.avif', width: 1720, height: 1720, alt: 'Outpost Guess the market poster with a striped classical sculpture' }] },
+  { type: 'media', images: [{ src: '/images/outpost/36.avif', video: '14', width: 3440, height: 1934, alt: 'Outpost campaign with the message Never think about audits' }] },
+  { type: 'media', images: [{ src: '/images/outpost/37-left.avif', width: 1720, height: 1720, alt: 'Outpost world map poster with green graphics and a silver spoon' }, { src: '/images/outpost/37-right.avif', video: '15', width: 1720, height: 1720, alt: 'Outpost Guess the market poster with a striped classical sculpture' }] },
   { type: 'text', align: 'right', paragraphs: [teamCopy] },
-  { type: 'media', images: [{ src: '/images/outpost/38.avif', width: 3440, height: 2052, alt: 'Outpost hiring campaign on a large outdoor billboard' }] },
+  { type: 'media', images: [{ src: '/images/outpost/38.avif', video: '16', width: 3440, height: 2052, alt: 'Outpost hiring campaign on a large outdoor billboard' }] },
   { type: 'media', images: [{ src: '/images/outpost/39.avif', width: 3440, height: 2052, alt: 'Outpost striped 3D brand pattern' }] },
-  { type: 'media', images: [{ src: '/images/outpost/40-left.avif', width: 1720, height: 1720, alt: 'Phone displaying the Outpost mobile website on grey' }, { src: '/images/outpost/40-right.avif', width: 1720, height: 1720, alt: 'Outpost circular line illustration' }] },
+  { type: 'media', images: [{ src: '/images/outpost/40-left.avif', width: 1720, height: 1720, alt: 'Phone displaying the Outpost homepage with the message The world is your Outpost' }, { src: '/images/outpost/40-right.avif', video: '17', width: 1720, height: 1720, alt: 'Outpost circular line illustration' }] },
   { type: 'text', align: 'center', paragraphs: [introCopy] },
   { type: 'media', images: [{ src: '/images/outpost/41.avif', width: 3440, height: 2052, alt: 'White Outpost cap on a reflective blue surface with the words God Egor' }] },
   { type: 'media', images: [{ src: '/images/outpost/42.avif', width: 3440, height: 1936, alt: 'Outpost closing brand motion frame' }] },
@@ -77,7 +79,7 @@ const sections = [
 
 export function CasePage() {
   return (
-    <main className="pb-10 2xl:[&>section:has(img)]:py-[25px]">
+    <main className="pb-10 2xl:[&>section:has(img,video)]:py-[25px]">
       <header className="relative grid-container my-2.5 lg:gap-y-20 pb-10 2xl:min-h-[583px] 2xl:grid-rows-[272px_1fr] 2xl:gap-y-0 2xl:pb-0">
         <div className="col-span-full flex gap-5 items-start justify-between md:justify-end md:gap-10 md:absolute md:top-0 md:right-0 lg:gap-[45px]">
           <Button as="a" href="/work/chainviz" label="Previous" />
@@ -151,17 +153,29 @@ export function CasePage() {
             <SectionMedia key={section.images[0].src}>
               <div className={section.images.length === 2 ? 'grid md:grid-cols-2' : undefined}>
                 {section.images.map(image => (
-                  <Image
-                    key={image.src}
-                    unoptimized
-                    preload={index === 0}
-                    sizes={section.images.length === 2 ? pairedMediaSizes : mediaSizes}
-                    className="w-full"
-                    src={image.src}
-                    alt={image.alt}
-                    width={image.width}
-                    height={image.height}
-                  />
+                  'video' in image
+                    ? (
+                        <div key={image.src} style={{ aspectRatio: `${image.width} / ${image.height}` }}>
+                          <CaseVideo
+                            src={`https://klad.b-cdn.net/outpost/case/${image.video}.webm`}
+                            poster={image.src}
+                            className={image.video === '13' ? 'size-full object-contain bg-[#262626]' : 'size-full object-cover'}
+                          />
+                        </div>
+                      )
+                    : (
+                        <Image
+                          key={image.src}
+                          unoptimized
+                          preload={index === 0}
+                          sizes={section.images.length === 2 ? pairedMediaSizes : mediaSizes}
+                          className="w-full"
+                          src={image.src}
+                          alt={image.alt}
+                          width={image.width}
+                          height={image.height}
+                        />
+                      )
                 ))}
               </div>
             </SectionMedia>
