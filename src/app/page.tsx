@@ -105,7 +105,7 @@ export default function Home() {
 
   return (
     <main>
-      <Hero />
+      <Hero eager />
       <Services />
       <Team />
       <Call />

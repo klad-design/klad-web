@@ -1,8 +1,7 @@
-import Image from 'next/image'
-
 import { TextBlur } from '@/components/ui/TextBlur'
+import { WorldMap } from '@/components/WorldMap'
 
-export function Hero() {
+export function Hero({ eager = false }: { eager?: boolean }) {
   return (
     <section className="pt-[60px] md:pt-[160px] lg:pt-0">
       <h1 className="md:text-nowrap text-[19vw] md:text-[min(100px,12vw)] lg:text-[10.5vw] tracking-normal leading-[90%] uppercase -ml-1.5 lg:-ml-2.5 -rotate-2">
@@ -16,43 +15,7 @@ export function Hero() {
             <p>As a small team, we deliberately limit the number of projects we take on, dedicating our full focus and commitment to each one.</p>
           </div>
         </div>
-        <div className="textBlur relative transform-gpu will-change-[filter] invert-0 dark:invert flex justify-center -mx-2.5 lg:mx-0 mt-[30px] md:mt-10 lg:mt-3 col-span-4">
-          <Image
-            className="absolute blur-[3px] opacity-20 transform-gpu ease-linear max-w-[140svw] md:max-w-[133svw] lg:max-w-full will-change-transform translate-y-[calc(var(--value)_*_1.5_*_1px)]"
-            src="/images/world.svg"
-            alt="World map"
-            width={1410}
-            height={928}
-            sizes="(min-width: 1024px) 90vw, (min-width: 768px) 133vw, 140vw"
-            aria-hidden
-          />
-          <Image
-            className="absolute blur-[3px] opacity-40 transform-gpu ease-linear max-w-[140svw] md:max-w-[133svw] lg:max-w-full will-change-transform translate-y-[calc(var(--value)_*_1_*_1px)]"
-            src="/images/world.svg"
-            alt="World map"
-            width={1410}
-            height={928}
-            sizes="(min-width: 1024px) 90vw, (min-width: 768px) 133vw, 140vw"
-            aria-hidden
-          />
-          <Image
-            className="absolute blur-[3px] opacity-80 transform-gpu ease-linear max-w-[140svw] md:max-w-[133svw] lg:max-w-full will-change-transform translate-y-[calc(var(--value)_*_0.5_*_1px)]"
-            src="/images/world.svg"
-            alt="World map"
-            width={1410}
-            height={928}
-            sizes="(min-width: 1024px) 90vw, (min-width: 768px) 133vw, 140vw"
-            aria-hidden
-          />
-          <Image
-            className="relative max-w-[140svw] md:max-w-[133svw] lg:max-w-full will-change-transform"
-            src="/images/world.svg"
-            alt="World map"
-            width={1410}
-            height={928}
-            sizes="(min-width: 1024px) 90vw, (min-width: 768px) 133vw, 140vw"
-          />
-        </div>
+        <WorldMap eager={eager} />
       </div>
     </section>
   )

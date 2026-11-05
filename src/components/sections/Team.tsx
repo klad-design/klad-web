@@ -10,6 +10,11 @@ import NextImage from 'next/image'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import dasha from '@/assets/team-fav/dasha.png'
+import egor from '@/assets/team-fav/egor.png'
+import ksusha from '@/assets/team-fav/ksusha.png'
+import lenar from '@/assets/team-fav/lenar.png'
+import lenas from '@/assets/team-fav/lenas.png'
 import { Button } from '@/components/ui/Button'
 import { TextBlur } from '@/components/ui/TextBlur'
 import { useMediaQuery } from '@/components/useMediaQuery'
@@ -58,7 +63,8 @@ const team: TeamMember[] = [
                 Egor
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/team-fav/egor.avif"
+                  src={egor}
+                  unoptimized
                   alt="Egor 3d model preview"
                   width={11}
                   height={14}
@@ -102,7 +108,8 @@ const team: TeamMember[] = [
                 Dasha
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/team-fav/dasha.avif"
+                  src={dasha}
+                  unoptimized
                   alt="Dasha 3d model preview"
                   width={11}
                   height={14}
@@ -161,7 +168,8 @@ const team: TeamMember[] = [
                 Egor
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/team-fav/egor.avif"
+                  src={egor}
+                  unoptimized
                   alt="Egor 3d model preview"
                   width={11}
                   height={14}
@@ -206,7 +214,8 @@ const team: TeamMember[] = [
                 Ksusha
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/team-fav/ksusha.avif"
+                  src={ksusha}
+                  unoptimized
                   alt="Ksusha 3d model preview"
                   width={11}
                   height={14}
@@ -226,7 +235,8 @@ const team: TeamMember[] = [
                 Lena R
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/team-fav/lenar.avif"
+                  src={lenar}
+                  unoptimized
                   alt="Lena Ryazantseva 3d model preview"
                   width={11}
                   height={14}
@@ -278,7 +288,8 @@ const team: TeamMember[] = [
                 Lena S
                 <NextImage
                   className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src="/images/team-fav/lenas.avif"
+                  src={lenas}
+                  unoptimized
                   alt="Lena Sivakova 3d model preview"
                   width={11}
                   height={14}
@@ -521,8 +532,6 @@ export function Team() {
   useEffect(() => {
     let disposed = false
     let loading = 0
-    let idle: number | undefined
-    let timer: ReturnType<typeof setTimeout> | undefined
     const pending: number[] = []
     const requested = new Set<number>()
     const pendingImages = new Set<HTMLImageElement>()
@@ -537,7 +546,7 @@ export function Team() {
 
     const prepareFrame = async (index: number, mobileSource: boolean) => {
       const size = mobileSource ? 832 : 1080
-      const source = mobileSource ? `/images/team-mobile/v5/${index}.avif` : `/images/team/${index}.avif`
+      const source = mobileSource ? `/images/team-mobile/v5/${index}.avif` : `/images/team/v1/${index}.avif`
       const image = new Image()
       image.decoding = 'async'
       image.fetchPriority = index === 0 ? 'auto' : 'low'
@@ -654,28 +663,11 @@ export function Team() {
       observer.disconnect()
     }, { rootMargin: `${Math.max(window.innerHeight, 800)}px` })
 
-    const preloadWhenIdle = () => {
-      if ('requestIdleCallback' in window)
-        idle = window.requestIdleCallback(loadSequence, { timeout: 1500 })
-      else
-        timer = setTimeout(loadSequence, 200)
-    }
-
     document.fonts.ready.then(() => {
       if (disposed || reducedMotion)
         return
-      wanted = new Set(previewFrames)
-      previewFrames.forEach(loadFrame)
-      prepareFrames()
       if (modelsRef.current)
         observer.observe(modelsRef.current)
-      if (!mobileFrames && !window.matchMedia('(pointer: coarse)').matches)
-        return
-      // Keep page assets ahead of the full sequence on the initial visit.
-      if (document.readyState === 'complete')
-        preloadWhenIdle()
-      else
-        window.addEventListener('load', preloadWhenIdle, { once: true })
     })
 
     const resizeCanvas = () => {
@@ -716,10 +708,6 @@ export function Team() {
           image.src = ''
       }
       images.length = 0
-      if (idle !== undefined)
-        window.cancelIdleCallback(idle)
-      clearTimeout(timer)
-      window.removeEventListener('load', preloadWhenIdle)
       observer.disconnect()
       resize.disconnect()
       ScrollTrigger.removeEventListener('refreshInit', beginRefresh)

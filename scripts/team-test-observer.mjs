@@ -1,8 +1,8 @@
-export const teamFrameURL = /\/images\/(?:team-mobile\/v5|team)\/\d+\.avif$/
+export const teamFrameURL = /\/images\/(?:team-mobile\/v5|team\/v1)\/\d+\.avif$/
 
 export async function observeTeam(context) {
   await context.addInitScript(() => {
-    const source = /\/images\/(?:team-mobile\/v5|team)\/(\d+)\.avif$/
+    const source = /\/images\/(?:team-mobile\/v5|team\/v1)\/(\d+)\.avif$/
     const identities = new WeakMap()
     const ready = new WeakSet()
     const nativeSource = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src')

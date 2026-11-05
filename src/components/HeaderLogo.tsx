@@ -8,6 +8,9 @@ import { createPortal } from 'react-dom'
 import { prepareLogoMotion } from '@/components/prepareLogoMotion'
 import { useReducedMotion } from '@/components/useReducedMotion'
 
+import logoMotion from '../../public/images/logo-scroll-motion.svg'
+import logoStill from '../../public/images/logo-still.svg'
+
 export function HeaderLogo({ mode, className = '', hidden = false }: { mode: 'scroll' | 'autoplay' | 'static', className?: string, hidden?: boolean }) {
   const [anchor, setAnchor] = useState<HTMLSpanElement | null>(null)
   const [markup, setMarkup] = useState('')
@@ -36,7 +39,7 @@ export function HeaderLogo({ mode, className = '', hidden = false }: { mode: 'sc
     const controller = new AbortController()
     async function load() {
       try {
-        const response = await fetch('/images/logo-scroll-motion.svg', { signal: controller.signal })
+        const response = await fetch(logoMotion.src, { signal: controller.signal })
         if (!response.ok)
           return
         const document = new DOMParser().parseFromString(await response.text(), 'image/svg+xml')
@@ -175,7 +178,7 @@ export function HeaderLogo({ mode, className = '', hidden = false }: { mode: 'sc
           aria-hidden="true"
           className={`mix-blend-difference pointer-events-none fixed left-0 top-0 z-40 ${hidden ? 'invisible' : ''}`}
         >
-          <Image className={`absolute inset-0 block size-full [filter:url(#brand-inversion)] ${active && markup ? 'invisible' : ''}`} src="/images/logo-still.svg" alt="" width={60} height={60} loading="eager" />
+          <Image className={`absolute inset-0 block size-full [filter:url(#brand-inversion)] ${active && markup ? 'invisible' : ''}`} src={logoStill} alt="" width={60} height={60} loading="eager" />
           {active && markup && <span ref={artworkRef} className="absolute inset-0" dangerouslySetInnerHTML={{ __html: markup }} />}
         </span>,
         anchor.ownerDocument.body,

@@ -96,7 +96,9 @@ async function navigate(page, name, path) {
 async function assertSharedArtwork(page, logo) {
   // Compare approved geometry with matching source ink; page probes verify calibrated output.
   const markup = (await logo.evaluate(svg => svg.outerHTML)).replaceAll('#E7E7E7', '#E6E6E6').replaceAll('#000000', '#010101')
-  await page.evaluate(async (markup) => {
+  // Firefox rasterizes an identical fresh URL differently; compare the actual loaded fallback.
+  const source = await logo.evaluate(svg => svg.closest('[data-header-logo]').querySelector('img').currentSrc)
+  await page.evaluate(async ({ markup, source }) => {
     const box = document.createElement('div')
     box.id = 'artwork-probe'
     box.style.cssText = 'position:fixed;top:0;left:0;width:160px;height:80px;background:#E6E6E6;isolation:isolate;z-index:2147483647;pointer-events:none'
@@ -121,7 +123,7 @@ async function assertSharedArtwork(page, logo) {
       visual.style.cssText = `position:absolute;top:0;left:${index * 80}px;width:80px;height:80px`
       if (index) {
         const image = new Image()
-        image.src = '/images/logo-still.svg'
+        image.src = source
         image.style.cssText = 'display:block;width:80px;height:80px'
         visual.append(image)
         await image.decode()
@@ -135,7 +137,7 @@ async function assertSharedArtwork(page, logo) {
     svg.pauseAnimations()
     svg.setCurrentTime(0)
     await new Promise(resolve => requestAnimationFrame(resolve))
-  }, markup)
+  }, { markup, source })
   try {
     const first = await page.screenshot({ clip: { x: 0, y: 0, width: 80, height: 80 } })
     const second = await page.screenshot({ clip: { x: 80, y: 0, width: 80, height: 80 } })
@@ -565,7 +567,7 @@ async function assertLoading(browser, options, label) {
       const pending = new Promise(resolve => release = resolve)
       let requested
       const requestSeen = new Promise(resolve => requested = resolve)
-      await page.route('**/images/logo-scroll-motion.svg', async (route) => {
+      await page.route('**/logo-scroll-motion*.svg', async (route) => {
         requested()
         if (kind === 'pending') {
           await pending
@@ -768,7 +770,7 @@ async function runLayout(browser, name, mobile) {
         await page.getByRole('button', { name: 'Menu', exact: true }).click()
         const menuLogo = page.locator('[data-logo-mode="static"]')
         await menuLogo.locator('img').evaluate(image => image.decode())
-        assert.equal(await menuLogo.locator('img').getAttribute('src'), '/images/logo-still.svg')
+        assert.match(await menuLogo.locator('img').getAttribute('src'), /\/logo-still\.[\w-]+\.svg$/)
         assert.equal(await menuLogo.locator('svg').count(), 0, 'Menu remains static')
         assert.equal(await visual.isVisible(), false, 'Main logo cannot show through the menu')
         await assertInversion(page, menuLogo, 'light', menuLogo.locator('img'))

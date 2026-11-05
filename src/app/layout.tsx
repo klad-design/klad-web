@@ -13,6 +13,8 @@ import { PageImprints } from '@/components/PageImprints'
 import { PageNoise } from '@/components/PageNoise'
 import { SmoothScroll } from '@/components/SmoothScroll'
 
+import logoStill from '../../public/images/logo-still.svg'
+
 import '@/styles/globals.css'
 import 'lenis/dist/lenis.css'
 
@@ -93,7 +95,7 @@ document.addEventListener("click", function(event) {
         <Image
           data-header-logo-initial
           className="inverted-ui pointer-events-none fixed right-[3px] top-[3px] z-40 size-[60px] md:right-2.5 md:top-2.5 md:size-[70px] lg:right-[60px] lg:top-[60px] lg:size-[80px]"
-          src="/images/logo-still.svg"
+          src={logoStill}
           alt=""
           width={60}
           height={60}

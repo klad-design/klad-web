@@ -47,6 +47,11 @@ async function mobileRange(page) {
   }))
 }
 
+async function approachTeam(page) {
+  await page.locator('.models').evaluate(el => scrollTo(0, el.getBoundingClientRect().top + scrollY - innerHeight - 400))
+  await waitForFrames(page, seedFrames)
+}
+
 async function paints(page, reset = false) {
   return page.evaluate((reset) => {
     const paints = window.__teamPaints.filter(paint => paint.draws.length).map(paint => ({
@@ -161,6 +166,9 @@ try {
     { viewport: { width: 390, height: 844 }, hasTouch: true },
     context => context.addInitScript(() => window.__teamHoldNonSeeds = true),
   )
+  await cold.page.waitForTimeout(500)
+  assert.equal(cold.requests.size, 1, 'A cold homepage must prepare only the initial portrait before approaching Team')
+  await approachTeam(cold.page)
   await cold.page.waitForFunction(seeds => seeds.every(frame => [...window.__teamDecoded].some(url => url.endsWith(`/${frame}.avif`))), seedFrames)
   const coldRange = await mobileRange(cold.page)
   await seek(cold.page, coldRange, 96.5)
@@ -227,6 +235,7 @@ try {
     context => context.addInitScript(() => window.__teamHold61 = true),
   )
   const { page } = phone
+  await approachTeam(page)
   await page.waitForFunction(seeds => seeds.every(frame => [...window.__teamDecoded].some(url => url.endsWith(`/${frame}.avif`))), seedFrames)
   assert.ok([...phone.requests][0].includes('/team-mobile/v5/'), 'Phones must use the sharper optimized rendition')
   assert.equal((await paints(page)).at(-1).draws[0].width, 832, 'Phone portraits must retain the higher-resolution source detail')
@@ -383,13 +392,13 @@ try {
     { viewport: { width: 390, height: 844 }, hasTouch: true },
     context => context.route(/\/team-mobile\/v5\/(?:0|61)\.avif$/, route => route.abort()),
   )
-  assert.ok(fallback.requests.has(`${baseURL}/images/team/0.avif`), 'A failed initial mobile portrait must fall back to the original')
+  assert.ok(fallback.requests.has(`${baseURL}/images/team/v1/0.avif`), 'A failed initial mobile portrait must fall back to the original')
   await fallback.page.waitForFunction(() => window.__teamPaints.some(paint => paint.draws.some(draw => draw.frame === 0 && draw.width === 1080)))
   assert.equal((await paints(fallback.page)).at(-1).draws[0].width, 1080, 'The fallback portrait must decode and paint successfully')
   const fallbackRange = await mobileRange(fallback.page)
   await fallback.page.evaluate(y => scrollTo(0, y), fallbackRange.start)
   const recovered = await seek(fallback.page, fallbackRange, 60.5)
-  assert.ok(fallback.requests.has(`${baseURL}/images/team/61.avif`), 'A persistently failed later mobile frame must also fall back')
+  assert.ok(fallback.requests.has(`${baseURL}/images/team/v1/61.avif`), 'A persistently failed later mobile frame must also fall back')
   assert.ok(Math.abs(recovered.at(-1).frame - 60.5) < 0.2, 'Playback must recover through the failed frame')
   verifyPaints(recovered)
   await verifyResidency(fallback.page)
@@ -400,7 +409,7 @@ try {
     await wide.page.locator('#team canvas').scrollIntoViewIfNeeded()
     await waitForFrames(wide.page, seedFrames)
     assert.ok(wide.requests.size < 122, 'Large layouts must not eagerly prepare the entire sequence')
-    assert.ok([...wide.requests].every(url => url.includes('/images/team/')), 'Tablets and desktops must use original-resolution portraits')
+    assert.ok([...wide.requests].every(url => url.includes('/images/team/v1/')), 'Tablets and desktops must use original-resolution portraits')
     assert.equal((await paints(wide.page)).at(-1).draws[0].width, 1080, 'Large portrait layouts must preserve original source detail')
     assert.equal(await wide.page.evaluate(() => window.__teamBitmapCalls), 0, 'Desktop portraits must preserve native HTML image resampling')
     assert.ok(await wide.page.locator('#team canvas').evaluate(el => el.width === Math.round(el.clientWidth * Math.min(devicePixelRatio, 2))))
@@ -414,7 +423,7 @@ try {
     { viewport: { width: 390, height: 844 }, hasTouch: true },
     async (context) => {
       await context.addInitScript(() => window.__teamHold61 = true)
-      await context.route(/\/images\/(?:team-mobile\/v5|team)\/67\.avif$/, async (route) => {
+      await context.route(/\/images\/(?:team-mobile\/v5|team\/v1)\/67\.avif$/, async (route) => {
         await new Promise(resolve => releaseRequest = resolve)
         await route.continue().catch(() => {})
       })

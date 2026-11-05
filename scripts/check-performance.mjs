@@ -21,6 +21,30 @@ try {
   })
   await page.goto(baseURL)
   await page.waitForFunction(() => !!document.querySelector('[data-header-logo] svg'))
+  await page.waitForFunction(() => document.querySelector('[data-world-map]')?.hasAttribute('data-map-raster'))
+  const map = await page.locator('[data-world-map]').first().evaluate((element) => {
+    const images = [...element.querySelectorAll('img')]
+    const image = images.at(-1)
+    return { width: image.getBoundingClientRect().width, pixels: image.naturalWidth, dpr: devicePixelRatio, layers: images.length, loading: images[0].loading, priority: images[0].fetchPriority }
+  })
+  assert.equal(map.layers, 4, 'The cached vector must retain all four scroll-trail layers')
+  assert.ok(Math.abs(map.pixels - Math.round(map.width * map.dpr)) <= 1, `The map cache must preserve the current pixel density: ${JSON.stringify(map)}`)
+  assert.equal(map.loading, 'eager', 'The initial map must not wait for lazy loading')
+  assert.equal(map.priority, 'high', 'The initial map must have high fetch priority')
+  const legacy = await page.request.get(`${baseURL}/images/team/0.avif`, { maxRedirects: 0 })
+  assert.equal(legacy.status(), 308, 'Already-open pages must retain their legacy portrait URLs')
+  assert.equal(legacy.headers().location, '/images/team/v1/0.avif')
+  for (const path of ['/images/team/v1/0.avif', '/images/team-mobile/v5/0.avif']) {
+    const response = await page.request.get(`${baseURL}${path}`)
+    assert.equal(response.status(), 200)
+    assert.match(response.headers()['cache-control'], /max-age=31536000.*immutable/, 'Versioned portraits must have immutable caching')
+  }
+  const staticAssets = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => entry.name).filter(url => /\/_next\/static\/.*(?:world.*\.svg|noise.*\.webp|\.woff2)$/.test(url)))
+  assert.ok(staticAssets.length >= 3, 'Map, grain, and font must use generated static URLs')
+  for (const url of staticAssets) {
+    const response = await page.request.get(url)
+    assert.match(response.headers()['cache-control'], /max-age=31536000.*immutable/, `Generated asset must have immutable caching: ${url}`)
+  }
   await page.waitForTimeout(1500)
   const rendering = await page.evaluate(async () => {
     const intervals = []
@@ -68,6 +92,17 @@ try {
   const memory = []
   if (type === chromium) {
     const session = await page.context().newCDPSession(page)
+    for (const ratio of [1, 2]) {
+      await session.send('Emulation.setDeviceMetricsOverride', { width: 1512, height: 982, deviceScaleFactor: ratio, mobile: false })
+      // CDP metric overrides need media reevaluation to emit native resolution changes.
+      await session.send('Emulation.setEmulatedMedia', { media: 'screen', features: [{ name: 'prefers-color-scheme', value: ratio === 1 ? 'light' : 'dark' }] })
+      await page.waitForFunction(() => {
+        const map = document.querySelector('[data-world-map]')
+        const image = map?.querySelector('img')
+        return map?.hasAttribute('data-map-raster') && image?.complete
+          && Math.abs(image.naturalWidth - Math.round(image.getBoundingClientRect().width * devicePixelRatio)) <= 1
+      })
+    }
     async function cycle() {
       console.log(`Navigation cycle from ${page.url()}`)
       for (const path of ['/pricing', '/expectations', '/process', '/work']) {

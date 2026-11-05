@@ -28,8 +28,8 @@ body:has([data-header-logo]) [data-header-logo-initial] {
   font-weight: 400;
   font-display: swap;
   src:
-          url('/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Regular.woff2') format('woff2'),
-          url('/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Regular.woff') format('woff');
+          url('../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Regular.woff2') format('woff2'),
+          url('../../public/fonts/HelveticaNowDisplay/HelveticaNowDisplay-Regular.woff') format('woff');
 }
 
 @theme {
@@ -148,7 +148,7 @@ body:has([data-header-logo]) [data-header-logo-initial] {
     right: 0;
     bottom: 0;
     opacity: 0.15;
-    background: url("/images/noise.gif") 0 0 / 150px 150px repeat;
+    background: url("../assets/noise.webp") 0 0 / 150px 150px repeat;
     pointer-events: none;
     z-index: 30;
   }
