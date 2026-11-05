@@ -13,6 +13,19 @@ const browser = await type.launch()
 const artifacts = `artifacts/case-motion/${type.name()}`
 await mkdir(artifacts, { recursive: true })
 const errors = []
+const datalaneVideos = [
+  ['01', '5'],
+  ['02', '11'],
+  ['03', '12-top-left'],
+  ['04', '21'],
+  ['05', '17-left'],
+  ['06', '29-left'],
+  ['07', '31'],
+  ['08', '27-right'],
+  ['10', '38'],
+  ['11', '12-bottom-right'],
+  ['12', '23'],
+]
 
 async function scrollReveal(page, section, fraction) {
   await section.evaluate((element, fraction) => {
@@ -69,6 +82,8 @@ try {
     assert.ok(opening.samples.some(frame => frame.opacity > 0.1 && frame.opacity < 0.95 && frame.blur > 0 && frame.y > 0), 'Case opening must reveal content through intermediate fade, blur and position states')
     assert.ok(opening.samples.at(-1).opacity === 1 && opening.samples.at(-1).blur === 0 && opening.samples.at(-1).y === 0, 'The opening reveal must settle fully')
     assert.equal(await page.locator('.page-imprints').isVisible(), false)
+    assert.equal(await page.locator('main video').count(), datalaneVideos.length)
+    assert.ok(await page.locator('main video[src]').count() < 2, 'Datalane videos must load lazily')
 
     const close = page.locator('.case-close')
     await assertInversion(page, close, 'cursor')
@@ -98,6 +113,25 @@ try {
     assert.ok(textBlur > 0 && textBlur < 6, 'Upcoming text must sharpen progressively too')
     await scrollReveal(page, textSection, 0.6)
     assert.equal(await textSection.locator(':scope > div').evaluate(el => getComputedStyle(el).filter), 'blur(0px)')
+
+    for (const [clip, poster] of datalaneVideos) {
+      const video = page.locator(`video[poster="/images/datalane/${poster}.avif"]`)
+      await video.scrollIntoViewIfNeeded()
+      await page.waitForFunction((poster) => {
+        const video = document.querySelector(`video[poster="/images/datalane/${poster}.avif"]`)
+        return video.currentTime > 0 && !video.paused && video.videoWidth > 0
+      }, poster)
+      assert.equal(await video.getAttribute('src'), `https://klad.b-cdn.net/datalane/case/F%20${clip}.mp4`)
+      assert.ok(await video.evaluate(el => el.muted && el.loop && el.playsInline && !el.controls && el.preload === 'none'))
+    }
+    assert.equal(await page.getByRole('link', { name: 'Open video', exact: true }).count(), 0)
+    const collage = page.locator('[data-case-reveal]').filter({ has: page.locator('video[poster="/images/datalane/12-top-left.avif"]') })
+    const tiles = await collage.locator('img, video').evaluateAll(elements => elements.map(el => el.getBoundingClientRect().toJSON()))
+    assert.equal(tiles.length, 4)
+    assert.ok(Math.abs(tiles[0].y - tiles[1].y) < 1 && Math.abs(tiles[1].x - tiles[0].x - tiles[0].width) < 1, 'Collage top row must retain two adjacent panels')
+    assert.ok(Math.abs(tiles[2].y - tiles[0].y - tiles[0].height) < 1 && Math.abs(tiles[2].x - tiles[0].x) < 1 && Math.abs(tiles[3].y - tiles[2].y) < 1, 'Collage bottom row must remain directly below the top row on desktop and mobile')
+    assert.equal(await page.locator('main [data-case-reveal] img, main [data-case-reveal] video').count(), 51)
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `Datalane must not overflow at ${width}px`)
 
     await close.getByRole('link', { name: 'Close', exact: true }).focus()
     const footer = page.locator('main > footer')
@@ -140,6 +174,14 @@ try {
     assert.equal(await page.locator('main > footer a[aria-label="Close"]').count(), 1)
     assert.ok(await page.locator('[data-case-reveal] img, [data-case-reveal] video').evaluateAll(elements => elements.every(el => getComputedStyle(el).filter === 'none' && getComputedStyle(el).opacity === '1')), 'Reduced motion must keep case media clear and visible')
     assert.ok(await page.locator('main > header > div').evaluateAll(elements => elements.every(el => el.style.opacity === '' && el.style.transform === '')), 'Reduced motion must skip opening motion')
+    if (slug === 'datalane') {
+      const video = page.locator('main video').first()
+      await video.scrollIntoViewIfNeeded()
+      await page.waitForFunction(() => !!document.querySelector('main video').getAttribute('src') && [...document.querySelectorAll('main video')].every(video => video.paused && video.controls))
+      await video.evaluate(el => el.play())
+      await page.waitForFunction(() => document.querySelector('main video').currentTime > 0 && !document.querySelector('main video').paused)
+      await video.evaluate(el => el.pause())
+    }
   }
   for (const slug of ['case', 'another-case'])
     assert.equal((await page.request.get(`/work/${slug}`)).status(), 404, `${slug}: deleted template must stay unavailable`)
@@ -149,6 +191,7 @@ try {
   const staticPage = await withoutJavaScript.newPage()
   await staticPage.goto('/work/datalane')
   assert.equal(await staticPage.getByRole('main').count(), 1)
+  assert.equal(await staticPage.locator('main video[poster]').count(), datalaneVideos.length, 'Datalane videos must retain posters without JavaScript')
   const colors = await staticPage.evaluate(() => ({
     body: getComputedStyle(document.body).backgroundColor,
     text: getComputedStyle(document.querySelector('main')).color,
