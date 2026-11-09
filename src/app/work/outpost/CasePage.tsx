@@ -34,7 +34,7 @@ const sections = [
   { type: 'media', images: [{ src: '/images/outpost/06.avif', video: '03', width: 3440, height: 2052, alt: 'Outpost striped pattern in 3D' }] },
   { type: 'text', align: 'right', paragraphs: [teamCopy] },
   { type: 'media', images: [{ src: '/images/outpost/07.avif', width: 3440, height: 2824, alt: 'Outpost world map poster and brand colour palette' }] },
-  { type: 'media', images: [{ src: '/images/outpost/08-left.avif', width: 1720, height: 1720, alt: 'Wherever you’re going, we’re already there Outpost poster' }, { src: '/images/outpost/08-right.avif', width: 1720, height: 1720, alt: 'Coloured cables connected to a network switch' }] },
+  { type: 'media', images: [{ src: '/images/outpost/08-left.avif', video: '19', width: 1720, height: 1720, alt: 'Wherever you’re going, we’re already there Outpost poster' }, { src: '/images/outpost/08-right.avif', width: 1720, height: 1720, alt: 'Coloured cables connected to a network switch' }] },
   { type: 'media', images: [{ src: '/images/outpost/09.avif', width: 3440, height: 2052, alt: 'Outpost campaign featuring an athlete on a running track' }] },
   { type: 'text', align: 'center', paragraphs: [introCopy] },
   { type: 'media', images: [{ src: '/images/outpost/10.avif', video: '05', width: 3440, height: 1934, alt: 'Outpost brand motion frame' }] },
@@ -50,8 +50,7 @@ const sections = [
   { type: 'media', images: [{ src: '/images/outpost/19.avif', width: 3440, height: 2052, alt: 'Outpost mobile website layouts and navigation' }] },
   { type: 'media', images: [{ src: '/images/outpost/20.avif', width: 3440, height: 2052, alt: 'Outpost developer platform campaign with striped geometric forms' }] },
   { type: 'media', images: [{ src: '/images/outpost/21-left.avif', video: '08', width: 1720, height: 1720, alt: 'Outpost market selector showing Canada and country flags' }, { src: '/images/outpost/21-right.avif', width: 1720, height: 1720, alt: 'Outpost set of pastel 3D brand icons' }] },
-  // shortcut: 09.webm is not uploaded yet; replace the UI collage still when it is available.
-  { type: 'media', images: [{ src: '/images/outpost/22.avif', width: 3440, height: 2052, alt: 'Collection of Outpost interface components and product screens' }] },
+  { type: 'media', images: [{ src: '/images/outpost/22.avif', video: '09', width: 3440, height: 2052, alt: 'Collection of Outpost interface components and product screens' }] },
   { type: 'media', images: [{ src: '/images/outpost/23.avif', video: '10', width: 3440, height: 2052, alt: 'Black and white connectors on a pale purple background' }] },
   { type: 'media', images: [{ src: '/images/outpost/24-left.avif', width: 1720, height: 1720, alt: 'Striped Outpost puzzle piece on pale blue' }, { src: '/images/outpost/24-right.avif', width: 1720, height: 1720, alt: 'Person holding a phone displaying the Outpost mobile website' }] },
   { type: 'media', images: [{ src: '/images/outpost/25.avif', video: '18', width: 3440, height: 2052, alt: 'Outpost outline icon set on charcoal' }] },

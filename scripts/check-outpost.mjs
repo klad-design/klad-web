@@ -26,8 +26,8 @@ try {
   const images = page.locator('main img')
   const media = page.locator('main img, main video')
   const videos = page.locator('main video')
-  const clips = ['01', '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14', '15', '16', '17', '18']
-  assert.equal(await images.count(), 34)
+  const clips = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19']
+  assert.equal(await images.count(), 32)
   assert.equal(await videos.count(), clips.length)
   assert.equal(await media.count(), 51)
   await page.waitForFunction(() => [...document.querySelectorAll('main video')].every(video => video.paused && video.controls))
@@ -117,6 +117,8 @@ try {
       }
     }
     assert.deepEqual(sources.sort(), clips.map(clip => `https://klad.b-cdn.net/outpost/case/${clip}.webm`))
+    assert.equal(await page.locator('video[poster="/images/outpost/22.avif"]').getAttribute('src'), 'https://klad.b-cdn.net/outpost/case/09.webm')
+    assert.equal(await page.locator('video[poster="/images/outpost/08-left.avif"]').getAttribute('src'), 'https://klad.b-cdn.net/outpost/case/19.webm')
     assert.equal(await page.getByRole('link', { name: 'Open video', exact: true }).count(), 0)
     await page.locator('main > header').scrollIntoViewIfNeeded()
     await page.waitForFunction(() => [...document.querySelectorAll('main video')].every((video) => {
@@ -140,7 +142,7 @@ try {
   await page.waitForURL('**/work')
   assert.equal(await page.getByRole('button', { name: 'Outpost', exact: true }).count(), 0)
   assert.deepEqual(errors, [])
-  console.log('Outpost checks passed: 17 CDN animations playing on desktop and mobile, 51 local stills/posters, 49 sections, responsive geometry, paired panels, lazy loading, offscreen pause, reduced motion, noindex, Close, and no public case links. Animation 09 remains a still pending upload.')
+  console.log('Outpost checks passed: all 19 CDN animations playing on desktop and mobile, 51 local stills/posters, 49 sections, responsive geometry, paired panels, lazy loading, offscreen pause, reduced motion, noindex, Close, and no public case links.')
 }
 finally {
   await browser.close()
