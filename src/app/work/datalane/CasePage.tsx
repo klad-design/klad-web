@@ -12,7 +12,7 @@ const pairedMediaSizes = '(min-width: 1536px) calc((100vw - 200px) / 2), (min-wi
 const sections = [
   { type: 'media', src: '/images/datalane/1.avif', width: 3440, height: 2200, alt: 'Datalane website hero with a blue network and the headline Scraping the mess isn’t enough' },
   { type: 'media', src: '/images/datalane/2.avif', width: 3440, height: 1934, alt: 'White data points and circular diagrams across a black brand graphic' },
-  { type: 'text', align: 'center', paragraphs: ['An experimental first direction helped sharpen the brief. Datalane wanted the confidence of a focused identity that enterprise buyers could trust. We narrowed the palette to black, white and blue, and let individual data points become the foundation of the graphic system.'] },
+  { type: 'text', align: 'center', paragraphs: ['Klad authored Datalane’s complete design system, from brand identity and art direction to web and product design, illustrations, and motion. An experimental first direction helped sharpen the brief. Datalane wanted the confidence of a focused identity that enterprise buyers could trust. We narrowed the palette to black, white and blue, and let individual data points become the foundation of the graphic system.'] },
   { type: 'media', src: '/images/datalane/3.avif', width: 3440, height: 1934, alt: 'Blue tinted aerial view of city streets and buildings' },
   { type: 'media', src: '/images/datalane/4.avif', width: 3440, height: 1934, alt: 'Lists of local business data fields arranged on a white background' },
   { type: 'media', src: '/images/datalane/5.avif', video: '01', width: 3440, height: 1934, alt: 'Minimal loading indicator on a blue background' },
@@ -24,7 +24,7 @@ const sections = [
   { type: 'media', src: '/images/datalane/9.avif', width: 3440, height: 2052, alt: 'Oversized white Datalane wordmark on blue' },
   { type: 'media', src: '/images/datalane/10.avif', width: 3440, height: 1934, alt: 'Datalane colour palette with blue, greyscale and coral swatches' },
   { type: 'media', src: '/images/datalane/11.avif', video: '02', width: 3440, height: 1934, alt: 'Datalane navigation labels over a black network diagram' },
-  { type: 'text', align: 'left', paragraphs: ['The system works at different speeds. On the website, a headline frames the problem while a map or chart shows what Datalane can uncover. In the app, the same visual language helps people work with that information. On social channels, it makes even a quick post recognisably Datalane.'] },
+  { type: 'text', align: 'left', paragraphs: ['Klad designed Datalane’s website, product interfaces and social templates as parts of one visual system. On the website, a headline frames the problem while a map or chart shows what Datalane can uncover. In the app, the same visual language helps people work with that information. On social channels, it makes even a quick post recognisably Datalane.'] },
   { type: 'grid', images: [
     { src: '/images/datalane/12-top-left.avif', video: '03', width: 1720, height: 1934, alt: 'Rotating globe with the message See the whole market, not just the nearest contacts' },
     { src: '/images/datalane/12-top-right.avif', width: 1720, height: 1934, alt: 'Restaurant customer photograph with Datalane business data labels' },
@@ -40,12 +40,12 @@ const sections = [
   { type: 'media', src: '/images/datalane/18.avif', width: 3440, height: 1934, alt: 'Blue beaded Datalane lanyard with a key' },
   { type: 'pair', images: [{ src: '/images/datalane/19-left.avif', width: 1720, height: 1938, alt: 'Datalane letterhead on blue' }, { src: '/images/datalane/19-right.avif', width: 1720, height: 1938, alt: 'Datalane printed cards on a dark background' }] },
   { type: 'media', src: '/images/datalane/20.avif', width: 3442, height: 1934, alt: 'Front and back of a black Datalane hoodie against blue' },
-  { type: 'text', align: 'center', paragraphs: ['The first Datalane selling guide ran to more than 80 pages. We designed its structure for screen and print, with isometric illustrations, GTM diagrams and data visualisations built in R. It gave the identity room to explain complex ideas at length.'] },
+  { type: 'text', align: 'center', paragraphs: ['The first Datalane selling guide ran to more than 80 pages. Klad designed its structure for screen and print and created its isometric illustrations, GTM diagrams and data visualisations built in R. It gave the identity room to explain complex ideas at length.'] },
   { type: 'media', src: '/images/datalane/21.avif', video: '04', width: 3440, height: 1934, alt: 'Collage of Datalane social posts with product messages and data graphics' },
   { type: 'media', src: '/images/datalane/22.avif', width: 3440, height: 2052, alt: 'Four pages from the Datalane selling guide' },
   { type: 'media', src: '/images/datalane/23.avif', video: '12', width: 3440, height: 2052, alt: 'Person working on a laptop displaying a Datalane product page' },
   { type: 'media', src: '/images/datalane/24.avif', width: 3440, height: 1934, alt: 'Printed Datalane data cleanup kit in clear packaging' },
-  { type: 'text', align: 'right', paragraphs: ['In motion, points gather, separate and settle into a larger picture. That movement from many to one shapes the easing, pacing and rhythm of transitions. We carried the rhythm into sound: an entry cue, background melodies and small sonic details make a Datalane video recognisable even without the image.'] },
+  { type: 'text', align: 'right', paragraphs: ['Klad created Datalane’s motion language and sound identity. In motion, points gather, separate and settle into a larger picture. That movement from many to one shapes the easing, pacing and rhythm of transitions. We carried the rhythm into sound: an entry cue, background melodies and small sonic details make a Datalane video recognisable even without the image.'] },
   { type: 'pair', images: [{ src: '/images/datalane/25-left.avif', width: 1720, height: 1934, alt: 'Datalane campaign interface over blue aerial imagery' }, { src: '/images/datalane/25-right.avif', width: 1720, height: 1934, alt: 'Datalane browser interface on a dark graphic background' }] },
   { type: 'media', src: '/images/datalane/26.avif', width: 3440, height: 2052, alt: 'Laptop displaying the blue Datalane website hero' },
   { type: 'pair', images: [{ src: '/images/datalane/27-left.avif', width: 1720, height: 1934, alt: 'Datalane icons on a gray grid' }, { src: '/images/datalane/27-right.avif', video: '08', width: 1720, height: 1934, alt: 'Datalane message about reaching on-site buyers' }] },
@@ -62,7 +62,7 @@ const sections = [
   { type: 'media', src: '/images/datalane/38.avif', video: '10', width: 3440, height: 1934, alt: 'Blue Datalane digital poster in a station concourse' },
   { type: 'pair', images: [{ src: '/images/datalane/39-left.avif', width: 1720, height: 1936, alt: 'Datalane mobile screen on a desk with stationery' }, { src: '/images/datalane/39-right-v2.avif', width: 1720, height: 1934, alt: 'Silver hole punch with blue paper confetti' }] },
   { type: 'media', src: '/images/datalane/40.avif', width: 3440, height: 1934, alt: 'Presenter beside a Datalane dotted network diagram' },
-  { type: 'text', align: 'center', paragraphs: ['Datalane asked us to continue as its design partner as soon as the nine-week project ended. The identity now extends across its product, guides, sales materials, videos, AI agent mascot and office and continues to grow with the company.'] },
+  { type: 'text', align: 'center', paragraphs: ['Over 10 months, Klad designed Datalane’s identity and extended it across the product, website, guides, sales materials, videos, AI agent mascot and office. Every part of the design presented in this case study was authored by Klad.'] },
   { type: 'media', src: '/images/datalane/41.avif', width: 3440, height: 1934, alt: 'Audience watching a Datalane presentation with a blue Thanks screen' },
 ] as const
 
@@ -89,6 +89,7 @@ export function CasePage() {
 
         <div className="flex flex-col items-start gap-[5px]">
           <Button as="a" href="https://www.datalane.com/" label="Website" />
+          <Button as="a" href="https://www.behance.net/gallery/258281553/Datalane" label="Behance" />
         </div>
 
         <div className="flex flex-col gap-5 mt-4 md:mt-0 md:gap-3 lg:col-start-4 lg:max-w-[180px]">
@@ -101,7 +102,7 @@ export function CasePage() {
           <div className="flex flex-col gap-[3px]">
             <h2 className="blur-regular uppercase p4">Solution</h2>
             <div className="p5">
-              <p>We built Datalane’s identity around a dot: a data point and a business on a map. In nine weeks, it became a brand and website.</p>
+              <p>Klad designed Datalane’s complete brand identity, website and product experience. The system centres on a dot, representing a data point and a business on a map.</p>
             </div>
           </div>
         </div>
@@ -117,7 +118,7 @@ export function CasePage() {
           </div>
           <div className="flex flex-col gap-[3px]">
             <h2 className="blur-regular uppercase p4">Length</h2>
-            <div className="p5">9 weeks, ongoing</div>
+            <div className="p5">10 months</div>
           </div>
           <div className="flex flex-col gap-[3px]">
             <h2 className="blur-regular uppercase p4">Year</h2>

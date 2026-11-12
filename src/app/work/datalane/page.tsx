@@ -4,7 +4,7 @@ import { CasePage } from '@/app/work/datalane/CasePage'
 
 export const metadata: Metadata = {
   title: 'Datalane – Brand Identity, Motion & Web – KLAD',
-  description: 'We built Datalane’s identity around a dot: a data point and a business on a map. In nine weeks, it became a brand and website.',
+  description: 'Datalane’s complete brand identity, website, product design, motion and sound, designed and authored by Klad over 10 months.',
   openGraph: {
     images: [
       {

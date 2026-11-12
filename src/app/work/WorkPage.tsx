@@ -14,14 +14,14 @@ import { useReducedMotion } from '@/components/useReducedMotion'
 const cases = [
   {
     title: 'Datalane',
-    info: ['GTM & Data', 'USA', '2025', '9 weeks, ongoing'],
+    info: ['GTM & Data', 'USA', '2025', '10 months'],
     tags: ['Branding', 'Sound & motion', 'Web'],
     image: '/images/datalane/preview.avif',
     link: '/work/datalane',
     description: () => (
       <>
         <p>Datalane had technology for finding and organising local-business data, but no established brand or website. It needed to earn enterprise buyers’ trust and stand apart from Clay’s more playful approach.</p>
-        <p>We built Datalane’s identity around a dot: a data point and a business on a map. In nine weeks, it became a brand and website.</p>
+        <p>Klad designed Datalane’s complete brand identity, website and product experience. The system centres on a dot, representing a data point and a business on a map.</p>
       </>
     ),
   },
