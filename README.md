@@ -33,7 +33,7 @@ pnpm dev
 
 ## Staging
 
-Deploy all preview builds from the existing `staging` branch to [the stable Vercel staging preview](https://klad-web-git-staging-zmaznevegors-projects.vercel.app/).
+Deploy all preview builds from the existing `staging` branch to [the stable Vercel staging preview](https://klad-web-git-staging-klad-syndicate.vercel.app/).
 
 Push changes to `origin/staging` to trigger the connected Vercel deployment. Verify that the deployment succeeds and use this stable branch URL for review. Deploy with these settings:
 
@@ -75,7 +75,7 @@ Browser checks expect the running production staging server at `http://127.0.0.1
 
 Select an engine with `STAGING_BROWSER=chromium`, `STAGING_BROWSER=firefox` or `STAGING_BROWSER=webkit`. The smoke check includes two complete homepage scroll cycles, native scroll restoration on reload and Back, and heading blur matching the restored position.
 
-`test:audit-fixes` covers mobile Close → Menu → Back scroll unlocking, server-rendered video posters, and one main landmark per page. `test:team` checks the v5 sequence's decoded frame identity, dimensions, interpolation, ordered playback, bounded loading, fallback, rotation and cleanup.
+`test:audit-fixes` covers mobile Close → Menu → Back scroll unlocking, server-rendered video posters, native lazy poster loading, and one main landmark per page. `test:team` checks the v5 sequence's decoded frame identity, dimensions, interpolation, ordered playback, bounded loading, fallback, rotation and cleanup.
 
 `test:seo` checks production canonical URLs in a staging build, query variants, crawlable case links without JavaScript, team cross-links with mini-portraits, the Datalane Launch video link, permanent legacy portfolio redirects, and ordinary versus modified project-link clicks. Host-header overrides for `www.klad.design` run only against localhost, `127.0.0.1`, or `[::1]`; remote previews use their own hostname so Vercel cannot route these checks to production. Team descriptions retain their member navigation buttons and have no links to external sites or other pages. Work project names link directly to their case studies; ordinary clicks keep the portfolio selection interaction, while opening a new tab or browsing without JavaScript opens the case itself.
 

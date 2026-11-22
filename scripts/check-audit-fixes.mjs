@@ -176,6 +176,22 @@ try {
     await image.decode()
     return image.naturalWidth > 0 && image.naturalHeight > 0
   }), 'The same case poster must decode in the browser')
+
+  const requested = new Set()
+  reducedPage.on('request', request => requested.add(new URL(request.url()).pathname))
+  await reducedPage.goto('/work/datalane')
+  const lastVideo = reducedPage.locator('video').last()
+  if (await lastVideo.evaluate(video => 'loading' in video)) {
+    await reducedPage.evaluate(() => document.fonts.ready)
+    await reducedPage.waitForTimeout(500)
+    const poster = await lastVideo.getAttribute('poster')
+    const bounds = await lastVideo.boundingBox()
+    assert.ok(bounds.y > 5000, 'The poster regression must cover a video far below the viewport')
+    assert.equal(requested.has(poster), false, 'Offscreen video posters must not compete with the initial page load')
+    const loaded = reducedPage.waitForResponse(response => new URL(response.url()).pathname === poster)
+    await lastVideo.scrollIntoViewIfNeeded()
+    assert.equal((await loaded).status(), 200, 'The poster must load when its video approaches the viewport')
+  }
   await reduced.close()
 
   assert.deepEqual(errors, [], 'Browser runtime errors')

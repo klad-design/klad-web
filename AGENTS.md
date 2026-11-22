@@ -11,7 +11,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Staging previews
 
 All preview builds must use the existing `staging` branch and deploy to:
-https://klad-web-git-staging-zmaznevegors-projects.vercel.app/
+https://klad-web-git-staging-klad-syndicate.vercel.app/
 
 Push preview changes to `origin/staging` through the connected Vercel Git integration. Verify that the Vercel deployment succeeds and share this stable branch URL for review. Use `STAGING=1` and `pnpm build:staging` for staging builds. `main` is the production branch.
 

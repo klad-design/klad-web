@@ -78,7 +78,8 @@ export function CaseVideo({ src, poster, className }: { src: string, poster: str
 
   return (
     <>
-      <video ref={videoRef} className={className} poster={poster} controls={reducedMotion} loop muted playsInline preload="none" aria-label="Motion design showcase" />
+      {/* shortcut: use a direct loading prop when React's video types support it. */}
+      <video {...{ loading: 'lazy' }} ref={videoRef} className={className} poster={poster} controls={reducedMotion} loop muted playsInline preload="none" aria-label="Motion design showcase" />
       {failed && <a className="p4 underline" href={standard} target="_blank" rel="noopener noreferrer">Open video</a>}
     </>
   )
