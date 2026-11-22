@@ -46,8 +46,8 @@ const cases = [
     link: '/work/stars-honey',
     description: () => (
       <>
-        <p>As a fast-growing brand with an active presence across social media, Stars+Honey needed a large volume of consistent, premium visuals to present the product in a refined and engaging way.</p>
-        <p>We developed a complete 3D product line: wrapped bars, unwrapped formats and packaging. For every flavor, we created ingredient-specific explosion renders, designed to highlight the flavor profile while staying fully on-brand.</p>
+        <p>Stars+Honey needed product visuals for regular social content, new flavors and seasonal campaigns.</p>
+        <p>We modelled wrapped bars, unwrapped bars and packaging, with ingredient renders and animations for each flavor.</p>
       </>
     ),
   },
@@ -59,8 +59,8 @@ const cases = [
     link: '/work/linux-mint',
     description: () => (
       <>
-        <p>A visual redesign initiative for Linux Mint, aiming to modernize its identity and enhance consistency across platforms, proving that open-source software can be both user-friendly and beautifully designed by default.</p>
-        <p>Our goal wasn’t to change what people love about Mint, but to give it the design foundation it currently lacks.</p>
+        <p>An independent visual identity concept for Linux Mint, covering the logo, colors, typography, website and desktop interface.</p>
+        <p>We proposed a consistent design foundation built around Mint’s existing character.</p>
       </>
     ),
   },
@@ -209,7 +209,7 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
   const { contextSafe } = useGSAP(() => {
     const fromGesture = transitionSource.current !== 'select'
     if (transitionSource.current === 'key') {
-      menuRef.current?.querySelectorAll('button')[activeIndex]?.focus({ preventScroll: true })
+      menuRef.current?.querySelectorAll('a')[activeIndex]?.focus({ preventScroll: true })
     }
     gsap.fromTo('.case-anim-target', { opacity: 0 }, {
       opacity: 1,
@@ -412,14 +412,23 @@ export default function WorkPage({ initialCase }: { initialCase?: string }) {
             ref={menuRef}
             className="overflow-x-auto overflow-y-hidden scroll-px-2.5 py-1 -my-1 md:overflow-visible md:py-0 md:my-0 flex gap-4 -mx-2.5 px-2.5 md:mx-0 md:px-0 md:items-start md:gap-[3px] md:flex-col md:sticky md:top-[100px] lg:top-2.5"
           >
-            {cases.map(({ title }, index) => (
+            {cases.map(({ title, link }, index) => (
               <Button
                 key={title}
+                as="a"
+                href={link}
+                data-case-option
+                prefetch={false}
                 label={title}
                 isActive={activeIndex === index}
-                aria-pressed={activeIndex === index}
+                aria-current={activeIndex === index ? 'true' : undefined}
                 className="shrink-0"
-                onClick={() => handleCaseChange(index)}
+                onClick={(event) => {
+                  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+                    return
+                  event.preventDefault()
+                  handleCaseChange(index)
+                }}
               />
             ))}
           </div>

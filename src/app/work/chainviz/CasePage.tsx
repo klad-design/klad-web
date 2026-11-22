@@ -82,7 +82,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="right">
-        <p>This project explores blockchain validator infrastructure through a real-time, 3D navigable interface designed for the Polkadot and Kusama ecosystems. At the core of the visual identity is a dynamic logo that adapts in form and reflects the interdependence of nodes within a living network. This idea extends into a cohesive visual system where dots, arcs, and data-driven motion represent validators and their relationships, creating a consistent language that connects branding, interface, and data visualization.</p>
+        <p>We designed a real-time 3D interface for exploring validators on Polkadot and Kusama, alongside the project’s brand identity.</p>
         <p>The design centers around a spatial validator sphere built from interwoven arcs, where each dot represents an active participant in the network. Scale, grouping, and positioning communicate parameters, categories and activity at a glance, while a unified graphic style ensures clarity across graphs, UI components and navigation. Validators remain the visual and conceptual focal point, reinforcing their central role in block verification and overall infrastructure health.</p>
         <p>The interface translates complex blockchain processes into an interactive experience through precise hover interactions, and layered information states. From relay chain statistics to parachain relationships, the system maintains visual consistency across contexts and devices.</p>
       </SectionText>
@@ -96,8 +96,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText title="A Living Mark for a Living Network" align="center">
-        <p>At the core of the visual identity is a dynamic logo that adapts in form and reflects the interdependence of nodes within a living network. Rather than acting as a static symbol, it becomes a conceptual anchor for the entire system.</p>
-        <p>This logic extends into a cohesive visual language built from dots, arcs, and data-driven motion that represent validators and their relationships. Together, these elements create a consistent bridge between branding, interface, and data visualization, ensuring that every part of the experience feels connected and rooted in the same structural idea.</p>
+        <p>The logo changes shape to reflect connections between validators. Dots, arcs and motion carry the same idea into the interface and supporting graphics.</p>
       </SectionText>
 
       <SectionMedia>
@@ -163,7 +162,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/13.avif" alt="SParachains interconnected future of blockchains, where every chain plays pivotal role in a seamless digital ecosystem." width={1720} height={1468} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/chainviz/13.avif" alt="Parachain connections shown as arcs and nodes in the Chainviz interface" width={1720} height={1468} />
       </SectionMedia>
 
       <SectionMedia>

@@ -59,6 +59,7 @@ STAGING=1 pnpm start --hostname 127.0.0.1 --port 3100
 pnpm lint
 pnpm build:staging
 pnpm test:audit-fixes
+pnpm test:seo
 pnpm test:staging
 pnpm test:logo
 pnpm test:team
@@ -75,6 +76,12 @@ Browser checks expect the running production staging server at `http://127.0.0.1
 Select an engine with `STAGING_BROWSER=chromium`, `STAGING_BROWSER=firefox` or `STAGING_BROWSER=webkit`. The smoke check includes two complete homepage scroll cycles, native scroll restoration on reload and Back, and heading blur matching the restored position.
 
 `test:audit-fixes` covers mobile Close → Menu → Back scroll unlocking, server-rendered video posters, and one main landmark per page. `test:team` checks the v5 sequence's decoded frame identity, dimensions, interpolation, ordered playback, bounded loading, fallback, rotation and cleanup.
+
+`test:seo` checks production canonical URLs in a staging build, query variants, crawlable case links without JavaScript, team cross-links with mini-portraits, the Datalane Launch video link, permanent legacy portfolio redirects, and ordinary versus modified project-link clicks. Host-header overrides for `www.klad.design` run only against localhost, `127.0.0.1`, or `[::1]`; remote previews use their own hostname so Vercel cannot route these checks to production. Team descriptions retain their member navigation buttons and have no links to external sites or other pages. Work project names link directly to their case studies; ordinary clicks keep the portfolio selection interaction, while opening a new tab or browsing without JavaScript opens the case itself.
+
+The three legacy portfolio PDFs and `/projects` variants redirect directly to `/work`. The app also defines permanent redirects from `www.klad.design` to the matching apex URL. Vercel's existing domain-level redirect currently runs before the app. After staging review and an approved production release, connect `www.klad.design` to this project's production environment instead of its domain-level redirect. Keep `klad.design` as the canonical host and let the app send one permanent `308` from HTTPS www URLs directly to their final apex path, including legacy PDFs and `/projects/`, while preserving query parameters.
+
+Verify the deployed production commit, then test both hosts over HTTP and HTTPS for the homepage, ordinary pages, trailing slashes, legacy paths and query strings. Confirm final status codes, no loops, and no extra app redirects. Vercel upgrades HTTP to HTTPS before project redirects, so plain HTTP URLs can still need that platform hop; removing it would require a separate edge or hosting change. See [Vercel's HTTPS policy](https://vercel.com/docs/cdn-security/encryption). Record the old domain setting before changing it so it can be restored if verification fails. Local previews do not change domain settings or publish anything.
 
 `test:performance` records the first and repeated theme switches separately, plus logo seeking, in every browser. A two-second hang guard accommodates different CI hardware; it is not a smoothness target. In Chromium, the check also repeats the main navigation loop after warming routes and checks that forced garbage collection releases DOM nodes and event listeners. Its JSON measurements live in ignored `artifacts/performance/`. Team retains the existing preview poses plus twelve neighboring frames on either side of the playhead instead of decoding the whole sequence; the Team checks verify bounded residency, eviction and reloading without changing source detail or interpolation. Scroll-trigger refreshes preserve that neighborhood while playheads temporarily reset.
 

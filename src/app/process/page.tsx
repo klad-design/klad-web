@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { TextBlur } from '@/components/ui/TextBlur'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/process' },
   title: 'Our Design Process – From Discovery to Delivery – KLAD',
   description: 'A transparent process for your project, from discovery to execution. Clear scoping, dedicated management and a structure built for long-term collaboration.',
 }
@@ -59,10 +60,10 @@ export default function Process() {
           <div className="p5 flex flex-col gap-4 max-w-[264px] md:max-w-[320px] lg:max-w-[432px] mt-[30px]">
             <p>Projects are quoted based on discovery and briefing. We typically bill 30–40 hours per person per week, and most projects run eight weeks or longer.</p>
             <p>
-              We skip wireframes, instead using visual references and content planning from the start. You’ll have a multiple rounds of discussions, but final visual calls are made by the lead designer. This ensures quality and accountability, for more details refer to
+              We start with visual references and content planning instead of wireframes. We discuss the work in several review rounds, and the lead designer makes the final visual decisions. Read our
               {' '}
               <Link className="underline" href="/expectations">expectations</Link>
-              . We can support in-house teams or act as your external design department. Every collaboration comes with a dedicated manager who handles all communication.
+              . We can support an in-house team or work as your external design department.
             </p>
           </div>
         </div>

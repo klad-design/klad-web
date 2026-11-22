@@ -7,7 +7,6 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useLenis } from 'lenis/react'
 import NextImage from 'next/image'
-import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import dasha from '@/assets/team-fav/dasha.png'
@@ -34,47 +33,26 @@ const team: TeamMember[] = [
     role: 'web',
     description: () => (
       <>
+        <p>Web designer and UI/UX specialist with 11 years of experience. Co-founder. Prefers digital minimalism, clear structure and simple solutions that last.</p>
+        <p>Works with existing branding or develops the visual direction from scratch. Understands how websites are built and keeps implementation in mind.</p>
         <p>
-          Web design and UI/UX specialist with 11 years of design experience. Co-founder. Not limited by industry or product type. Prefers digital minimalism. Can design with existing branding (see
-          {' '}
-          <Link href="https://shareio.webflow.io/" className="underline">Shareio</Link>
-          {' '}
-          or
-          {' '}
-          <Link href="https://www.behance.net/gallery/186534927/Chainviz-Validators-Explorer" className="underline">Chainviz</Link>
-          ) or start from scratch (see
-          {' '}
-          <Link href="https://www.guardrail.ai/" className="underline">Guardrail</Link>
-          {' '}
-          or
-          {' '}
-          <Link href="https://circus-dev.webflow.io" className="underline">Circus</Link>
-          ).
-        </p>
-        <p>
-          Never communicates directly with the client but allows them to follow her process in Figma from the start. Handles projects together with
+          Clients can follow the work in Figma from the start.
           {' '}
           <Button
             data-member={3}
+            aria-label="Go to Egor"
             className="underline decoration-dotted text-nowrap"
             isInherit
             label={(
               <>
                 Egor
-                <NextImage
-                  className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src={egor}
-                  unoptimized
-                  alt="Egor 3d model preview"
-                  width={11}
-                  height={14}
-                />
-                .
+                <NextImage className="inline ml-0.5 align-text-bottom w-[11px]" src={egor} unoptimized alt="Egor 3d model preview" width={11} height={14} />
               </>
             )}
           />
+          {' '}
+          handles communication and project management.
         </p>
-        <p>A visual thinker with an understanding of web development processes. Prefers long lasting simpler solutions over intensive design and ensures brand assets translate seamlessly to the web.</p>
       </>
     ),
   },
@@ -83,47 +61,24 @@ const team: TeamMember[] = [
     role: 'motion',
     description: () => (
       <>
-        <p>Motion and 3D generalist with 8 years of experience and formal training. Co-founder. Adapts quickly, unconstrained by tools or trends.</p>
+        <p>Motion designer and 3D generalist with 8 years of experience and formal training. Co-founder. Works across product animation, brand motion and 3D visuals.</p>
+        <p>Can lead a project independently or work as part of a larger team. Chooses tools for the task and is comfortable working within an existing brand system.</p>
         <p>
-          Equally confident leading solo projects (e.g.,
-          {' '}
-          <Link href="https://circus-dev.webflow.io/" className="underline">Circus</Link>
-          ,
-          {' '}
-          <Link href="https://shareio.webflow.io/" className="underline">Shareio</Link>
-          ) or collaborating within larger teams (e.g.,
-          {' '}
-          <Link href="https://www.behance.net/gallery/167777627/Veev-Motion-Library" className="underline">Veev</Link>
-          ,
-          {' '}
-          <Link href="https://www.skoda-auto.com/" className="underline">Skoda</Link>
-          ). Handles projects together with
+          Prefers artistic interpretations over standard approaches. Handles projects together with
           {' '}
           <Button
             data-member={4}
+            aria-label="Go to Dasha"
             className="underline decoration-dotted text-nowrap"
             isInherit
             label={(
               <>
                 Dasha
-                <NextImage
-                  className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src={dasha}
-                  unoptimized
-                  alt="Dasha 3d model preview"
-                  width={11}
-                  height={14}
-                />
+                <NextImage className="inline ml-0.5 align-text-bottom w-[11px]" src={dasha} unoptimized alt="Dasha 3d model preview" width={11} height={14} />
               </>
             )}
           />
           .
-        </p>
-        <p>
-          Prefers artistic interpretations over commonly researched standards. Skilled at both. Has straightforward
-          {' '}
-          <Link href="/process" className="underline">processes</Link>
-          , shaped by past experience.
         </p>
       </>
     ),
@@ -133,53 +88,26 @@ const team: TeamMember[] = [
     role: 'branding',
     description: () => (
       <>
+        <p>Brand designer working with physical products and digital businesses, from established retail brands to early-stage startups. Experienced in both B2B and B2C.</p>
+        <p>Builds new identities and develops existing ones. Her work covers the core brand system and its use across packaging, print and digital materials.</p>
         <p>
-          Brand designer. She has provided solutions for large-scale physical brands (see
-          {' '}
-          <Link href="https://www.behance.net/gallery/110329005/Perekrestok" className="underline">Perekrestok</Link>
-          ) and digital startups (see
-          {' '}
-          <Link href="https://www.behance.net/gallery/224757329/Shareio-Content-Tool" className="underline">Shareio</Link>
-          ), in both B2B and B2C spaces.
-        </p>
-        <p>
-          Equally skilled in building brands from scratch (e.g.
-          {' '}
-          <Link href="https://www.kay.ai/" className="underline">Kay</Link>
-          {' '}
-          or
-          {' '}
-          <Link href="https://www.nectarsocial.com/" className="underline">Nectar</Link>
-          ) or evolving them over time (see
-          {' '}
-          <Link href="https://www.guardrail.ai/" className="underline">Guardrail</Link>
-          {' '}
-          or
-          {' '}
-          <Link href="https://helikon.io/" className="underline">Helikon</Link>
-          ). More often works on projects together with
+          Usually leads the creative work on branding projects, with
           {' '}
           <Button
             data-member={3}
+            aria-label="Go to Egor"
             className="underline decoration-dotted text-nowrap"
             isInherit
             label={(
               <>
                 Egor
-                <NextImage
-                  className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src={egor}
-                  unoptimized
-                  alt="Egor 3d model preview"
-                  width={11}
-                  height={14}
-                />
+                <NextImage className="inline ml-0.5 align-text-bottom w-[11px]" src={egor} unoptimized alt="Egor 3d model preview" width={11} height={14} />
               </>
             )}
           />
-          .
+          {' '}
+          managing the project and client communication.
         </p>
-        <p>Typically takes on a creative lead in branding projects, while remaining comfortable in collaborative roles.</p>
       </>
     ),
   },
@@ -188,38 +116,20 @@ const team: TeamMember[] = [
     role: 'MGMT',
     description: () => (
       <>
+        <p>Project lead for web and branding. Co-founder with 8 years in B2B marketing and analytics. Particular interest in data visualisation and naming.</p>
+        <p>Keeps calls short and involves the people who make decisions. Brings the client’s needs into design discussions and explains the team’s decisions to the client.</p>
         <p>
-          Project lead for web and branding with 8 years in B2B marketing and analytics. Co-founder with a focus on data visualization (see
-          {' '}
-          <Link href="https://www.behance.net/gallery/186534927/Chainviz-Validators-Explorer" className="underline">Chainviz</Link>
-          ) and naming (see
-          {' '}
-          <Link href="https://www.behance.net/gallery/162125657/Namefolio-2020-2023" className="underline">Namefolio</Link>
-          ).
-        </p>
-        <p>Prefers minimal calls with only core decision-makers. Advocates for the client in design discussions, while in client-facing calls, focuses on leveraging the team’s strengths.</p>
-        <p>
-          Shares studio
-          {' '}
-          <Link href="/expectations" className="underline">expectations</Link>
-          {' '}
-          in every project. Primary and often the only point of contact for projects involving
+          Main point of contact for projects with
           {' '}
           <Button
             data-member={0}
+            aria-label="Go to Ksusha"
             className="underline decoration-dotted text-nowrap"
             isInherit
             label={(
               <>
                 Ksusha
-                <NextImage
-                  className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src={ksusha}
-                  unoptimized
-                  alt="Ksusha 3d model preview"
-                  width={11}
-                  height={14}
-                />
+                <NextImage className="inline ml-0.5 align-text-bottom w-[11px]" src={ksusha} unoptimized alt="Ksusha 3d model preview" width={11} height={14} />
               </>
             )}
           />
@@ -228,23 +138,17 @@ const team: TeamMember[] = [
           {' '}
           <Button
             data-member={2}
+            aria-label="Go to Lena R"
             className="underline decoration-dotted text-nowrap"
             isInherit
             label={(
               <>
                 Lena R
-                <NextImage
-                  className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src={lenar}
-                  unoptimized
-                  alt="Lena Ryazantseva 3d model preview"
-                  width={11}
-                  height={14}
-                />
+                <NextImage className="inline ml-0.5 align-text-bottom w-[11px]" src={lenar} unoptimized alt="Lena Ryazantseva 3d model preview" width={11} height={14} />
               </>
             )}
           />
-          .
+          . Sets expectations, manages communication and keeps the work moving.
         </p>
       </>
     ),
@@ -254,50 +158,24 @@ const team: TeamMember[] = [
     role: 'MGMT',
     description: () => (
       <>
-        <p>Project lead for motion and 3D with 6 years in account management and legal, and a background in conflict management. Co-founder.</p>
+        <p>Project lead for motion and 3D. Co-founder with 6 years in account management and legal, and a background in conflict management.</p>
+        <p>Manages short-turnaround work and longer collaborations. Handles schedules, feedback and client communication so the designers can focus on the work.</p>
         <p>
-          Skilled in managing both fast-paced (see
-          {' '}
-          <Link href="https://www.london-handel-festival.com" className="underline">London Handel Festival</Link>
-          {' '}
-          and
-          {' '}
-          <Link href="https://www.skoda-auto.com/" className="underline">Skoda</Link>
-          ) and long-term projects (e.g.
-          {' '}
-          <Link href="https://www.behance.net/gallery/240620453/StarsHoney-Product-3D" className="underline">S+H</Link>
-          {' '}
-          and
-          {' '}
-          <Link href="https://www.futuremoney.co" className="underline">FutureMoney</Link>
-          ), with a focus on lasting partnerships.
-        </p>
-        <p>
-          Shares studio
-          {' '}
-          <Link href="/expectations" className="underline">expectations</Link>
-          {' '}
-          in every project. Main point of contact for projects involving
+          Main point of contact for projects with
           {' '}
           <Button
             data-member={1}
+            aria-label="Go to Lena S"
             className="underline decoration-dotted text-nowrap"
             isInherit
             label={(
               <>
                 Lena S
-                <NextImage
-                  className="inline ml-0.5 align-text-bottom w-[11px]"
-                  src={lenas}
-                  unoptimized
-                  alt="Lena Sivakova 3d model preview"
-                  width={11}
-                  height={14}
-                />
+                <NextImage className="inline ml-0.5 align-text-bottom w-[11px]" src={lenas} unoptimized alt="Lena Sivakova 3d model preview" width={11} height={14} />
               </>
             )}
           />
-          .
+          . Sets expectations at the start and stays involved throughout the project.
         </p>
       </>
     ),
@@ -405,6 +283,8 @@ export function Team() {
         pinSpacing: false,
         pin: true,
         scrub: mobileScrub,
+        // Refresh can restore the playhead without calling onUpdate.
+        onRefresh: () => loadImageOnCanvas(playhead.frame),
       },
     })
 

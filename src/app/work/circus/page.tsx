@@ -3,8 +3,9 @@ import type { Metadata } from 'next'
 import { CasePage } from '@/app/work/circus/CasePage'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/work/circus' },
   title: 'Circus Group – 3D Product Website Design & Webflow Development – KLAD',
-  description: 'A product-driven website by Klad Syndicate featuring high-fidelity 3D models, interactive look insid functionality and motion design built for Webflow.',
+  description: 'Website design, Webflow development and 3D animation for Circus Group’s robotic kitchen, including an interactive look inside the machine.',
 }
 
 export default function Case() {

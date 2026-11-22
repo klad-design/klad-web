@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { CasePage } from '@/app/work/outpost/CasePage'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/work/outpost' },
   title: 'Outpost – Branding, 3D & Web Design – KLAD',
   description: 'Brand identity, 3D visuals and web design for Outpost by Klad Syndicate.',
   robots: { index: false, follow: false },

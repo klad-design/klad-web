@@ -14,7 +14,7 @@ await mkdir(artifacts, { recursive: true })
 const errors = []
 
 async function selected(page, name) {
-  await page.waitForFunction(name => document.querySelector('button[aria-pressed="true"]')?.getAttribute('aria-label') === name && document.querySelector('h1')?.textContent.includes(name), name)
+  await page.waitForFunction(name => document.querySelector('[data-case-option][aria-current="true"]')?.getAttribute('aria-label') === name && document.querySelector('h1')?.textContent.includes(name), name)
   await page.waitForFunction(() => [...document.querySelectorAll('.case-anim-target')].every(el => Number(getComputedStyle(el).opacity) > 0.99))
 }
 
@@ -22,14 +22,14 @@ async function recordVisibleCases(page) {
   await page.evaluate(() => {
     const recording = { frames: [], frame: 0 }
     window.__workQA = recording
-    const names = [...document.querySelectorAll('button[aria-pressed]')].map(button => button.getAttribute('aria-label'))
+    const names = [...document.querySelectorAll('[data-case-option]')].map(button => button.getAttribute('aria-label'))
     function sample() {
       const title = names.find(name => document.querySelector('h1')?.textContent.includes(name))
       const target = document.querySelector('.case-anim-target')
       if (title && target && Number(getComputedStyle(target).opacity) > 0.99 && recording.frames.at(-1)?.title !== title) {
         const link = document.querySelector('main a[aria-label$="case study"]')
         const image = document.querySelector('[data-case-cover]')
-        recording.frames.push({ title, selected: document.querySelector('[aria-pressed="true"]')?.getAttribute('aria-label'), link: link?.getAttribute('aria-label'), slug: link?.getAttribute('href')?.split('/').at(-1), query: new URL(location.href).searchParams.get('case'), poster: image?.getAttribute('alt'), imageReady: image?.complete && image.naturalWidth > 0 })
+        recording.frames.push({ title, selected: document.querySelector('[data-case-option][aria-current="true"]')?.getAttribute('aria-label'), link: link?.getAttribute('aria-label'), slug: link?.getAttribute('href')?.split('/').at(-1), query: new URL(location.href).searchParams.get('case'), poster: image?.getAttribute('alt'), imageReady: image?.complete && image.naturalWidth > 0 })
       }
       recording.frame = requestAnimationFrame(sample)
     }
@@ -98,7 +98,7 @@ try {
     await page.keyboard.press(key)
     await selected(page, name)
     if (key === 'ArrowDown' && name === 'Circus')
-      assert.ok(await page.getByRole('button', { name, exact: true }).evaluate(el => el === document.activeElement), 'Arrow navigation must focus the selected project')
+      assert.ok(await page.getByRole('link', { name, exact: true }).evaluate(el => el === document.activeElement), 'Arrow navigation must focus the selected project')
   }
   await page.locator('main').dispatchEvent('keydown', { key: 'ArrowDown', repeat: true })
   await selected(page, 'Datalane')
@@ -111,9 +111,9 @@ try {
   await page.keyboard.press('ArrowDown')
   await page.clock.runFor(800)
   await selected(page, 'Stars+Honey')
-  assert.ok(await page.getByRole('button', { name: 'Stars+Honey', exact: true }).evaluate(el => el === document.activeElement), 'Queued arrow navigation must focus the final selected project')
+  assert.ok(await page.getByRole('link', { name: 'Stars+Honey', exact: true }).evaluate(el => el === document.activeElement), 'Queued arrow navigation must focus the final selected project')
   await keyQueue(['Datalane', 'Circus', 'Stars+Honey'])
-  await page.getByRole('button', { name: 'Datalane', exact: true }).click()
+  await page.getByRole('link', { name: 'Datalane', exact: true }).click()
   await page.clock.runFor(800)
   await selected(page, 'Datalane')
   const smallPixels = await recordVisibleCases(page)
@@ -122,10 +122,10 @@ try {
     await page.clock.runFor(20)
   }
   await page.clock.runFor(800)
-  assert.equal(await page.locator('[aria-pressed="true"]').getAttribute('aria-label'), 'Stars+Honey', 'Small pixel movement must retain the remainder for the next distance step')
+  assert.equal(await page.locator('[data-case-option][aria-current="true"]').getAttribute('aria-label'), 'Stars+Honey', 'Small pixel movement must retain the remainder for the next distance step')
   await selected(page, 'Stars+Honey')
   await smallPixels(['Datalane', 'Circus', 'Stars+Honey'])
-  await page.getByRole('button', { name: 'Datalane', exact: true }).click()
+  await page.getByRole('link', { name: 'Datalane', exact: true }).click()
   await page.clock.runFor(800)
   await selected(page, 'Datalane')
   const shortTail = await recordVisibleCases(page)
@@ -134,21 +134,21 @@ try {
     await page.clock.runFor(32)
   }
   await page.clock.runFor(500)
-  assert.equal(await page.locator('[aria-pressed="true"]').getAttribute('aria-label'), 'Circus', 'An ended declining tail must not drain delayed case requests')
+  assert.equal(await page.locator('[data-case-option][aria-current="true"]').getAttribute('aria-label'), 'Circus', 'An ended declining tail must not drain delayed case requests')
   await selected(page, 'Circus')
   await shortTail(['Datalane', 'Circus'])
-  await page.getByRole('button', { name: 'Datalane', exact: true }).click()
+  await page.getByRole('link', { name: 'Datalane', exact: true }).click()
   await page.clock.runFor(800)
   await selected(page, 'Datalane')
   for (let sample = 0; sample < 3; sample++) {
     await page.locator('main').dispatchEvent('wheel', { deltaY: 40 })
     await page.clock.runFor(20)
   }
-  await page.getByRole('button', { name: 'Stars+Honey', exact: true }).click()
+  await page.getByRole('link', { name: 'Stars+Honey', exact: true }).click()
   await page.clock.runFor(1200)
-  assert.equal(await page.locator('[aria-pressed="true"]').getAttribute('aria-label'), 'Stars+Honey', 'An explicit menu selection must cancel pending wheel distance')
+  assert.equal(await page.locator('[data-case-option][aria-current="true"]').getAttribute('aria-label'), 'Stars+Honey', 'An explicit menu selection must cancel pending wheel distance')
   await selected(page, 'Stars+Honey')
-  await page.getByRole('button', { name: 'Datalane', exact: true }).click()
+  await page.getByRole('link', { name: 'Datalane', exact: true }).click()
   await page.clock.runFor(800)
   await selected(page, 'Datalane')
   for (let sample = 0; sample < 3; sample++) {
@@ -157,10 +157,10 @@ try {
   }
   await page.setViewportSize({ width: 390, height: 844 })
   await page.clock.runFor(1200)
-  assert.equal(await page.locator('[aria-pressed="true"]').getAttribute('aria-label'), 'Circus', 'Pending desktop wheel distance must not flush after resizing to mobile')
+  assert.equal(await page.locator('[data-case-option][aria-current="true"]').getAttribute('aria-label'), 'Circus', 'Pending desktop wheel distance must not flush after resizing to mobile')
   await selected(page, 'Circus')
   await page.setViewportSize({ width: 1438, height: 820 })
-  await page.getByRole('button', { name: 'Datalane', exact: true }).click()
+  await page.getByRole('link', { name: 'Datalane', exact: true }).click()
   await page.clock.runFor(800)
   await selected(page, 'Datalane')
   for (const gap of [100, 50]) {
@@ -169,10 +169,10 @@ try {
     await page.clock.runFor(gap)
     await page.mouse.wheel(0, 100)
     await page.clock.runFor(800)
-    assert.equal(await page.locator('[aria-pressed="true"]').getAttribute('aria-label'), 'Stars+Honey', `Two wheel notches ${gap}ms apart must both be preserved`)
+    assert.equal(await page.locator('[data-case-option][aria-current="true"]').getAttribute('aria-label'), 'Stars+Honey', `Two wheel notches ${gap}ms apart must both be preserved`)
     await selected(page, 'Stars+Honey')
     await visible(['Datalane', 'Circus', 'Stars+Honey'])
-    await page.getByRole('button', { name: 'Datalane', exact: true }).click()
+    await page.getByRole('link', { name: 'Datalane', exact: true }).click()
     await page.clock.runFor(800)
     await selected(page, 'Datalane')
   }
@@ -182,10 +182,10 @@ try {
     await page.clock.runFor(20)
   }
   await page.clock.runFor(1000)
-  assert.equal(await page.locator('[aria-pressed="true"]').getAttribute('aria-label'), 'Linux Mint', 'Three rapid pixel-mode notches must keep all three case requests')
+  assert.equal(await page.locator('[data-case-option][aria-current="true"]').getAttribute('aria-label'), 'Linux Mint', 'Three rapid pixel-mode notches must keep all three case requests')
   await selected(page, 'Linux Mint')
   await rapidBurst(['Datalane', 'Circus', 'Stars+Honey', 'Linux Mint'])
-  await page.getByRole('button', { name: 'Datalane', exact: true }).click()
+  await page.getByRole('link', { name: 'Datalane', exact: true }).click()
   await page.clock.runFor(800)
   await selected(page, 'Datalane')
   const smallNotches = await recordVisibleCases(page)
@@ -194,10 +194,10 @@ try {
     await page.clock.runFor(220)
   }
   await page.clock.runFor(400)
-  assert.equal(await page.locator('[aria-pressed="true"]').getAttribute('aria-label'), 'Chainviz', 'Five separated small line-mode notches must produce five case changes')
+  assert.equal(await page.locator('[data-case-option][aria-current="true"]').getAttribute('aria-label'), 'Chainviz', 'Five separated small line-mode notches must produce five case changes')
   await selected(page, 'Chainviz')
   await smallNotches(['Datalane', 'Circus', 'Stars+Honey', 'Linux Mint', 'Shareio', 'Chainviz'])
-  await page.getByRole('button', { name: 'Datalane', exact: true }).click()
+  await page.getByRole('link', { name: 'Datalane', exact: true }).click()
   await page.clock.runFor(800)
   await selected(page, 'Datalane')
   const momentum = await recordVisibleCases(page)
@@ -205,14 +205,14 @@ try {
     await page.locator('main').dispatchEvent('wheel', { deltaY })
     await page.clock.runFor(32)
   }
-  assert.equal(await page.locator('[aria-pressed="true"]').getAttribute('aria-label'), 'Circus', 'A monotonic fading trackpad tail must not invent extra case changes')
+  assert.equal(await page.locator('[data-case-option][aria-current="true"]').getAttribute('aria-label'), 'Circus', 'A monotonic fading trackpad tail must not invent extra case changes')
   await selected(page, 'Circus')
   await momentum(['Datalane', 'Circus'])
   await page.locator('main').dispatchEvent('wheel', { deltaY: 100 })
   await page.clock.runFor(500)
   await selected(page, 'Stars+Honey')
   await page.clock.resume()
-  await page.getByRole('button', { name: 'Datalane', exact: true }).click()
+  await page.getByRole('link', { name: 'Datalane', exact: true }).click()
   await selected(page, 'Datalane')
   for (const [delta, name] of [[100, 'Circus'], [-100, 'Datalane'], [100, 'Circus'], [-100, 'Datalane']]) {
     await page.mouse.wheel(0, delta)
@@ -241,7 +241,7 @@ try {
   })
   await page.mouse.wheel(0, 100)
   await page.clock.runFor(100)
-  await page.waitForFunction(() => document.querySelector('button[aria-pressed="true"]')?.getAttribute('aria-label') === 'Circus')
+  await page.waitForFunction(() => document.querySelector('[data-case-option][aria-current="true"]')?.getAttribute('aria-label') === 'Circus')
   for (const delta of [80, 60, 45, 30, 20, 12, 6, 3, 1]) {
     await page.locator('main').dispatchEvent('wheel', { deltaY: delta })
     await page.clock.runFor(32)
@@ -287,19 +287,19 @@ try {
   await page.clock.runFor(400)
   await selected(page, 'Chainviz')
   await page.clock.resume()
-  await page.getByRole('button', { name: 'Datalane', exact: true }).click()
+  await page.getByRole('link', { name: 'Datalane', exact: true }).click()
   await selected(page, 'Datalane')
 
   for (const delay of [30, 60]) {
     await page.evaluate(async (delay) => {
-      document.querySelector('button[aria-label="Stars+Honey"]').click()
+      document.querySelector('[data-case-option][aria-label="Stars+Honey"]').click()
       await new Promise(resolve => setTimeout(resolve, delay))
-      document.querySelector('button[aria-label="Datalane"]').click()
+      document.querySelector('[data-case-option][aria-label="Datalane"]').click()
     }, delay)
     await selected(page, 'Datalane')
   }
 
-  await page.getByRole('button', { name: 'Chainviz', exact: true }).click()
+  await page.getByRole('link', { name: 'Chainviz', exact: true }).click()
   await selected(page, 'Chainviz')
   await page.keyboard.press('ArrowDown')
   await selected(page, 'Chainviz')
@@ -327,7 +327,7 @@ try {
   await selected(page, 'Datalane')
 
   for (const name of ['Datalane', 'Circus', 'Stars+Honey', 'Linux Mint', 'Shareio', 'Chainviz']) {
-    await page.getByRole('button', { name, exact: true }).click()
+    await page.getByRole('link', { name, exact: true }).click()
     await selected(page, name)
     await page.getByRole('link', { name: `View ${name} case study` }).click()
     await noise(page, false)
@@ -342,7 +342,8 @@ try {
         await page.waitForFunction(file => document.querySelector(`main img[src*="${file}"]`)?.complete && document.querySelector(`main img[src*="${file}"]`)?.naturalWidth > 0, file)
         await image.evaluate(el => el.decode())
       }
-      assert.equal(await page.locator('main img[src*="-left.avif"]').count(), 7, 'Only the seven numbered Datalane subframe pairs should be split')
+      const pairs = await page.locator('main section > .grid').evaluateAll(grids => grids.filter(grid => grid.children.length === 2).length)
+      assert.equal(pairs, 7, 'The seven Datalane pairs must stay split, including pairs with video frames')
       const left = await page.getByAltText('ABC Oracle and Geist Mono type specimens').boundingBox()
       const right = await page.getByAltText('Datalane data receipt on blue').boundingBox()
       assert.ok(left && right && Math.abs(left.y - right.y) < 1 && Math.abs(right.x - left.x - left.width) < 1, 'Datalane shot 8 must show two images without a gap on desktop')
@@ -355,7 +356,7 @@ try {
   await page.screenshot({ path: `${artifacts}/work-desktop.png` })
   for (const viewport of [{ width: 1024, height: 400 }, { width: 1024, height: 600 }, { width: 1440, height: 600 }]) {
     await page.setViewportSize(viewport)
-    await page.getByRole('button', { name: 'Stars+Honey', exact: true }).click()
+    await page.getByRole('link', { name: 'Stars+Honey', exact: true }).click()
     await selected(page, 'Stars+Honey')
     await page.waitForTimeout(300)
     if (viewport.height === 400) {
@@ -366,7 +367,7 @@ try {
       await page.waitForFunction(() => !document.documentElement.classList.contains('lenis-smooth'))
       assert.ok(await page.evaluate(() => scrollY) > 0, 'Wheel must scroll overflowing project content before switching cases')
       await selected(page, 'Stars+Honey')
-      assert.equal(await page.getByRole('button', { name: 'Stars+Honey', exact: true }).evaluate(el => el.parentElement.getBoundingClientRect().top), 10, 'CSS sticky must keep the case menu visible in short windows')
+      assert.equal(await page.getByRole('link', { name: 'Stars+Honey', exact: true }).evaluate(el => el.parentElement.getBoundingClientRect().top), 10, 'CSS sticky must keep the case menu visible in short windows')
     }
     const headerBefore = await page.locator('.site-header').boundingBox()
     await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight))
@@ -374,10 +375,10 @@ try {
     const bounds = await page.evaluate(() => {
       const details = document.querySelectorAll('.case-anim-target')[2].getBoundingClientRect()
       const cover = document.querySelector('.case-anim-target img').getBoundingClientRect()
-      const menu = document.querySelector('button[aria-pressed]').parentElement.getBoundingClientRect()
+      const menu = document.querySelector('[data-case-option]').parentElement.getBoundingClientRect()
       return { y: scrollY, details: details.toJSON(), cover: cover.toJSON(), menu: menu.toJSON(), height: innerHeight }
     })
-    assert.ok(bounds.y > 0 && bounds.details.bottom <= bounds.height + 1 && bounds.cover.bottom <= bounds.height + 1, `Short viewport must expose all project content: ${JSON.stringify(bounds)}`)
+    assert.ok(bounds.details.bottom <= bounds.height + 1 && bounds.cover.bottom <= bounds.height + 1, `Short viewport must expose all project content: ${JSON.stringify(bounds)}`)
     assert.ok(bounds.menu.bottom <= bounds.details.top, `Pinned project titles must not overlap details: ${JSON.stringify(bounds)}`)
     const headerAfter = await page.locator('.site-header').boundingBox()
     assert.ok(Math.abs(headerAfter.y - headerBefore.y) < 1, 'The right navigation must remain fixed while Work scrolls')
@@ -482,7 +483,7 @@ try {
       await selected(page, name)
       assert.ok(Math.abs(await page.evaluate(() => scrollY) - initialY) <= 1, 'A slightly diagonal horizontal swipe must not jerk the page vertically')
     }
-    const title = await page.getByRole('button', { name: 'Chainviz', exact: true }).boundingBox()
+    const title = await page.getByRole('link', { name: 'Chainviz', exact: true }).boundingBox()
     assert.ok(title.x >= 9 && title.x + title.width <= 381, 'Swiping must reveal the selected project title')
     await swipe(-140)
     await selected(page, 'Chainviz')

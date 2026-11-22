@@ -140,7 +140,7 @@ try {
   }
   await page.getByRole('link', { name: 'Close', exact: true }).click()
   await page.waitForURL('**/work')
-  assert.equal(await page.getByRole('button', { name: 'Outpost', exact: true }).count(), 0)
+  assert.equal(await page.getByRole('link', { name: 'Outpost', exact: true }).count(), 0)
   assert.deepEqual(errors, [])
   console.log('Outpost checks passed: all 19 CDN animations playing on desktop and mobile, 51 local stills/posters, 49 sections, responsive geometry, paired panels, lazy loading, offscreen pause, reduced motion, noindex, Close, and no public case links.')
 }

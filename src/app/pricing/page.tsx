@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { TextBlur } from '@/components/ui/TextBlur'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/pricing' },
   title: 'Pricing Models – KLAD',
   description: 'How pricing works at Klad Syndicate. Engagement models, commitments and billing structure for long-term design partnerships.',
 }
@@ -53,7 +54,7 @@ export default function Pricing() {
         <div className="md:col-span-2 lg:col-span-1">
           <div className="p5 flex flex-col gap-1 md:max-w-[180px] 2xl:max-w-[240px]">
             <p>Projects typically last around three months. Quotes depend on our hourly rate, your materials, and requested deliverables.</p>
-            <p>For long-term clients, we reserve the original hourly rates for as long as we can sustain them. The longer the commitment, the more benefits and discounts we aim to offer to support our partnership.</p>
+            <p>For long-term clients, we keep the original hourly rate for as long as we can sustain it. Longer commitments can qualify for discounts.</p>
           </div>
         </div>
         <div className="md:col-span-2 lg:col-span-1">

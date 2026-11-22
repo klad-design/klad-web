@@ -223,7 +223,7 @@ try {
     const page = await visit(context, '/work')
     await page.evaluate(() => scrollTo(0, 40))
     for (const name of ['Chainviz', 'Circus', 'Chainviz']) {
-      const button = page.getByRole('button', { name, exact: true })
+      const button = page.getByRole('link', { name, exact: true })
       // Reveal only the edge horizontally; selection must bring the whole title into view.
       const point = await button.evaluate(async (button) => {
         const menu = button.parentElement
@@ -236,12 +236,12 @@ try {
         const bounds = button.getBoundingClientRect()
         const x = (Math.max(12, bounds.left) + Math.min(innerWidth - 12, bounds.right)) / 2
         const y = bounds.top + bounds.height / 2
-        return { x, y, partial: bounds.left < 10 || bounds.right > innerWidth - 10, hit: document.elementFromPoint(x, y)?.closest('button') === button }
+        return { x, y, partial: bounds.left < 10 || bounds.right > innerWidth - 10, hit: document.elementFromPoint(x, y)?.closest('a') === button }
       })
       assert.ok(point.partial, `${name}: start with a partially clipped title to exercise automatic reveal`)
       assert.ok(point.hit, `${name}: the touch must hit the visible edge of the intended title`)
       await page.touchscreen.tap(point.x, point.y)
-      await page.waitForFunction(name => document.querySelector('button[aria-pressed="true"]')?.getAttribute('aria-label') === name, name)
+      await page.waitForFunction(name => document.querySelector('[data-case-option][aria-current="true"]')?.getAttribute('aria-label') === name, name)
       await page.waitForTimeout(650)
       const after = await button.boundingBox()
       assert.ok(after.x >= 9 && after.x + after.width <= 381, `${name}: selected title must be fully visible`)

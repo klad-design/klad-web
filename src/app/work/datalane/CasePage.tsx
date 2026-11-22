@@ -90,6 +90,7 @@ export function CasePage() {
         <div className="flex flex-col items-start gap-[5px]">
           <Button as="a" href="https://www.datalane.com/" label="Website" />
           <Button as="a" href="https://www.behance.net/gallery/258281553/Datalane" label="Behance" />
+          <Button as="a" href="https://www.linkedin.com/posts/davidpattersoncole_today-we-are-launching-datalane-deployed-ugcPost-7528108677816512513-Xbte" label="Launch video" />
         </div>
 
         <div className="flex flex-col gap-5 mt-4 md:mt-0 md:gap-3 lg:col-start-4 lg:max-w-[180px]">

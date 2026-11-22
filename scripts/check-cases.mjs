@@ -147,7 +147,7 @@ try {
     await page.screenshot({ path: `${artifacts}/footer-${width}.png` })
     await footerClose.click()
     await page.waitForURL('**/work?case=datalane')
-    await page.waitForFunction(() => document.querySelector('button[aria-pressed="true"]')?.getAttribute('aria-label') === 'Datalane')
+    await page.waitForFunction(() => document.querySelector('[data-case-option][aria-current="true"]')?.getAttribute('aria-label') === 'Datalane')
     await page.goBack()
     await page.waitForURL('**/work/datalane')
     await page.waitForTimeout(300)

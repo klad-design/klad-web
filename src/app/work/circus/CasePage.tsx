@@ -76,7 +76,7 @@ export function CasePage() {
       </header>
 
       <SectionText title="Robotics-centered website" align="center">
-        <p>For this project, we were invited to rethink Circus’ digital presence through a 3D-focused web experience. Working carefully within the provided brand system, our goal was to create a product-driven website that feels impressive, immersive and visually compelling. Through realistic 3D and with some motion design, we transformed the website so the product takes center stage - tactile and impossible to ignore.</p>
+        <p>We redesigned Circus’ website around its robotic kitchen, using 3D models and animation to explain the product. The work followed the existing brand system.</p>
       </SectionText>
 
       <SectionMedia>
@@ -84,8 +84,8 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="right">
-        <p>To ensure our product visuals are both beautiful and accurate, we worked with engineering-grade 3D models of the robotic kitchen, as well as technical schematics that served as the foundation for our visual development. Using these precise references, we translated complex internal systems into visually appealing, high-fidelity 3D assets tailored specifically for the web.</p>
-        <p>We enhanced the realism and engagement with subtle effects like droplets falling after cleaning, freezing mechanisms activation and other small animations that bring the product to life. These details contributed a lot to the tactile effects, making the digital experience feel almost physical.</p>
+        <p>The engineering models and technical schematics supplied by Circus were the basis for our 3D assets. We adapted them for the website while retaining the machine’s construction and internal details.</p>
+        <p>Animations show the cleaning cycle, falling droplets and freezing mechanisms. These small details explain what happens inside the kitchen.</p>
       </SectionText>
 
       <SectionMedia>
@@ -101,7 +101,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="center">
-        <p>One of the standout features is an interactive “look inside” effect. By moving the cursor across the machine, users can reveal its internal structure and explore how the system operates beneath the surface. This interaction transforms technical complexity into an intuitive, exploratory experience.</p>
+        <p>The “look inside” interaction reveals the machine’s internal structure as the cursor moves across it.</p>
       </SectionText>
 
       <SectionMedia>
@@ -113,9 +113,9 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="left">
-        <p>Alongside the 3D layer, we animated existing 2D brand elements - gradients, logo and graphic accents - carefully integrating them into the motion language of the website. This ensured that the immersive visuals remained fully aligned with the established identity.</p>
-        <p>As a result, we designed a highly engaging, visually striking website that not only showcases the product in depth but elevates the entire brand presence. The project was fully implemented in Webflow, translating complex 3D and motion ideas into a smooth and production-ready experience.</p>
-        <p>Website design, development and 3D were provided by our team at Klad. The branding and website copy was provided by Ming Labs.</p>
+        <p>We also animated the existing gradients, logo and graphic elements, using the same timing and transitions as the 3D sequences.</p>
+        <p>Our team designed and built the website in Webflow, including the 3D assets and motion.</p>
+        <p>Branding and website copy were provided by Ming Labs.</p>
       </SectionText>
 
       <SectionMedia>
@@ -123,7 +123,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/circus/8.avif" alt="Refridgerator bluebrint render" width={1720} height={590} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/circus/8.avif" alt="Refrigerator blueprint render" width={1720} height={590} />
       </SectionMedia>
 
       <SectionMedia>

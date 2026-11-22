@@ -90,7 +90,7 @@ export function PageImprints() {
 
     function onClick(event: MouseEvent) {
       const link = event.target instanceof Element ? event.target.closest('a[href]') : null
-      if (!(link instanceof HTMLAnchorElement) || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.download || (link.target && link.target !== '_self'))
+      if (!(link instanceof HTMLAnchorElement) || link.hasAttribute('data-case-option') || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.download || (link.target && link.target !== '_self'))
         return
       const url = new URL(link.href)
       if (url.origin === location.origin && url.pathname !== pathRef.current)

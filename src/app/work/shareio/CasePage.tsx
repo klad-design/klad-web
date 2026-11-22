@@ -77,12 +77,12 @@ export function CasePage() {
       </header>
 
       <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/1.avif" alt="Shareio ase cover image" width={1720} height={1030} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/shareio/1.avif" alt="Shareio case cover image" width={1720} height={1030} />
       </SectionMedia>
 
       <SectionText align="right">
-        <p>The content monetization space is shifting fast. Platforms come and go, algorithms change, and creators are left adapting. Shareio set out to offer something different, a tool focused on ownership, control and direct monetization without feeds, moderation or gatekeepers.</p>
-        <p>We built a visual identity around the idea of creativity as an endless dimension. Simple but expressive, confident with a subtle nostalgic edge. A brand system designed to feel clear, creator-first, and distinct - positioning Shareio as a bridge between making and earning, without anything in between.</p>
+        <p>Shareio lets creators sell access to content through the cloud storage they already use. The product centres on ownership, access and payments.</p>
+        <p>We designed the identity, 3D assets, website and product interface. Typography, motion and a family of parametric 3D forms connect the brand across those formats.</p>
       </SectionText>
 
       <SectionMedia>
@@ -90,8 +90,8 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText title="Sign of three metaphors" align="center">
-        <p>The logo is built around the idea of connection. Two forms merging into one suggest sharing, collaboration and the constant flow between creators and their audiences. In interface context, it subtly echoes the familiar logic of a share icon.</p>
-        <p>The coin-like geometry hints at the economic layer beneath it all. Flow, impact and value converge into a single shape, pointing to the financial side of sharing — where creativity turns into income, and content becomes a sustainable asset.</p>
+        <p>Two forms merge in the logo, suggesting sharing and the connection between a creator and their audience. In the app, the shape also recalls a share icon.</p>
+        <p>Its coin-like shape refers to the payment side of the product.</p>
       </SectionText>
 
       <SectionMedia>
@@ -99,7 +99,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="center">
-        <p>A sequence of three dots, scaling from large to small, introduces a sense of movement. It reflects the journey of content: from creation to distribution to monetization. A quiet visual metaphor for progression, reach, and the ripple effect, which we later translated into a subtle logo animation.</p>
+        <p>Three dots, decreasing in size, represent creation, distribution and monetization. We used this sequence in the logo animation.</p>
       </SectionText>
 
       <SectionMedia>
@@ -107,9 +107,8 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="left">
-        <p>Shareio is positioned as a pure tool accessible through a mobile app and built to give creators full control over how their work is shared and monetized. It doesn’t host feeds or shape visibility. Instead, it provides the infrastructure for secure ownership and payments, leaving creative freedom entirely in the hands of users.</p>
-        <p>There are no algorithms deciding what gets seen. No moderation layers shaping content. Creators own not only their work, but the connection to their audience. The app acts as an enabler, not a filter, removing friction like demonetization risks or forced optimization.</p>
-        <p>The logo is set in Averia - a typeface created by blending the shapes of many different fonts into one. Its layered origin gives it a distinct personality: slightly imperfect and human at its core. The choice was intentional. As a tool built for a wide range of creators, the identity needed to feel approachable and individual. Averia brings familiarity with a subtle nostalgic tone, reinforcing the idea that creative work should feel personal.</p>
+        <p>Shareio connects creators to their audiences without hosting a feed. The app handles content access and payments while creators keep their existing storage.</p>
+        <p>The logotype uses Averia, a typeface made by averaging the shapes of other fonts. Its irregular outlines gave us the slightly nostalgic character we wanted for the identity.</p>
       </SectionText>
 
       <SectionMedia>
@@ -149,7 +148,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="center">
-        <p>At the core of the product is a simple design idea: your cloud becomes your storefront. Instead of pushing creators into new platforms or complex systems, Shareio connects to the storage they already use and turns existing files into monetizable assets. This principle shaped the UX into a lightweight layer on top of existing content, where selling, licensing and sharing feel like natural extensions. Focused on clarity, the interface keeps control visible and understandable while the infrastructure stays in the background, allowing the content itself to remain at the center.</p>
+        <p>The main flow turns files in existing cloud storage into products. We kept selling, licensing and sharing together, with access and payment settings visible in the same interface.</p>
       </SectionText>
 
       <SectionMedia>
@@ -169,9 +168,9 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="right">
-        <p>The quasar became more than a visual centerpiece. It represents the core ideas behind Shareio: decentralization as movement, ownership as a strong center, and monetization as a continuous flow of energy. It works as a visual thesis for the product, where every creator adds to a shared pulse that grows and evolves.</p>
+        <p>The quasar is the main 3D element in the identity. Its central form and moving particles connect the ideas of ownership, distribution and payment.</p>
         <p>Instead of relying on a static illustration, we designed it as a fully parametric brand artifact that adapts to context. The form changes based on input variables. Color gradients shift depending on user scenarios, animation speed responds to tone, and particle density reflects different content categories. For onboarding it appears calm and open, while product updates bring faster motion and more intensity.</p>
-        <p>We built custom Blender Python scripts to generate high resolution stills and animations, allowing the quasar to live across touchpoints as a looping motion element, editorial visual, app header, or background. This turned a single concept into a flexible system that keeps the brand expressive and consistent without feeling repetitive.</p>
+        <p>Custom Blender Python scripts generate the stills and animations. The same form can be used in app headers, backgrounds, editorial images and motion loops.</p>
       </SectionText>
 
       <SectionMedia>
@@ -183,8 +182,8 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="center">
-        <p>Shareio brings together cloud integration, blockchain, DRM, monetization, tokenomics, and creator dashboards into a single tool. Despite the technical depth, the experience had to feel familiar, trustworthy, and lightweight. The goal was to design something powerful that still feels like a simple utility, not a complex platform.</p>
-        <p>We intentionally made blockchain invisible in the interface. Users do not need to understand smart contracts, gas fees, or token mechanics. These layers exist, but they are translated into clear actions, human language, and smart defaults that cover most use cases. The focus stays on the outcome, not the technology behind it.</p>
+        <p>The product combines cloud storage, blockchain, DRM, payments and creator dashboards. We organised these features around familiar actions: choose content, set access and pricing, then share a link.</p>
+        <p>Blockchain mechanics stay behind those actions. Users can sell and share their work without learning about smart contracts or gas fees.</p>
       </SectionText>
 
       <SectionMedia>

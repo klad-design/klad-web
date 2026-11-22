@@ -44,13 +44,13 @@ export function CasePage() {
           <div className="flex flex-col gap-[3px]">
             <h2 className="blur-regular uppercase p4">Initiative</h2>
             <div className="p5">
-              <p>A visual redesign initiative for Linux Mint, aiming to modernize its identity and enhance consistency across platforms, proving that open-source software can be both user-friendly and beautifully designed by default.</p>
+              <p>An independent visual identity concept for Linux Mint, covering the logo, colors, typography, website and desktop interface.</p>
             </div>
           </div>
           <div className="flex flex-col gap-[3px]">
             <h2 className="blur-regular uppercase p4">Concept</h2>
             <div className="p5">
-              <p>Our goal wasn’t to change what people love about Mint, but to give it the design foundation it currently lacks.</p>
+              <p>A consistent design foundation for the system, built around Mint’s existing character.</p>
             </div>
           </div>
         </div>
@@ -81,9 +81,9 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="right">
-        <p>Linux Mint is one of the few distributions that genuinely prioritize user experience, yet it continues to suffer from a long-standing visual identity crisis. This reflects a broader perception that non-commercial software often sacrifices design and usability. While Mint positions itself as an out-of-the-box solution, its inconsistent visual language frequently pushes users into a DIY experience - not by choice, but by necessity.</p>
-        <p>Our work focused on two core challenges: inconsistency and a dated visual presence. Across platforms, Linux Mint’s identity appears fragmented—colors shift between interfaces, logos vary in tone and execution, and typography lacks cohesion. Even the brand’s defining color, green, is applied inconsistently. These details, while seemingly minor, shape perception and weaken the sense of reliability that Mint stands for.</p>
-        <p>We began with the foundation: a redesigned logo and a defined color system that anchors the brand in a clear, recognizable visual language. From there, we introduced a coherent typographic structure and a minimalist palette built around green and white to improve clarity while reducing maintenance complexity. The dynamic logomark reinforces Mint’s identity as a user-friendly, GUI-first system and acts as a symbolic centerpiece for future evolution.</p>
+        <p>Linux Mint makes a practical desktop available to newcomers. We wanted its identity to be as consistent as the experience the project aims to provide.</p>
+        <p>Our starting points were the variations in logos, green tones and typography across Mint’s interfaces. We proposed a shared set of rules for all three.</p>
+        <p>The proposal combines a redesigned logo, a green-and-white palette and a defined type system. The moving logomark carries those elements into animation.</p>
       </SectionText>
 
       <SectionMedia>
@@ -95,7 +95,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText title="Make Mint fresh again" align="center">
-        <p>We began with the logo and core brand elements because they form the anchor of any scalable visual system. In Linux Mint’s case, the absence of a clearly defined foundation, from inconsistent greens to shifting typographic choices, has made the identity feel fragmented across platforms. By establishing a unified logomark, a consistent color palette rooted in Mint’s own name, and a coherent typographic structure, we created a base that allows the visual language to scale naturally. From the website and installer to the desktop UI and future touchpoints, this foundation ensures that every element feels recognizably part of the same system. Fixing the core makes everything else simpler and more maintainable.</p>
+        <p>The same logo, colors and typography apply to the website, installer and desktop UI. A common foundation makes the identity easier to use and maintain.</p>
       </SectionText>
 
       <SectionMedia>
@@ -103,8 +103,8 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="right">
-        <p>We admire Linux Mint and its mission to provide a user-friendly gateway for Linux newcomers. Our initiative supports this vision by offering a clearer, more cohesive visual identity. At the heart of the challenge lies the absence of a strong design foundation: something we believe is crucial for the project’s continued growth and accessibility.</p>
-        <p>Even if our proposal is not formally adopted, we hope it initiates a broader conversation about the role of design in open-source software. Good design should not be exclusive to proprietary platforms. Linux can be modern, intuitive, and visually refined. By default.</p>
+        <p>We admire Linux Mint’s work and made this concept independently. It is a proposal, not an adopted redesign.</p>
+        <p>We hope it starts a discussion about design in open-source software. We would be happy to develop the system further with the project.</p>
       </SectionText>
 
       <SectionMedia>
@@ -125,7 +125,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="center">
-        <p>Linux Mint is more than just a green theme. Cinnamon can be more than a Windows 7 lookalike. With a solid visual foundation, Mint could become a leader in design innovation without losing its functional appeal. We began by redesigning the logo, the anchor of any identity. Ironically, despite its name, Mint lacks a consistent green color. Our proposal resolves this, introducing a defined palette and a coherent typographic system.</p>
+        <p>The desktop concepts extend the same identity into Cinnamon’s menus, icons and interface elements.</p>
       </SectionText>
 
       <SectionMedia>
@@ -161,9 +161,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="right">
-        <p>The visual language we propose extends across web, installer, desktop UI, and even physical assets. To illustrate its flexibility, we included a conceptual mobile interface—a thought experiment to show how good design scales naturally across platforms.</p>
-        <p>We focus on two core issues: lack of consistency (evident in conflicting fonts, colors, and outdated logos) and an overall dated look. Our solution is minimalist, scalable, and rooted in clarity. The dynamic logomark reinforces Mint’s identity as a user-friendly, GUI-first system. It also acts as a symbolic centerpiece, suggesting new digital horizons.</p>
-        <p>Our concept demonstrates how fixing even a single aspect, such color system definition can improve coherence while simplifying visual maintenance. By focusing on a streamlined green-and-white palette, we deliver clarity without sacrificing personality.</p>
+        <p>The concept covers the website, installer, desktop and physical materials. We also explored a mobile interface to test the system in a different format.</p>
         <p>Linux Mint deserves appreciation and support. Even if our visual initiative isn’t embraced, we encourage you to support the project directly through donations. It’s a small act that helps a great system continue to grow.</p>
       </SectionText>
 

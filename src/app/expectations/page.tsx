@@ -6,8 +6,9 @@ import Link from 'next/link'
 import { TextBlur } from '@/components/ui/TextBlur'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/expectations' },
   title: 'Expectations & Working Principles – KLAD',
-  description: 'How we work and what we expect from our clients. Сlear communication, respect for expertise, creative ownership and a shared commitment to strong design.',
+  description: 'How we work and what we expect from our clients. Clear communication, respect for expertise, creative ownership and a shared commitment to strong design.',
 }
 
 export default function Expectations() {
@@ -24,13 +25,13 @@ export default function Expectations() {
         <div className="col-span-2 md:col-start-4 md:col-span-6 lg:col-span-1 lg:self-center">
           <div className="p3 flex flex-col gap-3.5">
             <p>
-              We bring hands-on, experienced
+              Work directly with our experienced
               {' '}
               <Link className="underline" href="/#team">team</Link>
               {' '}
-              of specialists and artists who focus solely on design, delivering unique solutions without outsourcing or co-creation.
+              of designers and artists. Studio owners do the work. We do not outsource or co-create.
             </p>
-            <p>Our work isn’t about appeasing. It’s about elevating. We listen closely but speak honestly. Our role isn’t to echo your views, but to broaden them.</p>
+            <p>We listen to your brief and feedback, explain our decisions and speak honestly when we disagree. You hire us for our judgment as well as the final work.</p>
           </div>
         </div>
         <div className="col-span-2 md:col-span-full lg:col-start-1 lg:row-start-1 lg:col-span-3 lg:self-center -mx-2.5 md:mt-3 lg:-mt-2.5 lg:mr-2.5 lg:mb-5">
@@ -62,12 +63,12 @@ export default function Expectations() {
             <TextBlur isBold>What you can expect from&nbsp;us</TextBlur>
           </div>
           <div className="p5 flex flex-col gap-1.5 md:max-w-[180px] 2xl:max-w-[240px] mt-3">
-            <p>Commitment to delivering the best possible results.</p>
-            <p>Genuine, full involvement in your project.</p>
-            <p>Honest and transparent communication.</p>
+            <p>Design led by the people responsible for the final work.</p>
+            <p>A small team involved from the brief through delivery.</p>
+            <p>Direct answers and clear communication.</p>
             <p>Direct work by our experienced team. No outsourcing to juniors. Studio owners are hands-on creators.</p>
             <p>Respect for your time and budget – extra costs only with your consent and clear benefit.</p>
-            <p>Experiments, try new approaches, and avoid old or common paths. We want your solution to be unique and something we’re proud of.</p>
+            <p>Research and experiments shaped by your brief. We explain what we tried and why we chose a direction.</p>
           </div>
         </div>
         <div className="col-span-2 md:col-start-7 md:col-span-6 lg:col-start-auto lg:col-span-1 mt-14 lg:mt-0">

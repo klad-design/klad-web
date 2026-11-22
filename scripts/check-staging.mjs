@@ -221,7 +221,7 @@ try {
     await replaceDocument(page, () => page.goto(`${baseURL}/work`))
     await page.waitForFunction(() => document.fonts.status === 'loaded')
     await page.waitForTimeout(600)
-    assert.equal(await page.getByRole('button', { name: 'Datalane' }).count(), 1)
+    assert.equal(await page.getByRole('link', { name: 'Datalane', exact: true }).count(), 1)
     assert.match(await page.locator('h1').textContent(), /Datalane/, 'Datalane must be the default work case')
     const titleFits = await page.locator('h1').evaluate((el) => {
       const range = document.createRange()
@@ -231,7 +231,7 @@ try {
     assert.ok(titleFits, `Project title is clipped at ${width}px`)
     await page.screenshot({ path: `${artifacts}/work-${width}.png` })
 
-    const circus = page.getByRole('button', { name: 'Circus', exact: true })
+    const circus = page.getByRole('link', { name: 'Circus', exact: true })
     await page.keyboard.press('Tab')
     await circus.focus()
     await page.waitForFunction(() => document.activeElement?.matches(':focus-visible') && getComputedStyle(document.activeElement).outlineWidth === '1px')

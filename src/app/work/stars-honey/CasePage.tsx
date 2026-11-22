@@ -44,13 +44,13 @@ export function CasePage() {
           <div className="flex flex-col gap-[3px]">
             <h2 className="blur-regular uppercase p4">Task</h2>
             <div className="p5">
-              <p>As a fast-growing brand with an active presence across social media, Stars+Honey needed a large volume of consistent, premium visuals to present the product in a refined and engaging way.</p>
+              <p>Stars+Honey needed product visuals for regular social content, new flavors and seasonal campaigns. The assets had to cover a growing range of bars and packaging.</p>
             </div>
           </div>
           <div className="flex flex-col gap-[3px]">
             <h2 className="blur-regular uppercase p4">Solution</h2>
             <div className="p5">
-              <p>We developed a complete 3D product line: wrapped bars, unwrapped formats and packaging. For every flavor, we created ingredient-specific explosion renders, designed to highlight the flavor profile while staying fully on-brand.</p>
+              <p>We modelled wrapped bars, unwrapped bars and packaging. Each flavor has its own ingredient renders and animations.</p>
             </div>
           </div>
         </div>
@@ -81,8 +81,8 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="right">
-        <p>We created a cohesive library of 3D assets for Stars+Honey collagen bars brand that allows for endless combinations for campaigns, seasonal drops and new flavor announcements. Scaling product visuals now costs significantly less, as new variations are built from the existing system.</p>
-        <p>Built to support growth, the visual system helps the brand scale beyond online sales into retail. Not only it powers consistent social content, it also simplifies presentations for partners and investors.</p>
+        <p>We built a reusable 3D library for Stars+Honey’s collagen bars. New flavors and campaign compositions use the same product models, materials and lighting setups.</p>
+        <p>The assets cover social content, retail presentations and materials for partners and investors.</p>
       </SectionText>
 
       <SectionMedia>
@@ -90,11 +90,11 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText title="BRANDED AND PACKED" align="center">
-        <p>Each unwrapped bar was rendered to feel visually appealing and genuinely delicious. With a strong foundation we established early on, adding and refining new flavors becomes a smooth and efficient process, while still allowing each bar to retain its own character.</p>
+        <p>The unwrapped bars show the texture of each filling and coating. Packaging and ingredient compositions distinguish the flavors while keeping the product range consistent.</p>
       </SectionText>
 
       <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/stars-honey/1.avif" alt="Rasberry donut bar Stars+Honey brand poster design" width={1720} height={1720} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/stars-honey/1.avif" alt="Raspberry donut bar Stars+Honey brand poster design" width={1720} height={1720} />
       </SectionMedia>
 
       <SectionMedia>
@@ -106,7 +106,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="center">
-        <p>Consistency is key, especially for a brand with a wide variety of flavors like Stars+Honey. With a clearly defined visual system, we were able to support the core product line alongside new flavors and holiday editions, extending the brand without disrupting its visual language.</p>
+        <p>The same models and packaging layouts support the core range, new flavors and holiday editions.</p>
       </SectionText>
 
       <SectionMedia>
@@ -122,13 +122,11 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="right">
-        <p>Introducing new visual directions in socials requires a careful, brand-led approach. By highlighting key ingredients in 3D, we created eye-catching assets that both function independently and keep expanding the Stars+Honey visual narrative.</p>
-        <p>Each unwrapped bar was rendered to feel visually appealing and genuinely delicious.</p>
-        <p>With a strong foundation we established early on, adding and refining new flavors becomes a smooth and efficient process, while still allowing each bar to retain its own character.</p>
+        <p>Ingredient renders give each flavor a separate set of images and animations for social posts.</p>
       </SectionText>
 
       <SectionMedia>
-        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/stars-honey/4.avif" alt="Rasberry donut flavour brand poster design for Stars+Honey" width={1720} height={1053} />
+        <Image sizes="(min-width: 1536px) calc(100vw - 200px), (min-width: 1024px) calc(100vw - 150px), (min-width: 768px) calc(100vw - 80px), calc(100vw - 20px)" className="w-full" src="/images/stars-honey/4.avif" alt="Raspberry donut flavour brand poster design for Stars+Honey" width={1720} height={1053} />
       </SectionMedia>
 
       <SectionMedia>
@@ -140,7 +138,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText title="New ways to create visual stories" align="center">
-        <p>The key outcome of the project was creation of a soft, flavor-driven visual ecosystem - calm, elegant and quietly playful. Designed to support the brand’s daily storytelling and make content creation beautifully seamless, providing with a flexible toolkit that always stays true to Stars+Honey’s gentle aesthetic.</p>
+        <p>The final library includes product renders, packaging, ingredient explosions and compositions for social posts. The team can combine them for new campaigns without rebuilding the assets.</p>
       </SectionText>
 
       <SectionMedia>
@@ -156,7 +154,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="center">
-        <p>Beyond creating new visuals from scratch, we also elevated Stars+Honey’s existing photography and 3D compositions by integrating our updated assets. This approach allows the brand to refresh familiar visuals and extend the value of existing content without losing its original character or forcing changes where they aren’t necessary.</p>
+        <p>We combined the new 3D assets with Stars+Honey’s existing photography, keeping useful images in circulation alongside the new work.</p>
       </SectionText>
 
       <SectionMedia>
@@ -168,7 +166,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="center">
-        <p>Stars+Honey is an aesthetic-driven brand built around a genuinely good, healthy product. When creating the visual assets, it was essential for us to stay true to this positioning, presenting the bars as an everyday snack rather than a dietary supplement. Every composition was designed to feel natural, appetizing and lifestyle-oriented, reinforcing wellness through texture and mood instead of clinical cues. This approach allows the brand to communicate health in a way that feels modern and approachable.</p>
+        <p>We presented the bars as everyday snacks. Food textures, ingredient shots and lifestyle photography took priority over the clinical imagery often used for supplements.</p>
       </SectionText>
 
       <SectionMedia>
@@ -184,8 +182,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="left">
-        <p>The project was built as a modular system. Every material, texture and lighting setup can be reused or extended, allowing the brand to scale its visual assets efficiently and cost-effectively. </p>
-        <p>This gives the Stars+Honey team the freedom to create premium visuals for daily storytelling, seasonal drops and new flavour launches — quickly and without friction.</p>
+        <p>Materials, textures and lighting setups are reusable. New product variations can be made from the existing library.</p>
       </SectionText>
 
       <SectionMedia>
@@ -197,7 +194,7 @@ export function CasePage() {
       </SectionMedia>
 
       <SectionText align="center">
-        <p>Apart from soft, serene compositions, we introduced bolder visual moments filled with flavor and energy. Brighter colors, expressive ingredient forms and richer contrasts carefully woven into the system, allowing communicate special or holiday flavors more vividly while remaining true to the brand’s refined aesthetic.</p>
+        <p>Holiday flavors use brighter colors and stronger ingredient compositions. They share the same packaging and product models as the core range.</p>
       </SectionText>
 
       <SectionMedia>

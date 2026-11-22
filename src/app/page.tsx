@@ -4,6 +4,7 @@ import { DarkSections } from '@/components/DarkSections'
 import { Call, Hero, Services, Team } from '@/components/sections'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/' },
   title: 'Multidisciplinary Design Syndicate – KLAD',
   description: 'Klad Syndicate is a multidisciplinary design studio offering comprehensive solutions for ambitious brands. Every design we deliver is original and every project is approached as a unique challenge. We see our clients as long-term partners, helping them reach new heights in how they express themselves and present their identity.',
 }

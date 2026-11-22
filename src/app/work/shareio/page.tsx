@@ -3,8 +3,9 @@ import type { Metadata } from 'next'
 import { CasePage } from '@/app/work/shareio/CasePage'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/work/shareio' },
   title: 'Shareio – Visual Identity, 3D & Web Redesign – KLAD',
-  description: 'Design case study by Klad Syndicate. Branding, 3D/motion and web redesign for Shareio - a content monetization tool built around creator ownership, trust and a creative dimension identity.',
+  description: 'Brand identity, parametric 3D assets, motion, website and product interface design for Shareio, a tool for selling access to content in cloud storage.',
 }
 
 export default function Case() {
